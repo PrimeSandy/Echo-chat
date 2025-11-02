@@ -1,4 +1,4 @@
-// === Echo App Server (Final Render Version) ===
+// === Echo App Server (Render Compatible, FINAL) ===
 require("dotenv").config();
 const express = require("express");
 const { MongoClient } = require("mongodb");
@@ -22,9 +22,9 @@ const BASE_URL = process.env.BASE_URL || `https://sandy-echo.onrender.com`;
 
 app.use(cors());
 app.use(express.json());
-app.use(express.static(__dirname)); // serve all files in this folder
+app.use(express.static(__dirname)); // Serve everything in same folder
 
-// === Multer setup ===
+// === Multer ===
 const upload = multer({
   storage: multer.diskStorage({
     destination: __dirname,
@@ -32,7 +32,7 @@ const upload = multer({
   }),
 });
 
-// === MongoDB Connection ===
+// === MongoDB ===
 let db;
 (async () => {
   try {
@@ -41,7 +41,7 @@ let db;
     db = client.db("EchoApp");
     console.log("✅ MongoDB connected");
   } catch (err) {
-    console.error("❌ Mongo connection failed:", err);
+    console.error("❌ MongoDB connection failed:", err);
   }
 })();
 
@@ -68,7 +68,7 @@ app.post("/api/upload", upload.single("voice"), async (req, res) => {
     };
 
     await db.collection("voices").insertOne(voice);
-    res.json({ ok: true, link: `${BASE_URL}/?v=${id}` });
+    res.json({ ok: true, link: `${BASE_URL}/v/${id}` }); // 👈 Use /v/ route now
   } catch (err) {
     console.error(err);
     res.json({ ok: false });
@@ -89,22 +89,16 @@ app.get("/play/:file", (req, res) => {
 });
 
 app.post("/api/open/:id", async (req, res) => {
-  await db.collection("voices").updateOne(
-    { id: req.params.id },
-    { $inc: { openCount: 1 } }
-  );
+  await db.collection("voices").updateOne({ id: req.params.id }, { $inc: { openCount: 1 } });
   res.json({ ok: true });
 });
 
 app.post("/api/play/:id", async (req, res) => {
-  await db.collection("voices").updateOne(
-    { id: req.params.id },
-    { $inc: { playCount: 1 } }
-  );
+  await db.collection("voices").updateOne({ id: req.params.id }, { $inc: { playCount: 1 } });
   res.json({ ok: true });
 });
 
-// === Reveal system ===
+// === Reveal System ===
 app.post("/api/request-reveal/:id", async (req, res) => {
   const voice = await db.collection("voices").findOne({ id: req.params.id });
   if (!voice) return res.status(404).json({ ok: false });
@@ -145,14 +139,20 @@ app.get("/api/dashboard/:senderId", async (req, res) => {
   res.json(data);
 });
 
-// === SPA Catch-All for Render ===
-app.get("*", (req, res) => {
+// === Serve main index for /v/:id ===
+// 👇 this is what fixes Render’s “Not Found” for shared links
+app.get("/v/:id", (req, res) => {
+  res.sendFile(path.join(__dirname, "index.html"));
+});
+
+// === Fallback route ===
+app.get("/", (req, res) => {
   res.sendFile(path.join(__dirname, "index.html"));
 });
 
 // === Socket.io ===
 io.on("connection", (socket) => {
-  console.log("🔗 New client:", socket.id);
+  console.log("🔗 Connected:", socket.id);
   socket.on("register_sender", (senderId) => {
     if (senderId) socket.join(senderId);
   });
