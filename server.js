@@ -17,13 +17,16 @@ const io = new Server(server, {
 
 app.use(cors());
 app.use(express.json());
-app.use("/public", express.static(path.join(__dirname, "public")));
 
-// ✅ make sure this folder exists in your repo before deploy
-const uploadDir = path.join(__dirname, "public/voices");
-if (!fs.existsSync(uploadDir)) fs.mkdirSync(uploadDir, { recursive: true });
+// ✅ Create voices folder inside same folder if not exist
+const voicesDir = path.join(__dirname, "voices");
+if (!fs.existsSync(voicesDir)) fs.mkdirSync(voicesDir);
 
-const upload = multer({ dest: uploadDir });
+app.use("/voices", express.static(voicesDir)); // serve voices
+app.use(express.static(__dirname)); // serve index.html from same folder
+
+// ✅ Upload destination
+const upload = multer({ dest: voicesDir });
 
 const BASE_URL = process.env.BASE_URL || "https://sandy-echo.onrender.com";
 const DB_URL =
@@ -45,7 +48,7 @@ let db, voices;
   }
 })();
 
-// ✅ Socket.io connection
+// ✅ Socket.io
 io.on("connection", (socket) => {
   console.log("🔗 Socket connected:", socket.id);
 
@@ -134,14 +137,14 @@ app.post("/api/approve-reveal/:id", async (req, res) => {
   res.json({ ok: true, senderName: voice.senderName });
 });
 
-// ✅ Play file
+// ✅ Serve voice files
 app.get("/play/:filename", (req, res) => {
-  const file = path.join(__dirname, "public/voices", req.params.filename);
+  const file = path.join(voicesDir, req.params.filename);
   if (!fs.existsSync(file)) return res.status(404).send("File not found");
   res.sendFile(file);
 });
 
-// ✅ Fallback frontend
+// ✅ Fallback to index.html for any route
 app.get("*", (req, res) => {
   res.sendFile(path.join(__dirname, "index.html"));
 });
