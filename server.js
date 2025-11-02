@@ -22,7 +22,7 @@ app.use("/public", express.static(path.join(__dirname, "public")));
 const upload = multer({ dest: "public/voices/" });
 
 const BASE_URL = process.env.BASE_URL || "https://sandy-echo.onrender.com";
-const DB_URL = process.env.MONGO_URL || "mongodb+srv://<your_connection_string>";
+const DB_URL = process.env.MONGO_URL || "mongodb+srv://Sandydb456:Sandydb456@cluster0.o4lr4zd.mongodb.net/?retryWrites=true&w=majority";
 const DB_NAME = "echoApp";
 let db, voices;
 
@@ -145,3 +145,4 @@ app.get("*", (req, res) => {
 // ✅ Start server
 const PORT = process.env.PORT || 10000;
 server.listen(PORT, () => console.log(`🚀 Echo server running on ${PORT}`));
+
