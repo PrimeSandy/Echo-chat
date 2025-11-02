@@ -1,1633 +1,428 @@
-<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>EchoChat – Voice to Live Chat</title>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<title>Echo – Anonymous Voice Connect</title>
 <style>
 /* -------------------------
-   MODERN THEME COLORS + VARIABLES
+   THEME COLORS + VARIABLES
    ------------------------- */
-:root {
-  --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  --secondary-gradient: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
-  --accent-gradient: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
-  --success-gradient: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
-  --dark-bg: #0f0f1a;
-  --darker-bg: #0a0a12;
-  --card-dark: rgba(255,255,255,0.05);
-  --text-primary: #ffffff;
-  --text-secondary: rgba(255,255,255,0.7);
-  --text-light: rgba(255,255,255,0.5);
-  --border-dark: rgba(255,255,255,0.1);
-  --shadow-soft: 0 8px 32px rgba(0,0,0,0.2);
-  --radius-small: 12px;
-  --radius-medium: 16px;
-  --radius-large: 24px;
+:root{
+  --black-bg:#0b0b0b;
+  --white-bg:#fdfdfd;
+  --glass-dark:rgba(255,255,255,0.07);
+  --glass-light:rgba(0,0,0,0.07);
+  --border-light:rgba(255,255,255,0.1);
+  --border-dark:rgba(0,0,0,0.1);
+  --accent:#00d1ff;
+  --font-main:"Poppins",sans-serif;
 }
 
 /* -------------------------
-   BASE STYLES
+   BASE + GLOBAL
    ------------------------- */
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
+*{box-sizing:border-box;transition:all .20s ease}
+html,body{height:100%}
+body{
+  font-family:var(--font-main);
+  background:linear-gradient(135deg,var(--black-bg),#202020);
+  color:#fff;margin:0;padding:0;min-height:100vh;
+  display:flex;flex-direction:column;align-items:center;padding:20px;
+  -webkit-font-smoothing:antialiased;
+  -moz-osx-font-smoothing:grayscale;
 }
 
-body {
-  font-family: 'Inter', sans-serif;
-  background: var(--dark-bg);
-  color: var(--text-primary);
-  min-height: 100vh;
-  overflow-x: hidden;
+/* light theme */
+body.light{
+  background:linear-gradient(135deg,var(--white-bg),#d9d9d9);
+  color:#111;
 }
 
 /* -------------------------
-   LAYOUT COMPONENTS
+   HEADER BUTTONS (THEME + GUIDE)
    ------------------------- */
-.app-container {
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
+.header-buttons{
+  position:fixed;
+  top:12px;
+  right:12px;
+  display:flex;
+  gap:10px;
+  z-index:1200;
 }
-
-.main-header {
-  background: rgba(15, 15, 26, 0.95);
-  backdrop-filter: blur(20px);
-  border-bottom: 1px solid var(--border-dark);
-  padding: 1rem 2rem;
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  z-index: 1000;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
+button.header-btn{
+  border:none;border-radius:999px;background:rgba(255,255,255,0.08);
+  color:inherit;padding:10px 14px;cursor:pointer;backdrop-filter:blur(6px);
+  box-shadow:0 6px 18px rgba(0,0,0,0.25);
+  display:flex;align-items:center;gap:8px;font-weight:600;
 }
+button.header-btn:hover{background:rgba(255,255,255,0.16)}
+body.light button.header-btn{background:rgba(0,0,0,0.06)}
 
-.logo {
-  font-size: 1.5rem;
-  font-weight: 700;
-  background: var(--primary-gradient);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-}
-
-.back-button {
-  background: rgba(255,255,255,0.1);
-  border: 1px solid var(--border-dark);
-  color: var(--text-primary);
-  padding: 0.5rem 1rem;
-  border-radius: var(--radius-small);
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  text-decoration: none;
-}
-
-.back-button:hover {
-  background: rgba(255,255,255,0.15);
-}
-
-.main-content {
-  flex: 1;
-  padding: 6rem 1rem 2rem;
-  max-width: 1200px;
-  margin: 0 auto;
-  width: 100%;
+/* keep header buttons compact on mobile */
+@media(max-width:520px){
+  .header-buttons{right:8px;top:8px;gap:8px}
+  button.header-btn{padding:8px 10px;font-size:14px}
 }
 
 /* -------------------------
-   VIEW MANAGEMENT
+   APP CONTAINER
    ------------------------- */
-.view {
-  display: none;
+.app{
+  width:100%;max-width:980px;background:var(--glass-dark);
+  backdrop-filter:blur(10px);border-radius:16px;padding:24px;margin-top:84px;
+  box-shadow:0 10px 40px rgba(0,0,0,0.45);border:1px solid var(--border-light);
+  transition:all .2s ease;
 }
+body.light .app{background:var(--glass-light);border:1px solid var(--border-dark)}
+/* ensure header doesn't overlap content on tiny screens */
+@media(max-width:520px){ .app{margin-top:84px;padding:18px} }
 
-.view.active {
-  display: block;
-  animation: fadeIn 0.3s ease-in-out;
-}
-
-@keyframes fadeIn {
-  from { opacity: 0; transform: translateY(10px); }
-  to { opacity: 1; transform: translateY(0); }
-}
+h2{text-align:center;margin:0 0 6px 0;font-weight:700}
+p.sub{text-align:center;color:rgba(255,255,255,0.65);margin:0 0 18px 0}
+body.light p.sub{color:rgba(0,0,0,0.6)}
 
 /* -------------------------
-   SENDER VIEW STYLES
+   FORM + ELEMENTS
    ------------------------- */
-.voice-card {
-  background: var(--card-dark);
-  border: 1px solid var(--border-dark);
-  border-radius: var(--radius-large);
-  padding: 2rem;
-  margin-bottom: 2rem;
-  backdrop-filter: blur(20px);
-  box-shadow: var(--shadow-soft);
+label{font-weight:600;margin-top:10px;display:block;font-size:0.95rem}
+input,select{
+  width:100%;padding:11px;border-radius:10px;border:none;
+  background:rgba(255,255,255,0.08);color:inherit;margin-bottom:10px;
+  -webkit-text-fill-color:inherit;
 }
+body.light input, body.light select{ background: rgba(0,0,0,0.06) }
+select:focus,input:focus{ outline:2px solid var(--accent); box-shadow:0 6px 20px rgba(0,0,0,0.08) }
 
-.card-title {
-  font-size: 1.5rem;
-  font-weight: 600;
-  margin-bottom: 0.5rem;
-  background: var(--primary-gradient);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
+/* style select wrapper & caret so it's more consistent */
+.select-wrap{position:relative}
+.select-wrap::after{
+  content:"▾";position:absolute;right:12px;top:50%;transform:translateY(-50%);
+  color:rgba(255,255,255,0.7);pointer-events:none;font-size:12px;
 }
+body.light .select-wrap::after{ color: rgba(0,0,0,0.6) }
 
-.card-subtitle {
-  color: var(--text-secondary);
-  margin-bottom: 1.5rem;
+/* Mic button */
+.mic{ width:110px;height:110px;border-radius:999px;margin:18px auto;display:flex;
+  align-items:center;justify-content:center;font-size:34px;cursor:pointer;
+  background:rgba(255,255,255,0.08);transition:all .25s ease;
 }
+.mic:hover{ background:rgba(255,255,255,0.12) }
+.mic.recording{ background:linear-gradient(135deg,#ff4b8a,#ff3b6b); box-shadow:0 0 24px rgba(255,59,138,0.35); transform:scale(1.05) }
 
-.form-group {
-  margin-bottom: 1.5rem;
+/* buttons */
+button{cursor:pointer;border:0;border-radius:10px;padding:10px 14px;margin:6px 0;background:rgba(255,255,255,0.12);color:inherit;font-weight:600}
+button:hover{background:rgba(255,255,255,0.18)}
+button:disabled{opacity:0.5;cursor:not-allowed}
+
+/* audio */
+audio{ width:100%; margin-top:8px; border-radius:10px; background:transparent }
+
+/* cards grid */
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:14px;margin-top:18px}
+.card{
+  background:rgba(255,255,255,0.06);border-radius:10px;padding:12px;backdrop-filter:blur(6px);
+  border:1px solid rgba(255,255,255,0.08);display:flex;flex-direction:column;gap:6px;
 }
+.card a { color:var(--accent); word-break:break-all; text-decoration:none }
+.card small { color:rgba(255,255,255,0.65) }
 
-.form-label {
-  display: block;
-  margin-bottom: 0.5rem;
-  font-weight: 500;
-  color: var(--text-primary);
-}
+/* selection colors */
+::selection{ background:rgba(0,0,0,0.6); color:#fff }
+body.light ::selection{ background:rgba(200,200,200,0.8); color:#111 }
 
-.form-select, .form-input {
-  width: 100%;
-  padding: 1rem;
-  background: rgba(255,255,255,0.05);
-  border: 1px solid var(--border-dark);
-  border-radius: var(--radius-small);
-  color: var(--text-primary);
-  font-family: inherit;
-  transition: all 0.3s ease;
-}
+/* option styling (works in many browsers, not all details controllable) */
+select{ -webkit-appearance:none; appearance:none; position:relative; z-index:1 }
+option{ background:#2b2b2b; color:#fff }
+body.light option{ background:#fff; color:#111 }
+option:hover, option:checked{ background:#3b3b3b !important; color:#fff !important }
 
-.form-select:focus, .form-input:focus {
-  outline: none;
-  border-color: #4facfe;
-  box-shadow: 0 0 0 3px rgba(79, 172, 254, 0.1);
-}
-
-.select-wrapper {
-  position: relative;
-}
-
-.select-wrapper::after {
-  content: '▼';
-  position: absolute;
-  right: 1rem;
-  top: 50%;
-  transform: translateY(-50%);
-  color: var(--text-light);
-  pointer-events: none;
-  font-size: 0.7rem;
-}
-
-.recording-section {
-  text-align: center;
-  margin: 2rem 0;
-}
-
-.mic-button {
-  width: 120px;
-  height: 120px;
-  border-radius: 50%;
-  background: var(--card-dark);
-  border: 2px solid var(--border-dark);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  margin: 0 auto 1rem;
-  cursor: pointer;
-  font-size: 2.5rem;
-  transition: all 0.3s ease;
-  position: relative;
-  overflow: hidden;
-}
-
-.mic-button::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: var(--accent-gradient);
-  opacity: 0;
-  transition: opacity 0.3s ease;
-}
-
-.mic-button.recording {
-  background: var(--secondary-gradient);
-  transform: scale(1.1);
-  box-shadow: 0 0 30px rgba(245, 87, 108, 0.4);
-}
-
-.mic-button.recording::before {
-  opacity: 1;
-}
-
-.mic-button:hover:not(.recording) {
-  transform: scale(1.05);
-  border-color: #4facfe;
-}
-
-.btn {
-  padding: 0.75rem 1.5rem;
-  border: none;
-  border-radius: var(--radius-small);
-  font-family: inherit;
-  font-weight: 500;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  display: inline-flex;
-  align-items: center;
-  gap: 0.5rem;
-}
-
-.btn-primary {
-  background: var(--accent-gradient);
-  color: white;
-}
-
-.btn-secondary {
-  background: rgba(255,255,255,0.1);
-  color: var(--text-primary);
-  border: 1px solid var(--border-dark);
-}
-
-.btn:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
-
-.action-buttons {
-  display: flex;
-  gap: 1rem;
-  justify-content: center;
-  margin-top: 1rem;
-  flex-wrap: wrap;
-}
-
-/* -------------------------
-   AUDIO PLAYER STYLES
-   ------------------------- */
-.audio-player {
-  width: 100%;
-  margin: 1rem 0;
-  border-radius: var(--radius-small);
-  background: rgba(255,255,255,0.05);
-}
-
-.audio-player::-webkit-media-controls-panel {
-  background: rgba(255,255,255,0.05);
-}
-
-.audio-player::-webkit-media-controls-play-button {
-  background-color: #4facfe;
-  border-radius: 50%;
-}
-
-/* -------------------------
-   CHAT VIEW STYLES
-   ------------------------- */
-.chat-container {
-  background: var(--card-dark);
-  border: 1px solid var(--border-dark);
-  border-radius: var(--radius-large);
-  height: 70vh;
-  display: flex;
-  flex-direction: column;
-  backdrop-filter: blur(20px);
-  box-shadow: var(--shadow-soft);
-}
-
-.chat-header {
-  padding: 1.5rem;
-  border-bottom: 1px solid var(--border-dark);
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  background: rgba(255,255,255,0.02);
-}
-
-.chat-messages {
-  flex: 1;
-  padding: 1rem;
-  overflow-y: auto;
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
-}
-
-.message {
-  max-width: 70%;
-  padding: 0.75rem 1rem;
-  border-radius: var(--radius-small);
-  position: relative;
-  animation: messageSlide 0.3s ease-out;
-}
-
-@keyframes messageSlide {
-  from { opacity: 0; transform: translateY(10px); }
-  to { opacity: 1; transform: translateY(0); }
-}
-
-.message.sent {
-  background: var(--accent-gradient);
-  align-self: flex-end;
-  border-bottom-right-radius: 4px;
-}
-
-.message.received {
-  background: rgba(255,255,255,0.1);
-  align-self: flex-start;
-  border-bottom-left-radius: 4px;
-}
-
-.message.system {
-  background: rgba(255,255,255,0.05);
-  align-self: center;
-  max-width: 80%;
-  text-align: center;
-  font-style: italic;
-  color: var(--text-light);
-}
-
-.message-status {
-  font-size: 0.7rem;
-  opacity: 0.7;
-  margin-top: 0.25rem;
-  text-align: right;
-}
-
-.message-ticks {
-  font-size: 0.8rem;
-}
-
-.chat-input-container {
-  padding: 1rem;
-  border-top: 1px solid var(--border-dark);
-  display: flex;
-  gap: 0.5rem;
-  background: rgba(255,255,255,0.02);
-}
-
-.chat-input {
-  flex: 1;
-  padding: 0.75rem 1rem;
-  background: rgba(255,255,255,0.05);
-  border: 1px solid var(--border-dark);
-  border-radius: var(--radius-small);
-  color: var(--text-primary);
-  font-family: inherit;
-  resize: none;
-  min-height: 44px;
-  max-height: 120px;
-}
-
-.chat-input:focus {
-  outline: none;
-  border-color: #4facfe;
-}
-
-/* -------------------------
-   CHAT REQUEST STYLES
-   ------------------------- */
-.chat-request {
-  text-align: center;
-  padding: 2rem;
-  background: rgba(255,255,255,0.03);
-  border-radius: var(--radius-medium);
-  margin: 1.5rem 0;
-  border: 1px solid var(--border-dark);
-}
-
-.request-actions {
-  display: flex;
-  gap: 1rem;
-  justify-content: center;
-  margin-top: 1.5rem;
-  flex-wrap: wrap;
-}
-
-/* -------------------------
-   STATUS INDICATORS
-   ------------------------- */
-.status-indicator {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.5rem;
-  padding: 0.5rem 1rem;
-  border-radius: 20px;
-  font-size: 0.8rem;
-  font-weight: 500;
-}
-
-.status-active {
-  background: rgba(67, 233, 123, 0.2);
-  color: #43e97b;
-  border: 1px solid rgba(67, 233, 123, 0.3);
-}
-
-.status-pending {
-  background: rgba(255, 193, 7, 0.2);
-  color: #ffc107;
-  border: 1px solid rgba(255, 193, 7, 0.3);
-}
-
-.status-expired {
-  background: rgba(245, 87, 108, 0.2);
-  color: #f5576c;
-  border: 1px solid rgba(245, 87, 108, 0.3);
-}
-
-/* -------------------------
-   IDENTITY REVEAL SECTION
-   ------------------------- */
-.identity-section {
-  background: rgba(255,255,255,0.03);
-  border-radius: var(--radius-medium);
-  padding: 1.5rem;
-  margin: 1.5rem 0;
-  border: 1px solid var(--border-dark);
-  text-align: center;
-}
-
-/* -------------------------
-   TYPING INDICATOR
-   ------------------------- */
-.typing-indicator {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  padding: 0.75rem 1rem;
-  background: rgba(255,255,255,0.05);
-  border-radius: var(--radius-small);
-  align-self: flex-start;
-  max-width: fit-content;
-  margin-bottom: 0.5rem;
-}
-
-.typing-dots {
-  display: flex;
-  gap: 0.25rem;
-}
-
-.typing-dots span {
-  width: 6px;
-  height: 6px;
-  background: var(--text-light);
-  border-radius: 50%;
-  animation: typing 1.4s infinite ease-in-out;
-}
-
-.typing-dots span:nth-child(1) { animation-delay: -0.32s; }
-.typing-dots span:nth-child(2) { animation-delay: -0.16s; }
-
-@keyframes typing {
-  0%, 80%, 100% { transform: scale(0.8); opacity: 0.5; }
-  40% { transform: scale(1); opacity: 1; }
-}
-
-/* -------------------------
-   RESPONSIVE DESIGN
-   ------------------------- */
-@media (max-width: 768px) {
-  .main-header {
-    padding: 1rem;
-  }
-  
-  .main-content {
-    padding: 5rem 1rem 1rem;
-  }
-  
-  .voice-card {
-    padding: 1.5rem;
-    margin: 0 0 1.5rem 0;
-    border-radius: var(--radius-medium);
-  }
-  
-  .message {
-    max-width: 85%;
-  }
-  
-  .request-actions {
-    flex-direction: column;
-  }
-  
-  .action-buttons {
-    flex-direction: column;
-  }
-  
-  .mic-button {
-    width: 100px;
-    height: 100px;
-    font-size: 2rem;
-  }
-  
-  .chat-container {
-    height: 65vh;
-  }
-}
-
-@media (max-width: 480px) {
-  .main-content {
-    padding: 4rem 0.5rem 1rem;
-  }
-  
-  .voice-card {
-    padding: 1rem;
-    border-radius: var(--radius-small);
-  }
-  
-  .message {
-    max-width: 90%;
-  }
-}
-
-.hidden {
-  display: none !important;
-}
-
-.fade-in {
-  animation: fadeIn 0.6s ease-out;
-}
-
-.online-dot {
-  width: 8px;
-  height: 8px;
-  background: #43e97b;
-  border-radius: 50%;
-  animation: pulse 2s infinite;
-}
-
-@keyframes pulse {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.5; }
-}
-
-/* -------------------------
-   NOTIFICATION STYLES
-   ------------------------- */
-.notification {
-  position: fixed;
-  top: 80px;
-  right: 20px;
-  background: var(--accent-gradient);
-  color: white;
-  padding: 1rem 1.5rem;
-  border-radius: var(--radius-small);
-  z-index: 10000;
-  animation: slideInRight 0.3s ease-out;
-  box-shadow: var(--shadow-soft);
-}
-
-@keyframes slideInRight {
-  from { transform: translateX(100%); opacity: 0; }
-  to { transform: translateX(0); opacity: 1; }
+/* small screens */
+@media(max-width:600px){
+  .mic{ width:90px; height:90px; font-size:28px }
+  .header-buttons{ right:8px; top:8px; gap:8px; flex-direction:column }
+  .card{ padding:10px }
 }
 </style>
 </head>
 <body>
-  <div class="app-container">
-    <!-- Header -->
-    <header class="main-header">
-      <div class="logo">
-        <span>💬</span>
-        EchoChat
-      </div>
-      <div id="headerActions">
-        <!-- Back button and other actions will be inserted here -->
-      </div>
-    </header>
-
-    <!-- Main Content -->
-    <main class="main-content">
-      
-      <!-- Sender View -->
-      <div id="senderView" class="view active">
-        <div class="voice-card fade-in">
-          <h2 class="card-title">Send Voice Message</h2>
-          <p class="card-subtitle">Record a voice message and start a conversation</p>
-          
-          <div class="form-group">
-            <label class="form-label">Privacy Setting</label>
-            <div class="select-wrapper">
-              <select class="form-select" id="privacy">
-                <option value="anonymous">Anonymous - No identity revealed</option>
-                <option value="reveal_on_request">Reveal on Request - Approve identity requests</option>
-                <option value="auto_reveal">Auto Reveal - Show identity automatically</option>
-              </select>
-            </div>
-          </div>
-
-          <div class="form-group">
-            <label class="form-label">Message Expiry</label>
-            <div class="select-wrapper">
-              <select class="form-select" id="expiry">
-                <option value="permanent">Permanent - Never expires</option>
-                <option value="24h">24 Hours - Auto-deletes after 1 day</option>
-                <option value="1h">1 Hour - Quick temporary message</option>
-              </select>
-            </div>
-          </div>
-
-          <div class="form-group">
-            <label class="form-label">Your Display Name</label>
-            <input type="text" class="form-input" id="senderName" placeholder="Enter your name or stay anonymous" value="User">
-          </div>
-
-          <!-- Recording Section -->
-          <div class="recording-section">
-            <div class="mic-button" id="micBtn">
-              <span class="mic-icon">🎙️</span>
-            </div>
-            <audio id="preview" controls class="audio-player" hidden></audio>
-            
-            <div class="action-buttons">
-              <button class="btn btn-secondary" id="stopBtn" disabled>⏹️ Stop Recording</button>
-              <button class="btn btn-primary" id="uploadBtn" hidden>🚀 Upload & Share</button>
-            </div>
-          </div>
-
-          <!-- Result Section -->
-          <div id="result"></div>
-
-          <!-- Active Chats Section -->
-          <div id="activeChatsSection" class="hidden">
-            <h3 class="card-title">Active Conversations</h3>
-            <div id="activeChatsList">
-              <!-- Active chats will appear here -->
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Receiver View -->
-      <div id="receiverView" class="view">
-        <div class="voice-card fade-in">
-          <div id="voiceMessageSection">
-            <h2 class="card-title">Voice Message Received</h2>
-            <div class="status-indicator status-active" id="expiryStatus">
-              <span>⏰</span>
-              <span>This message is permanent</span>
-            </div>
-            
-            <!-- Audio Player -->
-            <div class="audio-section">
-              <audio id="playAudio" controls class="audio-player"></audio>
-              <button class="btn btn-primary" id="playBtn" style="margin-top: 1rem; width: 100%;">
-                🔊 Play Voice Message
-              </button>
-            </div>
-            
-            <div id="receiverStatus"></div>
-            
-            <!-- Identity Reveal Section -->
-            <div id="identitySection" class="identity-section">
-              <h4>👤 Sender Identity</h4>
-              <div id="identityContent">
-                <p style="color: var(--text-light); margin-bottom: 1rem;">
-                  Request to know who sent this message
-                </p>
-              </div>
-              <button class="btn btn-primary" id="requestIdentity">
-                🔍 Request Sender Identity
-              </button>
-            </div>
-            
-            <!-- Chat Request Section -->
-            <div id="chatRequestSection" class="chat-request">
-              <h3>💬 Start a Live Chat?</h3>
-              <p>Connect with the sender for real-time conversation</p>
-              <div class="request-actions">
-                <button class="btn btn-secondary" id="declineChat">No Thanks</button>
-                <button class="btn btn-primary" id="acceptChat">✅ Accept Chat</button>
-              </div>
-            </div>
-          </div>
-
-          <!-- Chat Interface -->
-          <div id="chatInterface" class="hidden">
-            <div class="chat-container">
-              <div class="chat-header">
-                <div>
-                  <strong>Live Chat</strong>
-                  <div id="chatPartnerName">Chatting with Sender</div>
-                </div>
-                <div class="status-indicator status-active">
-                  <div class="online-dot"></div>
-                  Online
-                </div>
-              </div>
-              
-              <div class="chat-messages" id="chatMessages">
-                <!-- Messages will appear here -->
-              </div>
-              
-              <div class="chat-input-container">
-                <textarea class="chat-input" id="messageInput" placeholder="Type your message..." rows="1"></textarea>
-                <button class="btn btn-primary" id="sendMessage">Send</button>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Main Chat View -->
-      <div id="chatView" class="view">
-        <div class="voice-card fade-in">
-          <div class="chat-container">
-            <div class="chat-header">
-              <div>
-                <strong>Live Chat</strong>
-                <div id="chatWithUser">Active Conversation</div>
-              </div>
-              <div class="status-indicator status-active">
-                <div class="online-dot"></div>
-                Online
-              </div>
-            </div>
-            
-            <div class="chat-messages" id="mainChatMessages">
-              <!-- Messages will appear here -->
-            </div>
-            
-            <div class="chat-input-container">
-              <textarea class="chat-input" id="mainMessageInput" placeholder="Type your message..." rows="1"></textarea>
-              <button class="btn btn-primary" id="mainSendMessage">Send</button>
-            </div>
-          </div>
-        </div>
-      </div>
-
-    </main>
+  <div class="header-buttons" role="toolbar" aria-label="Top controls">
+    <button id="guideBtn" class="header-btn" title="Guide">❔ Guide</button>
+    <button id="themeBtn" class="header-btn" title="Toggle theme">🌗 Theme</button>
   </div>
 
+  <div class="app" id="app" hidden>
+    <h2>Echo – Anonymous Voice Connect</h2>
+    <p class="sub">Record → Upload → Share. Dashboard updates live when someone interacts.</p>
+
+    <!-- sender -->
+    <div id="senderView">
+      <label for="privacy">Privacy</label>
+      <div class="select-wrap">
+        <select id="privacy" name="privacy">
+          <option value="anonymous">Anonymous</option>
+          <option value="reveal_on_request">Reveal on Request</option>
+          <option value="auto_reveal">Auto Reveal</option>
+        </select>
+      </div>
+
+      <label for="expiry">Expiry</label>
+      <div class="select-wrap">
+        <select id="expiry" name="expiry">
+          <option value="permanent">Permanent</option>
+          <option value="24h">24 hours</option>
+        </select>
+      </div>
+
+      <label for="senderName">Your Name</label>
+      <input id="senderName" placeholder="e.g. Sandy" />
+
+      <div class="mic" id="micBtn" title="Start recording">🎙️</div>
+      <button id="stopBtn" disabled>⏹ Stop</button>
+      <audio id="preview" controls hidden></audio>
+      <button id="uploadBtn" hidden>⬆️ Upload</button>
+
+      <div id="result" style="margin-top:12px"></div>
+
+      <h3 style="margin-top:22px">My Voices</h3>
+      <div id="grid" class="grid"></div>
+    </div>
+
+    <!-- receiver -->
+    <div id="receiverView" hidden>
+      <h3>Incoming Voice Message 🔊</h3>
+      <audio id="playAudio" controls></audio>
+      <button id="playBtn">▶️ Play</button>
+      <div id="receiverStatus" style="margin-top:10px;color:rgba(255,255,255,0.7)"></div>
+      <div id="revealSection" style="margin-top:12px"></div>
+    </div>
+  </div>
+
+  <div id="loader" style="position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:#000;color:#fff;z-index:1400">Loading Echo...</div>
+
+<script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
 <script>
-// -------------------------
-// APP STATE MANAGEMENT
-// -------------------------
-const AppState = {
-  currentUser: null,
-  currentVoiceMessage: null,
-  activeChats: [],
-  isRecording: false,
-  mediaRecorder: null,
-  audioChunks: []
+/* -------------------------
+   BASIC INIT
+   ------------------------- */
+const BASE_URL = window.location.origin;
+const socket = io(BASE_URL, { transports: ['websocket','polling'] });
+const params = new URLSearchParams(window.location.search);
+const voiceId = params.get("v");
+const loader = document.getElementById("loader");
+const app = document.getElementById("app");
+const senderView = document.getElementById("senderView");
+const receiverView = document.getElementById("receiverView");
+const themeBtn = document.getElementById("themeBtn");
+const guideBtn = document.getElementById("guideBtn");
+
+/* THEME */
+let dark = true;
+themeBtn.onclick = () => {
+  dark = !dark;
+  document.body.classList.toggle('light', !dark);
+  themeBtn.textContent = dark ? "🌗 Theme" : "☀️ Theme";
 };
 
-// -------------------------
-// DATA STORAGE MANAGEMENT
-// -------------------------
-class DataManager {
-  static getVoices() {
-    return JSON.parse(localStorage.getItem('echo_voices') || '[]');
-  }
-
-  static saveVoice(voiceData) {
-    const voices = this.getVoices();
-    // Remove existing voice with same ID
-    const filteredVoices = voices.filter(v => v.id !== voiceData.id);
-    filteredVoices.push(voiceData);
-    localStorage.setItem('echo_voices', JSON.stringify(filteredVoices));
-  }
-
-  static getVoice(voiceId) {
-    const voices = this.getVoices();
-    return voices.find(v => v.id === voiceId);
-  }
-
-  static getChats() {
-    return JSON.parse(localStorage.getItem('echo_chats') || '[]');
-  }
-
-  static saveChat(chatData) {
-    const chats = this.getChats();
-    // Remove existing chat with same ID
-    const filteredChats = chats.filter(c => c.id !== chatData.id);
-    filteredChats.push(chatData);
-    localStorage.setItem('echo_chats', JSON.stringify(filteredChats));
-  }
-
-  static getChat(chatId) {
-    const chats = this.getChats();
-    return chats.find(c => c.id === chatId);
-  }
-
-  static getChatByVoiceId(voiceId) {
-    const chats = this.getChats();
-    return chats.find(c => c.voiceId === voiceId);
-  }
-
-  static getMessages(chatId) {
-    return JSON.parse(localStorage.getItem(`echo_messages_${chatId}`) || '[]');
-  }
-
-  static saveMessage(chatId, message) {
-    const messages = this.getMessages(chatId);
-    messages.push(message);
-    localStorage.setItem(`echo_messages_${chatId}`, JSON.stringify(messages));
-  }
-
-  static getIdentityRequests() {
-    return JSON.parse(localStorage.getItem('echo_identity_requests') || '[]');
-  }
-
-  static saveIdentityRequest(request) {
-    const requests = this.getIdentityRequests();
-    requests.push(request);
-    localStorage.setItem('echo_identity_requests', JSON.stringify(requests));
-  }
-}
-
-// -------------------------
-// DOM ELEMENTS
-// -------------------------
-const elements = {
-  // Sender elements
-  micBtn: document.getElementById('micBtn'),
-  stopBtn: document.getElementById('stopBtn'),
-  preview: document.getElementById('preview'),
-  uploadBtn: document.getElementById('uploadBtn'),
-  senderName: document.getElementById('senderName'),
-  privacy: document.getElementById('privacy'),
-  expiry: document.getElementById('expiry'),
-  result: document.getElementById('result'),
-  activeChatsSection: document.getElementById('activeChatsSection'),
-  activeChatsList: document.getElementById('activeChatsList'),
-  
-  // Receiver elements
-  playAudio: document.getElementById('playAudio'),
-  playBtn: document.getElementById('playBtn'),
-  receiverStatus: document.getElementById('receiverStatus'),
-  expiryStatus: document.getElementById('expiryStatus'),
-  identitySection: document.getElementById('identitySection'),
-  identityContent: document.getElementById('identityContent'),
-  requestIdentity: document.getElementById('requestIdentity'),
-  chatRequestSection: document.getElementById('chatRequestSection'),
-  chatInterface: document.getElementById('chatInterface'),
-  acceptChat: document.getElementById('acceptChat'),
-  declineChat: document.getElementById('declineChat'),
-  
-  // Chat elements
-  chatMessages: document.getElementById('chatMessages'),
-  mainChatMessages: document.getElementById('mainChatMessages'),
-  messageInput: document.getElementById('messageInput'),
-  mainMessageInput: document.getElementById('mainMessageInput'),
-  sendMessage: document.getElementById('sendMessage'),
-  mainSendMessage: document.getElementById('mainSendMessage'),
-  chatPartnerName: document.getElementById('chatPartnerName'),
-  chatWithUser: document.getElementById('chatWithUser'),
-  headerActions: document.getElementById('headerActions'),
-  
-  // Views
-  senderView: document.getElementById('senderView'),
-  receiverView: document.getElementById('receiverView'),
-  chatView: document.getElementById('chatView')
+/* GUIDE */
+guideBtn.onclick = () => {
+  // Small friendly modal replacement
+  alert("How Echo works:\n\n1) Record a short voice note.\n2) Upload to get a unique share link.\n3) Send the link to someone. They can listen and, if allowed, request your name to be revealed.\n\nUse Reveal on Request to get notified and approve the reveal.");
 };
 
-// -------------------------
-// VIEW MANAGEMENT
-// -------------------------
-function showView(viewName) {
-  // Hide all views
-  document.querySelectorAll('.view').forEach(view => view.classList.remove('active'));
-  // Show requested view
-  document.getElementById(viewName + 'View').classList.add('active');
-  
-  // Update header actions
-  updateHeaderActions(viewName);
+/* Sender id registration (persisted locally) */
+if (!localStorage.getItem('echo_id')) {
+  localStorage.setItem('echo_id', 'echo_' + Math.random().toString(36).slice(2,9));
 }
+const SENDER_ID = localStorage.getItem('echo_id');
 
-function updateHeaderActions(currentView) {
-  let headerHTML = '';
-  
-  if (currentView === 'receiver' || currentView === 'chat') {
-    headerHTML = `
-      <button class="back-button" onclick="showView('sender')">
-        ← Back
-      </button>
-    `;
-  } else if (currentView === 'sender') {
-    headerHTML = `
-      <button class="btn btn-secondary" id="themeBtn">🌗 Theme</button>
-    `;
+/* When socket connects register sender to a private room so server can notify only them */
+socket.on('connect', () => {
+  // send register to server so server can do room emits (server must implement register_sender)
+  socket.emit('register_sender', SENDER_ID);
+});
+
+/* -------------------------
+   ON LOAD - show UI
+   ------------------------- */
+window.addEventListener('load', () => {
+  loader.style.display = 'none';
+  app.hidden = false;
+  if (voiceId) {
+    senderView.hidden = true;
+    receiverView.hidden = false;
+    loadReceiver();
+  } else {
+    senderView.hidden = false;
+    receiverView.hidden = true;
+    loadDashboard();
   }
-  
-  elements.headerActions.innerHTML = headerHTML;
-  
-  // Re-attach theme button event if it exists
-  const themeBtn = document.getElementById('themeBtn');
-  if (themeBtn) {
-    themeBtn.addEventListener('click', toggleTheme);
-  }
-}
+});
 
-function toggleTheme() {
-  document.body.style.filter = document.body.style.filter === 'invert(1) hue-rotate(180deg)' ? 'none' : 'invert(1) hue-rotate(180deg)';
-}
+/* -------------------------
+   RECORDING
+   ------------------------- */
+let mediaRecorder, chunks = [];
+const micBtn = document.getElementById('micBtn');
+const stopBtn = document.getElementById('stopBtn');
+const preview = document.getElementById('preview');
+const uploadBtn = document.getElementById('uploadBtn');
+const result = document.getElementById('result');
 
-// -------------------------
-// VOICE RECORDING
-// -------------------------
-elements.micBtn.addEventListener('click', startRecording);
-elements.stopBtn.addEventListener('click', stopRecording);
-
-async function startRecording() {
+micBtn.onclick = async () => {
   try {
     const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-    AppState.mediaRecorder = new MediaRecorder(stream);
-    AppState.audioChunks = [];
-    
-    AppState.mediaRecorder.ondataavailable = (e) => {
-      AppState.audioChunks.push(e.data);
+    mediaRecorder = new MediaRecorder(stream);
+    chunks = [];
+    mediaRecorder.ondataavailable = e => chunks.push(e.data);
+    mediaRecorder.onstop = () => {
+      const blob = new Blob(chunks, { type: 'audio/webm' });
+      preview.src = URL.createObjectURL(blob);
+      preview.hidden = false;
+      uploadBtn.hidden = false;
     };
-    
-    AppState.mediaRecorder.onstop = () => {
-      const audioBlob = new Blob(AppState.audioChunks, { type: 'audio/webm' });
-      const audioUrl = URL.createObjectURL(audioBlob);
-      elements.preview.src = audioUrl;
-      elements.preview.hidden = false;
-      elements.uploadBtn.hidden = false;
-      
-      // Store the audio blob for later use
-      AppState.recordedAudio = audioBlob;
-    };
-    
-    AppState.mediaRecorder.start();
-    AppState.isRecording = true;
-    elements.micBtn.classList.add('recording');
-    elements.stopBtn.disabled = false;
-    
-  } catch (error) {
-    showNotification('Microphone access required for recording');
+    mediaRecorder.start();
+    micBtn.classList.add('recording');
+    stopBtn.disabled = false;
+  } catch (err) {
+    alert('Please allow microphone access to record.');
   }
-}
+};
 
-function stopRecording() {
-  if (AppState.mediaRecorder && AppState.isRecording) {
-    AppState.mediaRecorder.stop();
-    AppState.isRecording = false;
-    elements.micBtn.classList.remove('recording');
-    elements.stopBtn.disabled = true;
-  }
-}
+stopBtn.onclick = () => {
+  if (mediaRecorder && mediaRecorder.state === 'recording') mediaRecorder.stop();
+  micBtn.classList.remove('recording');
+  stopBtn.disabled = true;
+};
 
-// -------------------------
-// VOICE MESSAGE UPLOAD & SHARING
-// -------------------------
-elements.uploadBtn.addEventListener('click', uploadVoiceMessage);
+/* -------------------------
+   UPLOAD + DASHBOARD
+   ------------------------- */
+uploadBtn.onclick = async () => {
+  const blob = new Blob(chunks, { type: 'audio/webm' });
+  const form = new FormData();
+  form.append('voice', blob);
+  form.append('privacy', document.getElementById('privacy').value);
+  form.append('expiry', document.getElementById('expiry').value);
+  form.append('senderId', SENDER_ID);
+  form.append('senderName', document.getElementById('senderName').value || 'Anonymous');
 
-async function uploadVoiceMessage() {
-  const senderName = elements.senderName.value || 'Anonymous';
-  const privacy = elements.privacy.value;
-  const expiry = elements.expiry.value;
-  
-  if (!AppState.recordedAudio) {
-    showNotification('Please record a voice message first');
-    return;
-  }
-  
-  elements.uploadBtn.disabled = true;
-  elements.uploadBtn.innerHTML = '⏳ Uploading...';
-  
+  uploadBtn.disabled = true; uploadBtn.textContent = 'Uploading...';
   try {
-    // Simulate upload process
-    await new Promise(resolve => setTimeout(resolve, 2000));
-    
-    const voiceData = {
-      id: 'voice_' + Math.random().toString(36).slice(2, 11),
-      senderName: senderName,
-      privacy: privacy,
-      expiry: expiry,
-      timestamp: new Date().toISOString(),
-      senderId: AppState.currentUser,
-      audioUrl: elements.preview.src, // Store the audio URL
-      hasChatRequest: true
-    };
-    
-    // Save voice message
-    DataManager.saveVoice(voiceData);
-    
-    // Generate share link
-    const shareLink = `${window.location.origin}?voice=${voiceData.id}`;
-    
-    // Show success message
-    elements.result.innerHTML = `
-      <div class="fade-in" style="margin-top: 1.5rem; padding: 1.5rem; background: rgba(67, 233, 123, 0.1); border-radius: var(--radius-medium); border: 1px solid rgba(67, 233, 123, 0.3);">
-        <div class="status-indicator status-active" style="margin-bottom: 1rem;">
-          <span>✅</span>
-          Voice Message Sent Successfully!
-        </div>
-        <p style="margin-bottom: 0.5rem;"><strong>Share this link:</strong></p>
-        <input value="${shareLink}" style="width: 100%; padding: 0.75rem; margin: 0.5rem 0; border-radius: var(--radius-small); background: rgba(255,255,255,0.05); border: 1px solid var(--border-dark); color: var(--text-primary);" readonly>
-        <div class="share-actions" style="display: flex; gap: 0.5rem; margin-top: 1rem; flex-wrap: wrap;">
-          <button class="btn btn-secondary" onclick="copyToClipboard('${shareLink}')">
-            📋 Copy Link
-          </button>
-          <button class="btn btn-primary" onclick="generateQRCode('${shareLink}')">
-            📱 QR Code
-          </button>
-        </div>
-        <div style="margin-top: 1rem; padding: 1rem; background: rgba(255,255,255,0.03); border-radius: var(--radius-small);">
-          <p style="margin: 0; font-size: 0.9rem;">
-            <strong>Settings:</strong><br>
-            • Privacy: ${getPrivacyText(privacy)}<br>
-            • Expiry: ${getExpiryText(expiry)}<br>
-            <strong>💬 Chat Feature:</strong> Receiver can start live chat after listening
-          </p>
-        </div>
-      </div>
-    `;
-    
-    // Show active chats section
-    elements.activeChatsSection.classList.remove('hidden');
-    loadActiveChats();
-    
-  } catch (error) {
-    elements.result.innerHTML = `
-      <div class="status-indicator status-expired" style="margin-top: 1rem;">
-        <span>❌</span>
-        Upload failed. Please try again.
-      </div>
-    `;
-  } finally {
-    elements.uploadBtn.disabled = false;
-    elements.uploadBtn.innerHTML = '🚀 Upload & Share';
-  }
-}
-
-// -------------------------
-// RECEIVER FUNCTIONALITY
-// -------------------------
-elements.playBtn.addEventListener('click', playVoiceMessage);
-elements.acceptChat.addEventListener('click', acceptChatRequest);
-elements.declineChat.addEventListener('click', declineChatRequest);
-elements.requestIdentity.addEventListener('click', requestSenderIdentity);
-
-function playVoiceMessage() {
-  const urlParams = new URLSearchParams(window.location.search);
-  const voiceId = urlParams.get('voice');
-  const voiceData = DataManager.getVoice(voiceId);
-  
-  if (voiceData && voiceData.audioUrl) {
-    elements.playAudio.src = voiceData.audioUrl;
-    elements.playAudio.play().catch(e => {
-      showNotification('Click play button on the audio player to listen');
-    });
-    
-    // Update play count
-    voiceData.playCount = (voiceData.playCount || 0) + 1;
-    DataManager.saveVoice(voiceData);
-    
-    elements.receiverStatus.innerHTML = `
-      <div class="status-indicator status-active" style="margin-top: 1rem;">
-        <span>🔊</span>
-        Playing voice message...
-      </div>
-    `;
-  } else {
-    // Demo audio for testing
-    elements.playAudio.src = "https://www.soundjay.com/button/beep-07.wav";
-    elements.playAudio.play();
-    
-    elements.receiverStatus.innerHTML = `
-      <div class="status-indicator status-active" style="margin-top: 1rem;">
-        <span>🔊</span>
-        Playing demo voice message
-      </div>
-    `;
-  }
-}
-
-function acceptChatRequest() {
-  const urlParams = new URLSearchParams(window.location.search);
-  const voiceId = urlParams.get('voice');
-  const voiceData = DataManager.getVoice(voiceId);
-  
-  if (voiceData) {
-    // Create chat session
-    const chatData = {
-      id: 'chat_' + Math.random().toString(36).slice(2, 11),
-      voiceId: voiceId,
-      participant1: voiceData.senderId,
-      participant2: AppState.currentUser,
-      participant1Name: voiceData.senderName,
-      participant2Name: 'Receiver',
-      timestamp: new Date().toISOString(),
-      status: 'active'
-    };
-    
-    // Save chat
-    DataManager.saveChat(chatData);
-    
-    // Add welcome message
-    const welcomeMessage = {
-      id: 'msg_' + Math.random().toString(36).slice(2, 11),
-      chatId: chatData.id,
-      senderId: 'system',
-      senderName: 'System',
-      content: `Chat started between ${voiceData.senderName} and Receiver`,
-      timestamp: new Date().toISOString(),
-      type: 'system'
-    };
-    
-    DataManager.saveMessage(chatData.id, welcomeMessage);
-    
-    showNotification('Chat started! You can now message each other.');
-    
-    // Start chat session for receiver
-    startChatSession(chatData, 'receiver');
-  }
-}
-
-function declineChatRequest() {
-  elements.chatRequestSection.innerHTML = `
-    <div class="status-indicator status-expired">
-      <span>❌</span>
-      Chat request declined
-    </div>
-  `;
-}
-
-function requestSenderIdentity() {
-  const urlParams = new URLSearchParams(window.location.search);
-  const voiceId = urlParams.get('voice');
-  const voiceData = DataManager.getVoice(voiceId);
-  
-  if (voiceData) {
-    if (voiceData.privacy === 'auto_reveal') {
-      // Show identity immediately
-      elements.identityContent.innerHTML = `
-        <div class="status-indicator status-active">
-          <span>👤</span>
-          Sender: <strong>${voiceData.senderName}</strong>
-        </div>
-      `;
-      elements.requestIdentity.classList.add('hidden');
-      
-      showNotification(`Sender identity: ${voiceData.senderName}`);
-      
-    } else if (voiceData.privacy === 'reveal_on_request') {
-      // Create identity request
-      const identityRequest = {
-        id: 'identity_' + Math.random().toString(36).slice(2, 11),
-        voiceId: voiceId,
-        receiverId: AppState.currentUser,
-        senderId: voiceData.senderId,
-        timestamp: new Date().toISOString(),
-        status: 'pending'
-      };
-      
-      DataManager.saveIdentityRequest(identityRequest);
-      
-      elements.identityContent.innerHTML = `
-        <div class="status-indicator status-pending">
-          <span>⏳</span>
-          Identity request sent to sender...
-        </div>
-      `;
-      elements.requestIdentity.classList.add('hidden');
-      
-      showNotification('Identity request sent to sender');
-      
-      // Simulate sender receiving the request
-      setTimeout(() => {
-        showNotificationOnSender('Someone requested your identity!');
-      }, 2000);
-      
+    const res = await fetch(`${BASE_URL}/api/upload`, { method: 'POST', body: form });
+    const data = await res.json();
+    if (data.ok) {
+      result.innerHTML = `<p style="color:var(--accent)">✅ Uploaded! Share this link:</p>
+        <input value="${data.link}" style="width:100%;padding:8px;border-radius:8px" readonly />
+        <button style="margin-top:8px" onclick="navigator.clipboard.writeText('${data.link}')">Copy</button>`;
+      await loadDashboard();
     } else {
-      elements.identityContent.innerHTML = `
-        <div class="status-indicator status-expired">
-          <span>🔒</span>
-          Sender prefers to remain anonymous
-        </div>
-      `;
-      elements.requestIdentity.classList.add('hidden');
+      result.textContent = 'Upload failed.';
     }
+  } catch (e) {
+    result.textContent = 'Upload failed.';
+  } finally {
+    uploadBtn.disabled = false; uploadBtn.textContent = '⬆️ Upload';
   }
-}
+};
 
-function showNotificationOnSender(message) {
-  // This would be a WebSocket notification in real app
-  // For demo, we'll show it when sender views active chats
-  const pendingRequests = DataManager.getIdentityRequests().filter(req => 
-    req.senderId === AppState.currentUser && req.status === 'pending'
-  );
-  
-  if (pendingRequests.length > 0) {
-    showNotification('New identity request! Check your active chats.');
-  }
-}
-
-// -------------------------
-// CHAT FUNCTIONALITY
-// -------------------------
-elements.sendMessage.addEventListener('click', sendMessage);
-elements.mainSendMessage.addEventListener('click', sendMainMessage);
-
-// Auto-resize textarea
-elements.messageInput.addEventListener('input', autoResize);
-elements.mainMessageInput.addEventListener('input', autoResize);
-
-function autoResize() {
-  this.style.height = 'auto';
-  this.style.height = this.scrollHeight + 'px';
-}
-
-// Enter key support (Shift+Enter for new line)
-elements.messageInput.addEventListener('keydown', function(e) {
-  if (e.key === 'Enter' && !e.shiftKey) {
-    e.preventDefault();
-    sendMessage();
-  }
-});
-
-elements.mainMessageInput.addEventListener('keydown', function(e) {
-  if (e.key === 'Enter' && !e.shiftKey) {
-    e.preventDefault();
-    sendMainMessage();
-  }
-});
-
-function sendMessage() {
-  const message = elements.messageInput.value.trim();
-  if (!message) return;
-  
-  const urlParams = new URLSearchParams(window.location.search);
-  const voiceId = urlParams.get('voice');
-  const chatData = DataManager.getChatByVoiceId(voiceId);
-  
-  if (chatData) {
-    sendChatMessage(chatData.id, message, 'chatMessages', elements.messageInput);
-  }
-}
-
-function sendMainMessage() {
-  const message = elements.mainMessageInput.value.trim();
-  if (!message) return;
-  
-  const currentChat = AppState.activeChats[0]; // For demo, use first active chat
-  if (currentChat) {
-    sendChatMessage(currentChat.id, message, 'mainChatMessages', elements.mainMessageInput);
-  }
-}
-
-function sendChatMessage(chatId, message, messagesContainerId, inputElement) {
-  const chatData = DataManager.getChat(chatId);
-  
-  // Create message
-  const messageData = {
-    id: 'msg_' + Math.random().toString(36).slice(2, 11),
-    chatId: chatId,
-    senderId: AppState.currentUser,
-    senderName: chatData.participant1 === AppState.currentUser ? chatData.participant1Name : chatData.participant2Name,
-    content: message,
-    timestamp: new Date().toISOString(),
-    type: 'text',
-    status: 'sent'
-  };
-  
-  // Save message
-  DataManager.saveMessage(chatId, messageData);
-  
-  // Add to UI
-  addMessage('sent', message, messagesContainerId);
-  
-  // Clear input
-  inputElement.value = '';
-  inputElement.style.height = 'auto';
-  
-  // Update message status to delivered
-  setTimeout(() => {
-    updateMessageStatus(messageData.id, 'delivered', messagesContainerId);
-  }, 1000);
-  
-  // Update message status to read
-  setTimeout(() => {
-    updateMessageStatus(messageData.id, 'read', messagesContainerId);
-  }, 3000);
-  
-  // Simulate reply after 2-5 seconds
-  setTimeout(() => {
-    simulateReply(chatId, messagesContainerId);
-  }, 2000 + Math.random() * 3000);
-}
-
-function simulateReply(chatId, messagesContainerId) {
-  const chatData = DataManager.getChat(chatId);
-  const otherParticipantName = chatData.participant1 === AppState.currentUser ? chatData.participant2Name : chatData.participant1Name;
-  
-  // Show typing indicator
-  showTypingIndicator(messagesContainerId, otherParticipantName);
-  
-  // Send reply after typing
-  setTimeout(() => {
-    hideTypingIndicator(messagesContainerId);
-    
-    const replies = [
-      "Thanks for your message!",
-      "That's interesting, tell me more!",
-      "I appreciate you sharing that with me",
-      "What are your thoughts on this?",
-      "That sounds great!",
-      "I'd love to hear more about that",
-      "How has your day been?",
-      "That's really helpful, thank you!",
-      "What do you think we should do next?",
-      "I completely understand how you feel"
-    ];
-    
-    const randomReply = replies[Math.floor(Math.random() * replies.length)];
-    
-    const replyMessage = {
-      id: 'msg_' + Math.random().toString(36).slice(2, 11),
-      chatId: chatId,
-      senderId: chatData.participant1 === AppState.currentUser ? chatData.participant2 : chatData.participant1,
-      senderName: otherParticipantName,
-      content: randomReply,
-      timestamp: new Date().toISOString(),
-      type: 'text',
-      status: 'read'
-    };
-    
-    DataManager.saveMessage(chatId, replyMessage);
-    addMessage('received', randomReply, messagesContainerId);
-  }, 1500 + Math.random() * 2000);
-}
-
-function showTypingIndicator(containerId, userName) {
-  const container = document.getElementById(containerId);
-  const typingDiv = document.createElement('div');
-  typingDiv.className = 'typing-indicator';
-  typingDiv.id = 'typing-' + containerId;
-  typingDiv.innerHTML = `
-    <div>${userName} is typing</div>
-    <div class="typing-dots">
-      <span></span>
-      <span></span>
-      <span></span>
-    </div>
-  `;
-  container.appendChild(typingDiv);
-  container.scrollTop = container.scrollHeight;
-}
-
-function hideTypingIndicator(containerId) {
-  const typingDiv = document.getElementById('typing-' + containerId);
-  if (typingDiv) {
-    typingDiv.remove();
-  }
-}
-
-function addMessage(type, content, containerId) {
-  const container = document.getElementById(containerId);
-  const messageDiv = document.createElement('div');
-  messageDiv.className = `message ${type}`;
-  
-  const timestamp = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-  
-  let statusHtml = '';
-  if (type === 'sent') {
-    statusHtml = '<span class="message-ticks">✓</span>';
-  }
-  
-  messageDiv.innerHTML = `
-    <div>${content}</div>
-    <div class="message-status">
-      ${timestamp} ${statusHtml}
-    </div>
-  `;
-  
-  container.appendChild(messageDiv);
-  container.scrollTop = container.scrollHeight;
-}
-
-function updateMessageStatus(messageId, status, containerId) {
-  const container = document.getElementById(containerId);
-  const messages = container.getElementsByClassName('message sent');
-  const lastMessage = messages[messages.length - 1];
-  
-  if (lastMessage) {
-    const statusElement = lastMessage.querySelector('.message-ticks');
-    if (statusElement) {
-      if (status === 'delivered') {
-        statusElement.textContent = '✓✓';
-      } else if (status === 'read') {
-        statusElement.textContent = '✓✓';
-        statusElement.style.color = '#4facfe';
-      }
+async function loadDashboard() {
+  const grid = document.getElementById('grid');
+  grid.innerHTML = '<p>Loading...</p>';
+  try {
+    const res = await fetch(`${BASE_URL}/api/dashboard/${SENDER_ID}`);
+    const rows = await res.json();
+    if (!rows || rows.length === 0) {
+      grid.innerHTML = "<p style='color:rgba(255,255,255,0.6)'>No voices yet.</p>";
+      return;
     }
-  }
-}
-
-function startChatSession(chatData, userType) {
-  if (userType === 'receiver') {
-    // Receiver starts chat in their view
-    elements.voiceMessageSection.classList.add('hidden');
-    elements.chatInterface.classList.remove('hidden');
-    elements.chatPartnerName.textContent = `Chatting with ${chatData.participant1Name}`;
-    
-    // Load existing messages
-    loadChatMessages(chatData.id, 'chatMessages');
-    
-  } else {
-    // Sender starts chat in main chat view
-    showView('chat');
-    elements.chatWithUser.textContent = `Chatting with ${chatData.participant2Name}`;
-    
-    // Load existing messages
-    loadChatMessages(chatData.id, 'mainChatMessages');
-  }
-}
-
-function loadChatMessages(chatId, containerId) {
-  const messages = DataManager.getMessages(chatId);
-  const container = document.getElementById(containerId);
-  
-  container.innerHTML = '';
-  
-  messages.forEach(msg => {
-    const messageType = msg.senderId === AppState.currentUser ? 'sent' : 
-                       msg.type === 'system' ? 'system' : 'received';
-    addMessage(messageType, msg.content, containerId);
-  });
-}
-
-// -------------------------
-// ACTIVE CHATS MANAGEMENT
-// -------------------------
-function loadActiveChats() {
-  const chats = DataManager.getChats();
-  const userChats = chats.filter(chat => 
-    chat.participant1 === AppState.currentUser || chat.participant2 === AppState.currentUser
-  );
-  
-  if (userChats.length > 0) {
-    AppState.activeChats = userChats;
-    
-    elements.activeChatsList.innerHTML = userChats.map(chat => {
-      const otherParticipant = chat.participant1 === AppState.currentUser ? 
-        { name: chat.participant2Name, id: chat.participant2 } : 
-        { name: chat.participant1Name, id: chat.participant1 };
-      
-      return `
-        <div class="status-indicator status-active" style="margin: 0.5rem 0; padding: 1rem; background: rgba(255,255,255,0.03); border-radius: var(--radius-medium); display: flex; justify-content: between; align-items: center;">
-          <div style="flex: 1;">
-            <span>💬</span>
-            Chat with <strong>${otherParticipant.name}</strong>
-          </div>
-          <button class="btn btn-primary" onclick="openChat('${chat.id}')" style="padding: 0.5rem 1rem;">
-            Open Chat
-          </button>
-        </div>
-      `;
-    }).join('');
-  } else {
-    elements.activeChatsList.innerHTML = `
-      <div style="text-align: center; padding: 2rem; color: var(--text-light);">
-        No active chats yet. Share your voice message to start a conversation!
+    grid.innerHTML = rows.map(v => `
+      <div class="card">
+        <b>${v.senderName || 'Anonymous'}</b>
+        <a href="${BASE_URL}/?v=${v.id}" target="_blank">${v.id}</a>
+        <small>Privacy: ${v.privacy} | Expiry: ${v.expiry}</small>
+        <div>Opened: ${v.openCount || 0} | Played: ${v.playCount || 0}</div>
+        ${v.revealRequest && !v.revealApproved ? `<button onclick="approveReveal('${v.id}')">Approve Reveal</button>` : v.revealApproved ? `<p>👁️ Reveal Approved</p>` : ''}
       </div>
-    `;
+    `).join('');
+  } catch (err) {
+    grid.innerHTML = "<p style='color:crimson'>Error loading dashboard.</p>";
   }
 }
 
-function openChat(chatId) {
-  const chatData = DataManager.getChat(chatId);
-  if (chatData) {
-    AppState.activeChats = [chatData];
-    startChatSession(chatData, 'sender');
+async function approveReveal(id) {
+  try {
+    await fetch(`${BASE_URL}/api/approve-reveal/${id}`, { method: 'POST' });
+    // notify server will emit reveal_approved
+    await loadDashboard();
+  } catch (e) {
+    alert('Approve failed');
   }
 }
 
-// -------------------------
-// UTILITY FUNCTIONS
-// -------------------------
-function getPrivacyText(privacy) {
-  const privacyMap = {
-    'anonymous': 'Anonymous',
-    'reveal_on_request': 'Reveal on Request',
-    'auto_reveal': 'Auto Reveal'
-  };
-  return privacyMap[privacy] || privacy;
+/* -------------------------
+   RECEIVER
+   ------------------------- */
+async function loadReceiver() {
+  try {
+    const res = await fetch(`${BASE_URL}/api/voice/${voiceId}`);
+    if (!res.ok) { document.getElementById('receiverStatus').textContent = 'Not found'; return; }
+    const data = await res.json();
+    const playAudio = document.getElementById('playAudio');
+    const playBtn = document.getElementById('playBtn');
+    const receiverStatus = document.getElementById('receiverStatus');
+    const revealSection = document.getElementById('revealSection');
+
+    if (!data.path) { receiverStatus.textContent = 'Voice not found'; return; }
+    playAudio.src = `${BASE_URL}/play/${data.path}`;
+    await fetch(`${BASE_URL}/api/open/${voiceId}`, { method: 'POST' });
+
+    if (data.privacy === 'auto_reveal') {
+      revealSection.innerHTML = `<p>👤 Sender: <b>${data.senderName}</b></p>`;
+    } else if (data.privacy === 'reveal_on_request') {
+      revealSection.innerHTML = `<button id="reqBtn">Request Name Reveal</button>`;
+      document.getElementById('reqBtn').onclick = async () => {
+        await fetch(`${BASE_URL}/api/request-reveal/${voiceId}`, { method: 'POST' });
+        revealSection.innerHTML = "<p>⏳ Request sent. Waiting...</p>";
+      };
+    } else {
+      revealSection.innerHTML = '';
+    }
+
+    playBtn.onclick = async () => {
+      playAudio.play();
+      await fetch(`${BASE_URL}/api/play/${voiceId}`, { method: 'POST' });
+      receiverStatus.textContent = "✅ Voice played.";
+    };
+  } catch (e) {
+    document.getElementById('receiverStatus').textContent = 'Error loading voice';
+  }
 }
 
-function getExpiryText(expiry) {
-  const expiryMap = {
-    'permanent': 'Permanent',
-    '1h': '1 Hour',
-    '24h': '24 Hours'
-  };
-  return expiryMap[expiry] || expiry;
-}
+/* -------------------------
+   SOCKET REAL-TIME
+   ------------------------- */
+/* -------------------------
+   SOCKET REAL-TIME
+   ------------------------- */
+socket.on('reveal_request', data => {
+  if (data && data.senderId && data.senderId === SENDER_ID) {
+    alert('🔔 Someone requested a reveal for your voice. Open the dashboard to approve.');
+    loadDashboard();
+  }
+});
 
-function copyToClipboard(text) {
-  navigator.clipboard.writeText(text).then(() => {
-    showNotification('Link copied to clipboard!');
+/* dynamically listen for reveal approval specific to this voice */
+if (voiceId) {
+  socket.on(`reveal_approved_${voiceId}`, (data) => {
+    console.log("Reveal approved received:", data);
+    const revealSection = document.getElementById("revealSection");
+    revealSection.innerHTML = `<p>👤 Sender: <b>${data.senderName || "Anonymous"}</b></p>`;
   });
 }
 
-function generateQRCode(link) {
-  alert(`QR Code for: ${link}\n\nIn a real app, this would generate a QR code.`);
-}
-
-function showNotification(message) {
-  const notification = document.createElement('div');
-  notification.className = 'notification';
-  notification.textContent = message;
-  document.body.appendChild(notification);
-  
-  setTimeout(() => {
-    if (notification.parentNode) {
-      notification.parentNode.removeChild(notification);
-    }
-  }, 3000);
-}
-
-// -------------------------
-// URL PARAMETER HANDLING
-// -------------------------
-function handleUrlParameters() {
-  const urlParams = new URLSearchParams(window.location.search);
-  const voiceId = urlParams.get('voice');
-  
-  if (voiceId) {
-    // This is a receiver viewing a voice message
-    showView('receiver');
-    
-    const voiceData = DataManager.getVoice(voiceId);
-    if (voiceData) {
-      // Set up receiver view based on voice data
-      elements.expiryStatus.innerHTML = `
-        <span>⏰</span>
-        <span>Expires: ${getExpiryText(voiceData.expiry)}</span>
-      `;
-      
-      // Set audio source
-      if (voiceData.audioUrl) {
-        elements.playAudio.src = voiceData.audioUrl;
-      }
-      
-      // Handle identity section based on privacy setting
-      if (voiceData.privacy === 'auto_reveal') {
-        elements.identityContent.innerHTML = `
-          <div class="status-indicator status-active">
-            <span>👤</span>
-            Sender: <strong>${voiceData.senderName}</strong>
-          </div>
-        `;
-        elements.requestIdentity.classList.add('hidden');
-      }
-      
-      // Check if chat already exists
-      const existingChat = DataManager.getChatByVoiceId(voiceId);
-      if (existingChat) {
-        // Chat already exists, show chat interface directly
-        elements.chatRequestSection.classList.add('hidden');
-        startChatSession(existingChat, 'receiver');
-      } else {
-        // Show chat request section
-        elements.chatRequestSection.classList.remove('hidden');
-      }
-    }
-  } else {
-    // This is a sender creating a new message
-    showView('sender');
-    loadActiveChats();
-  }
-}
-
-// -------------------------
-// INITIALIZATION
-// -------------------------
-document.addEventListener('DOMContentLoaded', () => {
-  // Initialize user
-  if (!localStorage.getItem('echo_user_id')) {
-    localStorage.setItem('echo_user_id', 'user_' + Math.random().toString(36).slice(2, 9));
-  }
-  AppState.currentUser = localStorage.getItem('echo_user_id');
-  
-  // Handle URL parameters to determine view
-  handleUrlParameters();
-});
-
-// Add some demo data for testing
-setTimeout(() => {
-  // Add welcome message to main chat if empty
-  if (document.getElementById('mainChatMessages').children.length === 0) {
-    addMessage('system', 'Start a conversation by sending a message!', 'mainChatMessages');
-  }
-}, 500);
 </script>
 </body>
 </html>
+
+
+
