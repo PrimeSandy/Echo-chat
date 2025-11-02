@@ -16,7 +16,7 @@ const io = require("socket.io")(server, { cors: { origin: "*" } });
 const PORT = process.env.PORT || 10000;
 const MONGO_URI =
   process.env.MONGO_URI ||
-  "mongodb+srv://santhoshgowtham777_db_user:santhoshgowtham777_db_user@cluster0.lxkilqq.mongodb.net/?appName=Cluster0";
+  "mongodb+srv://santhoshgowtham777_db_user:Sandy2005ED@cluster0.lxkilqq.mongodb.net/echo?retryWrites=true&w=majority&appName=Cluster0";
 const BASE_URL = process.env.BASE_URL || "https://sandy-echo.onrender.com";
 
 app.use(cors());
@@ -158,4 +158,5 @@ io.on("connection", (socket) => {
 
 // === Start ===
 server.listen(PORT, () => console.log(`🚀 Server live on ${BASE_URL}`));
+
 
