@@ -14,16 +14,15 @@ const app = express();
 const server = http.createServer(app);
 const io = require("socket.io")(server, { cors: { origin: "*" } });
 
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 10000;
 const MONGO_URI =
   process.env.MONGO_URI ||
   "mongodb+srv://Sandydb456:Sandydb456@cluster0.o4lr4zd.mongodb.net/?appName=Cluster0";
 const BASE_URL = process.env.BASE_URL || "https://sandy-echo.onrender.com";
 
-
 app.use(cors());
 app.use(express.json());
-app.use(express.static(__dirname));
+app.use(express.static(__dirname)); // serve static files
 
 // === Multer (save .webm files in same folder) ===
 const upload = multer({
@@ -90,32 +89,23 @@ app.get("/play/:file", (req, res) => {
 });
 
 app.post("/api/open/:id", async (req, res) => {
-  await db.collection("voices").updateOne(
-    { id: req.params.id },
-    { $inc: { openCount: 1 } }
-  );
+  await db.collection("voices").updateOne({ id: req.params.id }, { $inc: { openCount: 1 } });
   res.json({ ok: true });
 });
 
 app.post("/api/play/:id", async (req, res) => {
-  await db.collection("voices").updateOne(
-    { id: req.params.id },
-    { $inc: { playCount: 1 } }
-  );
+  await db.collection("voices").updateOne({ id: req.params.id }, { $inc: { playCount: 1 } });
   res.json({ ok: true });
 });
 
-// === Reveal System with Real-Time Socket Notification ===
+// === Reveal System (with real-time notification) ===
 app.post("/api/request-reveal/:id", async (req, res) => {
   const voice = await db.collection("voices").findOne({ id: req.params.id });
   if (!voice) return res.status(404).json({ ok: false });
 
-  await db.collection("voices").updateOne(
-    { id: req.params.id },
-    { $set: { revealRequest: true } }
-  );
+  await db.collection("voices").updateOne({ id: req.params.id }, { $set: { revealRequest: true } });
 
-  // 🔔 Notify only that sender’s room
+  // 🔔 Notify that sender’s private room
   io.to(voice.senderId).emit("reveal_request", {
     id: voice.id,
     senderId: voice.senderId,
@@ -128,12 +118,8 @@ app.post("/api/approve-reveal/:id", async (req, res) => {
   const voice = await db.collection("voices").findOne({ id: req.params.id });
   if (!voice) return res.status(404).json({ ok: false });
 
-  await db.collection("voices").updateOne(
-    { id: req.params.id },
-    { $set: { revealApproved: true } }
-  );
+  await db.collection("voices").updateOne({ id: req.params.id }, { $set: { revealApproved: true } });
 
-  // ✅ Notify receiver(s)
   io.emit("reveal_approved", { id: voice.id });
   res.json({ ok: true });
 });
@@ -148,14 +134,15 @@ app.get("/api/dashboard/:senderId", async (req, res) => {
   res.json(data);
 });
 
-// === Serve Main HTML ===
-app.get("/", (req, res) => res.sendFile(path.join(__dirname, "index.html")));
+// === Serve frontend for any route (fix for “Not Found” on Render) ===
+app.get("*", (req, res) => {
+  res.sendFile(path.join(__dirname, "index.html"));
+});
 
 // === Socket.IO ===
 io.on("connection", (socket) => {
   console.log("🔗 New client connected:", socket.id);
 
-  // each sender joins their own room (for reveal notifications)
   socket.on("register_sender", (senderId) => {
     if (senderId) {
       socket.join(senderId);
@@ -169,5 +156,4 @@ io.on("connection", (socket) => {
 });
 
 // === Start Server ===
-server.listen(PORT, () => console.log(`🚀 Server running on ${BASE_URL}`));
-
+server.listen(PORT, () => console.log(`🚀 Echo running on ${BASE_URL}`));
