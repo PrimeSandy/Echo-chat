@@ -176,10 +176,10 @@ option:hover, option:checked{ background:#3b3b3b !important; color:#fff !importa
       <label for="senderName">Your Name</label>
       <input id="senderName" placeholder="e.g. Sandy" />
 
-      <div class="mic" id="micBtn" title="Start recording">🎙</div>
+      <div class="mic" id="micBtn" title="Start recording">🎙️</div>
       <button id="stopBtn" disabled>⏹ Stop</button>
       <audio id="preview" controls hidden></audio>
-      <button id="uploadBtn" hidden>⬆ Upload</button>
+      <button id="uploadBtn" hidden>⬆️ Upload</button>
 
       <div id="result" style="margin-top:12px"></div>
 
@@ -191,7 +191,7 @@ option:hover, option:checked{ background:#3b3b3b !important; color:#fff !importa
     <div id="receiverView" hidden>
       <h3>Incoming Voice Message 🔊</h3>
       <audio id="playAudio" controls></audio>
-      <button id="playBtn">▶ Play</button>
+      <button id="playBtn">▶️ Play</button>
       <div id="receiverStatus" style="margin-top:10px;color:rgba(255,255,255,0.7)"></div>
       <div id="revealSection" style="margin-top:12px"></div>
     </div>
@@ -220,7 +220,7 @@ let dark = true;
 themeBtn.onclick = () => {
   dark = !dark;
   document.body.classList.toggle('light', !dark);
-  themeBtn.textContent = dark ? "🌗 Theme" : "☀ Theme";
+  themeBtn.textContent = dark ? "🌗 Theme" : "☀️ Theme";
 };
 
 /* GUIDE */
@@ -308,7 +308,7 @@ uploadBtn.onclick = async () => {
 
   uploadBtn.disabled = true; uploadBtn.textContent = 'Uploading...';
   try {
-    const res = await fetch(${BASE_URL}/api/upload, { method: 'POST', body: form });
+    const res = await fetch(`${BASE_URL}/api/upload`, { method: 'POST', body: form });
     const data = await res.json();
     if (data.ok) {
       result.innerHTML = `<p style="color:var(--accent)">✅ Uploaded! Share this link:</p>
@@ -321,7 +321,7 @@ uploadBtn.onclick = async () => {
   } catch (e) {
     result.textContent = 'Upload failed.';
   } finally {
-    uploadBtn.disabled = false; uploadBtn.textContent = '⬆ Upload';
+    uploadBtn.disabled = false; uploadBtn.textContent = '⬆️ Upload';
   }
 };
 
@@ -329,7 +329,7 @@ async function loadDashboard() {
   const grid = document.getElementById('grid');
   grid.innerHTML = '<p>Loading...</p>';
   try {
-    const res = await fetch(${BASE_URL}/api/dashboard/${SENDER_ID});
+    const res = await fetch(`${BASE_URL}/api/dashboard/${SENDER_ID}`);
     const rows = await res.json();
     if (!rows || rows.length === 0) {
       grid.innerHTML = "<p style='color:rgba(255,255,255,0.6)'>No voices yet.</p>";
@@ -341,7 +341,7 @@ async function loadDashboard() {
         <a href="${BASE_URL}/?v=${v.id}" target="_blank">${v.id}</a>
         <small>Privacy: ${v.privacy} | Expiry: ${v.expiry}</small>
         <div>Opened: ${v.openCount || 0} | Played: ${v.playCount || 0}</div>
-        ${v.revealRequest && !v.revealApproved ? <button onclick="approveReveal('${v.id}')">Approve Reveal</button> : v.revealApproved ? <p>👁 Reveal Approved</p> : ''}
+        ${v.revealRequest && !v.revealApproved ? `<button onclick="approveReveal('${v.id}')">Approve Reveal</button>` : v.revealApproved ? `<p>👁️ Reveal Approved</p>` : ''}
       </div>
     `).join('');
   } catch (err) {
@@ -351,7 +351,7 @@ async function loadDashboard() {
 
 async function approveReveal(id) {
   try {
-    await fetch(${BASE_URL}/api/approve-reveal/${id}, { method: 'POST' });
+    await fetch(`${BASE_URL}/api/approve-reveal/${id}`, { method: 'POST' });
     // notify server will emit reveal_approved
     await loadDashboard();
   } catch (e) {
@@ -364,7 +364,7 @@ async function approveReveal(id) {
    ------------------------- */
 async function loadReceiver() {
   try {
-    const res = await fetch(${BASE_URL}/api/voice/${voiceId});
+    const res = await fetch(`${BASE_URL}/api/voice/${voiceId}`);
     if (!res.ok) { document.getElementById('receiverStatus').textContent = 'Not found'; return; }
     const data = await res.json();
     const playAudio = document.getElementById('playAudio');
@@ -373,15 +373,15 @@ async function loadReceiver() {
     const revealSection = document.getElementById('revealSection');
 
     if (!data.path) { receiverStatus.textContent = 'Voice not found'; return; }
-    playAudio.src = ${BASE_URL}/play/${data.path};
-    await fetch(${BASE_URL}/api/open/${voiceId}, { method: 'POST' });
+    playAudio.src = `${BASE_URL}/play/${data.path}`;
+    await fetch(`${BASE_URL}/api/open/${voiceId}`, { method: 'POST' });
 
     if (data.privacy === 'auto_reveal') {
-      revealSection.innerHTML = <p>👤 Sender: <b>${data.senderName}</b></p>;
+      revealSection.innerHTML = `<p>👤 Sender: <b>${data.senderName}</b></p>`;
     } else if (data.privacy === 'reveal_on_request') {
-      revealSection.innerHTML = <button id="reqBtn">Request Name Reveal</button>;
+      revealSection.innerHTML = `<button id="reqBtn">Request Name Reveal</button>`;
       document.getElementById('reqBtn').onclick = async () => {
-        await fetch(${BASE_URL}/api/request-reveal/${voiceId}, { method: 'POST' });
+        await fetch(`${BASE_URL}/api/request-reveal/${voiceId}`, { method: 'POST' });
         revealSection.innerHTML = "<p>⏳ Request sent. Waiting...</p>";
       };
     } else {
@@ -390,7 +390,7 @@ async function loadReceiver() {
 
     playBtn.onclick = async () => {
       playAudio.play();
-      await fetch(${BASE_URL}/api/play/${voiceId}, { method: 'POST' });
+      await fetch(`${BASE_URL}/api/play/${voiceId}`, { method: 'POST' });
       receiverStatus.textContent = "✅ Voice played.";
     };
   } catch (e) {
@@ -413,13 +413,15 @@ socket.on('reveal_request', data => {
 
 /* dynamically listen for reveal approval specific to this voice */
 if (voiceId) {
-  socket.on(reveal_approved_${voiceId}, (data) => {
+  socket.on(`reveal_approved_${voiceId}`, (data) => {
     console.log("Reveal approved received:", data);
     const revealSection = document.getElementById("revealSection");
-    revealSection.innerHTML = <p>👤 Sender: <b>${data.senderName || "Anonymous"}</b></p>;
+    revealSection.innerHTML = `<p>👤 Sender: <b>${data.senderName || "Anonymous"}</b></p>`;
   });
 }
 
 </script>
 </body>
 </html>
+
+
