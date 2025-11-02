@@ -417,11 +417,20 @@ socket.on('reveal_request', data => {
   } catch (e) { console.error(e) }
 });
 
-socket.on('reveal_approved', d => {
-  // when approved, update UI for both sender & receiver
-  loadDashboard();
-  if (voiceId) loadReceiver();
+socket.on("reveal_approved", async (data) => {
+  console.log("Reveal approved received:", data);
+
+  // Update sender dashboard
+  if (typeof loadDashboard === "function") loadDashboard();
+
+  // If receiver is viewing same voice
+  if (voiceId && data.id === voiceId) {
+    const revealSection = document.getElementById("revealSection");
+    revealSection.innerHTML = `<p>👤 Sender: <b>${data.senderName || "Anonymous"}</b></p>`;
+  }
 });
+
 </script>
 </body>
 </html>
+
