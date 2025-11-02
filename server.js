@@ -70,7 +70,9 @@ app.post("/api/upload", upload.single("voice"), async (req, res) => {
     await db.collection("voices").insertOne(voice);
 
     // ✅ FIXED: Correct working share link (/?v=ID)
-    res.json({ ok: true, link: `${BASE_URL}/?v=${id}` });
+  
+    res.json({ ok: true, link: `https://echo-chat-ybep.onrender.com/?v=${id}` });
+
 
   } catch (err) {
     console.error(err);
