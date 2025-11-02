@@ -1,7 +1,7 @@
 // server.js
 require("dotenv").config();
 const express = require("express");
-const { MongoClient } = require("mongodb");
+const { MongoClient, ObjectId } = require("mongodb");
 const cors = require("cors");
 const path = require("path");
 const http = require("http");
@@ -17,53 +17,42 @@ const io = new Server(server, {
 
 app.use(cors());
 app.use(express.json());
+app.use("/public", express.static(path.join(__dirname, "public")));
 
-// ✅ Create voices folder inside same folder if not exist
-const voicesDir = path.join(__dirname, "voices");
-if (!fs.existsSync(voicesDir)) fs.mkdirSync(voicesDir);
-
-app.use("/voices", express.static(voicesDir)); // serve voices
-app.use(express.static(__dirname)); // serve index.html from same folder
-
-// ✅ Upload destination
-const upload = multer({ dest: voicesDir });
+const upload = multer({ dest: "public/voices/" });
 
 const BASE_URL = process.env.BASE_URL || "https://sandy-echo.onrender.com";
-const DB_URL =
-  process.env.MONGO_URL ||
-  "mongodb+srv://Sandydb456:Sandydb456@cluster0.o4lr4zd.mongodb.net/?retryWrites=true&w=majority";
+const DB_URL = process.env.MONGO_URL || "mongodb+srv://<your_connection_string>";
 const DB_NAME = "echoApp";
 let db, voices;
 
-// ✅ Connect MongoDB
+// Connect MongoDB
 (async () => {
-  try {
-    const client = new MongoClient(DB_URL);
-    await client.connect();
-    db = client.db(DB_NAME);
-    voices = db.collection("voices");
-    console.log("✅ MongoDB connected");
-  } catch (err) {
-    console.error("❌ MongoDB connect failed:", err);
-  }
+  const client = new MongoClient(DB_URL);
+  await client.connect();
+  db = client.db(DB_NAME);
+  voices = db.collection("voices");
+  console.log("✅ MongoDB connected");
 })();
 
-// ✅ Socket.io
+// socket.io connections
 io.on("connection", (socket) => {
   console.log("🔗 Socket connected:", socket.id);
 
+  // Register sender room
   socket.on("register_sender", (senderId) => {
     socket.join(senderId);
     console.log(`✅ Sender registered room: ${senderId}`);
   });
 });
 
-// ✅ Upload voice
+// ========== API ROUTES ==========
+
+// Upload voice
 app.post("/api/upload", upload.single("voice"), async (req, res) => {
   try {
     const { privacy, expiry, senderId, senderName } = req.body;
     const id = Math.random().toString(36).substring(2, 10);
-
     const voice = {
       id,
       path: req.file.filename,
@@ -77,78 +66,82 @@ app.post("/api/upload", upload.single("voice"), async (req, res) => {
       revealApproved: false,
       createdAt: new Date(),
     };
-
     await voices.insertOne(voice);
     res.json({ ok: true, link: `${BASE_URL}/?v=${id}` });
   } catch (e) {
-    console.error("❌ Upload error:", e);
-    res.status(500).json({ ok: false, error: "Upload failed" });
+    console.error(e);
+    res.status(500).json({ ok: false });
   }
 });
 
-// ✅ Dashboard
+// Get dashboard
 app.get("/api/dashboard/:senderId", async (req, res) => {
   const docs = await voices.find({ senderId: req.params.senderId }).toArray();
   res.json(docs);
 });
 
-// ✅ Open voice
+// Open voice
 app.post("/api/open/:id", async (req, res) => {
   await voices.updateOne({ id: req.params.id }, { $inc: { openCount: 1 } });
   res.json({ ok: true });
 });
 
-// ✅ Play voice
+// Play voice
 app.post("/api/play/:id", async (req, res) => {
   await voices.updateOne({ id: req.params.id }, { $inc: { playCount: 1 } });
   res.json({ ok: true });
 });
 
-// ✅ Get voice details
+// Get voice details
 app.get("/api/voice/:id", async (req, res) => {
   const voice = await voices.findOne({ id: req.params.id });
   if (!voice) return res.status(404).json({ error: "Not found" });
   res.json(voice);
 });
 
-// ✅ Request reveal
+// Request reveal
 app.post("/api/request-reveal/:id", async (req, res) => {
   const voice = await voices.findOne({ id: req.params.id });
   if (!voice) return res.status(404).json({ error: "Not found" });
 
   await voices.updateOne({ id: req.params.id }, { $set: { revealRequest: true } });
 
+  // notify sender realtime
   io.to(voice.senderId).emit("reveal_request", { id: voice.id, senderId: voice.senderId });
   res.json({ ok: true });
 });
 
-// ✅ Approve reveal (includes senderName)
+// Approve reveal
 app.post("/api/approve-reveal/:id", async (req, res) => {
   const voice = await voices.findOne({ id: req.params.id });
   if (!voice) return res.status(404).json({ error: "Not found" });
 
-  await voices.updateOne({ id: req.params.id }, { $set: { revealApproved: true } });
+  await voices.updateOne(
+    { id: req.params.id },
+    { $set: { revealApproved: true } }
+  );
 
-  io.emit(`reveal_approved_${voice.id}`, {
+  // notify receiver + include senderName
+  io.emit("reveal_approved", {
     id: voice.id,
     senderName: voice.senderName || "Anonymous",
   });
 
-  res.json({ ok: true, senderName: voice.senderName });
+  res.json({ ok: true });
 });
 
-// ✅ Serve voice files
+// play file
 app.get("/play/:filename", (req, res) => {
-  const file = path.join(voicesDir, req.params.filename);
+  const file = path.join(__dirname, "public/voices", req.params.filename);
   if (!fs.existsSync(file)) return res.status(404).send("File not found");
   res.sendFile(file);
 });
 
-// ✅ Fallback to index.html for any route
+// fallback frontend
 app.get("*", (req, res) => {
   res.sendFile(path.join(__dirname, "index.html"));
 });
 
-// ✅ Start server
+// start server
 const PORT = process.env.PORT || 10000;
 server.listen(PORT, () => console.log(`🚀 Echo server running on ${PORT}`));
