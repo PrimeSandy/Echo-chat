@@ -18,7 +18,8 @@ const PORT = process.env.PORT || 3000;
 const MONGO_URI =
   process.env.MONGO_URI ||
   "mongodb+srv://Sandydb456:Sandydb456@cluster0.o4lr4zd.mongodb.net/?appName=Cluster0";
-const BASE_URL = process.env.BASE_URL || `http://localhost:${PORT}`;
+const BASE_URL = process.env.BASE_URL || "https://sandy-echo.onrender.com";
+
 
 app.use(cors());
 app.use(express.json());
@@ -169,3 +170,4 @@ io.on("connection", (socket) => {
 
 // === Start Server ===
 server.listen(PORT, () => console.log(`🚀 Server running on ${BASE_URL}`));
+
