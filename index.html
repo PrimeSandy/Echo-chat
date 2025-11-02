@@ -401,36 +401,27 @@ async function loadReceiver() {
 /* -------------------------
    SOCKET REAL-TIME
    ------------------------- */
-/* Server should emit reveal_request only to the room of the senderId OR broadcast with {senderId} */
+/* -------------------------
+   SOCKET REAL-TIME
+   ------------------------- */
 socket.on('reveal_request', data => {
-  // If server emits to the specific room, data may be just { id, senderId }
-  // If server broadcasts, filter by senderId
-  try {
-    if (data && data.senderId && data.senderId === SENDER_ID) {
-      // notify sender
-      alert('🔔 Someone requested a reveal for your voice. Open the dashboard to approve.');
-      loadDashboard();
-    } else if (!data || !data.senderId) {
-      // fallback — refresh dashboard so owner sees new request if they're the uploader
-      loadDashboard();
-    }
-  } catch (e) { console.error(e) }
-});
-
-socket.on("reveal_approved", async (data) => {
-  console.log("Reveal approved received:", data);
-
-  // Update sender dashboard
-  if (typeof loadDashboard === "function") loadDashboard();
-
-  // If receiver is viewing same voice
-  if (voiceId && data.id === voiceId) {
-    const revealSection = document.getElementById("revealSection");
-    revealSection.innerHTML = `<p>👤 Sender: <b>${data.senderName || "Anonymous"}</b></p>`;
+  if (data && data.senderId && data.senderId === SENDER_ID) {
+    alert('🔔 Someone requested a reveal for your voice. Open the dashboard to approve.');
+    loadDashboard();
   }
 });
+
+/* dynamically listen for reveal approval specific to this voice */
+if (voiceId) {
+  socket.on(`reveal_approved_${voiceId}`, (data) => {
+    console.log("Reveal approved received:", data);
+    const revealSection = document.getElementById("revealSection");
+    revealSection.innerHTML = `<p>👤 Sender: <b>${data.senderName || "Anonymous"}</b></p>`;
+  });
+}
 
 </script>
 </body>
 </html>
+
 
