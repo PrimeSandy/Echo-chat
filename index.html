@@ -146,7 +146,7 @@ audio{ width:100%; margin-top:8px; border-radius:10px; background:transparent }
   padding: 24px;
   border-radius: 16px;
   text-align: center;
-  max-width: 280px;
+  max-width: 300px;
   width: 90%;
   border: 1px solid var(--border-light);
   box-shadow: 0 20px 60px rgba(0,0,0,0.5);
@@ -158,6 +158,12 @@ audio{ width:100%; margin-top:8px; border-radius:10px; background:transparent }
   background: white;
   padding: 10px;
   border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.qr-image canvas {
+  border-radius: 4px;
 }
 .close-qr {
   background: var(--accent);
@@ -249,14 +255,12 @@ option:hover, option:checked{ background:#3b3b3b !important; color:#fff !importa
   <div id="loader" style="position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:#000;color:#fff;z-index:1400">Loading Echo...</div>
 
 <!-- SIMPLE QR Code Library -->
-   
-<script src="https://cdn.jsdelivr.net/npm/qr-code-styling@1.5.0/lib/qr-code-styling.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
 <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
 <script>
 /* -------------------------
    BASIC INIT
    ------------------------- */
-   const qrUrl = `https://chart.googleapis.com/chart?cht=qr&chs=200x200&chl=${encodeURIComponent(link)}`;
 const BASE_URL = window.location.origin;
 const socket = io(BASE_URL, { transports: ['websocket','polling'] });
 const params = new URLSearchParams(window.location.search);
@@ -345,7 +349,7 @@ stopBtn.onclick = () => {
 };
 
 /* -------------------------
-   UPLOAD + DASHBOARD + QR CODE - WORKING VERSION
+   UPLOAD + DASHBOARD + QR CODE - LOCAL GENERATION
    ------------------------- */
 uploadBtn.onclick = async () => {
   const blob = new Blob(chunks, { type: 'audio/webm' });
@@ -380,7 +384,7 @@ uploadBtn.onclick = async () => {
   }
 };
 
-/* WORKING QR Code Generation - SIMPLE METHOD */
+/* WORKING QR Code Generation - LOCAL METHOD */
 function generateQRCode(link) {
   // Remove any existing modal first
   const existingModal = document.querySelector('.qr-modal');
@@ -405,14 +409,35 @@ function generateQRCode(link) {
   
   document.body.appendChild(modal);
   
-  // Generate QR Code using Google Charts API - SIMPLE & RELIABLE
-  setTimeout(() => {
-    const qrSize = 200;
-    const qrUrl = `https://chart.googleapis.com/chart?cht=qr&chs=${qrSize}x${qrSize}&chl=${encodeURIComponent(link)}`;
-    
+  // Generate QR Code locally using QRCode.js
+  try {
     const qrContainer = document.getElementById('qrcodeContainer');
-    qrContainer.innerHTML = `<img src="${qrUrl}" alt="QR Code" style="width:100%; height:100%; border-radius:4px;" />`;
-  }, 100);
+    qrContainer.innerHTML = ''; // Clear loading text
+    
+    QRCode.toCanvas(link, {
+      width: 180,
+      margin: 1,
+      color: {
+        dark: '#000000',
+        light: '#FFFFFF'
+      }
+    }, function (error, canvas) {
+      if (error) {
+        console.error('QR Code error:', error);
+        qrContainer.innerHTML = '<p style="color:red;">QR Generation Failed</p>';
+        return;
+      }
+      
+      if (canvas) {
+        qrContainer.appendChild(canvas);
+      }
+    });
+    
+  } catch (error) {
+    console.error('QR Code generation error:', error);
+    const qrContainer = document.getElementById('qrcodeContainer');
+    qrContainer.innerHTML = '<p style="color:red;">Please check console</p>';
+  }
   
   // Add click outside to close
   modal.addEventListener('click', function(e) {
@@ -517,4 +542,3 @@ if (voiceId) {
 </script>
 </body>
 </html>
-
