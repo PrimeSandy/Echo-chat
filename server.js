@@ -1,4 +1,4 @@
-// === Echo App Server ===
+// === Echo App Server (Final Render Version) ===
 require("dotenv").config();
 const express = require("express");
 const { MongoClient } = require("mongodb");
@@ -18,13 +18,13 @@ const PORT = process.env.PORT || 10000;
 const MONGO_URI =
   process.env.MONGO_URI ||
   "mongodb+srv://Sandydb456:Sandydb456@cluster0.o4lr4zd.mongodb.net/?appName=Cluster0";
-const BASE_URL = process.env.BASE_URL || "https://sandy-echo.onrender.com";
+const BASE_URL = process.env.BASE_URL || `https://sandy-echo.onrender.com`;
 
 app.use(cors());
 app.use(express.json());
-app.use(express.static(__dirname)); // serve static files
+app.use(express.static(__dirname)); // serve all files in this folder
 
-// === Multer (save .webm files in same folder) ===
+// === Multer setup ===
 const upload = multer({
   storage: multer.diskStorage({
     destination: __dirname,
@@ -75,7 +75,7 @@ app.post("/api/upload", upload.single("voice"), async (req, res) => {
   }
 });
 
-// === Receiver APIs ===
+// === Voice APIs ===
 app.get("/api/voice/:id", async (req, res) => {
   const v = await db.collection("voices").findOne({ id: req.params.id });
   if (!v) return res.status(404).json({});
@@ -89,23 +89,31 @@ app.get("/play/:file", (req, res) => {
 });
 
 app.post("/api/open/:id", async (req, res) => {
-  await db.collection("voices").updateOne({ id: req.params.id }, { $inc: { openCount: 1 } });
+  await db.collection("voices").updateOne(
+    { id: req.params.id },
+    { $inc: { openCount: 1 } }
+  );
   res.json({ ok: true });
 });
 
 app.post("/api/play/:id", async (req, res) => {
-  await db.collection("voices").updateOne({ id: req.params.id }, { $inc: { playCount: 1 } });
+  await db.collection("voices").updateOne(
+    { id: req.params.id },
+    { $inc: { playCount: 1 } }
+  );
   res.json({ ok: true });
 });
 
-// === Reveal System (with real-time notification) ===
+// === Reveal system ===
 app.post("/api/request-reveal/:id", async (req, res) => {
   const voice = await db.collection("voices").findOne({ id: req.params.id });
   if (!voice) return res.status(404).json({ ok: false });
 
-  await db.collection("voices").updateOne({ id: req.params.id }, { $set: { revealRequest: true } });
+  await db.collection("voices").updateOne(
+    { id: req.params.id },
+    { $set: { revealRequest: true } }
+  );
 
-  // 🔔 Notify that sender’s private room
   io.to(voice.senderId).emit("reveal_request", {
     id: voice.id,
     senderId: voice.senderId,
@@ -118,7 +126,10 @@ app.post("/api/approve-reveal/:id", async (req, res) => {
   const voice = await db.collection("voices").findOne({ id: req.params.id });
   if (!voice) return res.status(404).json({ ok: false });
 
-  await db.collection("voices").updateOne({ id: req.params.id }, { $set: { revealApproved: true } });
+  await db.collection("voices").updateOne(
+    { id: req.params.id },
+    { $set: { revealApproved: true } }
+  );
 
   io.emit("reveal_approved", { id: voice.id });
   res.json({ ok: true });
@@ -134,26 +145,19 @@ app.get("/api/dashboard/:senderId", async (req, res) => {
   res.json(data);
 });
 
-// === Serve frontend for any route (fix for “Not Found” on Render) ===
+// === SPA Catch-All for Render ===
 app.get("*", (req, res) => {
   res.sendFile(path.join(__dirname, "index.html"));
 });
 
-// === Socket.IO ===
+// === Socket.io ===
 io.on("connection", (socket) => {
-  console.log("🔗 New client connected:", socket.id);
-
+  console.log("🔗 New client:", socket.id);
   socket.on("register_sender", (senderId) => {
-    if (senderId) {
-      socket.join(senderId);
-      console.log(`📦 Sender ${senderId} joined their private room`);
-    }
+    if (senderId) socket.join(senderId);
   });
-
-  socket.on("disconnect", () => {
-    console.log("❌ Client disconnected:", socket.id);
-  });
+  socket.on("disconnect", () => console.log("❌ Disconnected:", socket.id));
 });
 
-// === Start Server ===
-server.listen(PORT, () => console.log(`🚀 Echo running on ${BASE_URL}`));
+// === Start ===
+server.listen(PORT, () => console.log(`🚀 Server live on ${BASE_URL}`));
