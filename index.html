@@ -19,6 +19,7 @@
   --accent:#00d1ff;
   --danger:#ff4757;
   --success:#2ed573;
+  --warning:#ffa502;
   --font-main:"Roboto", sans-serif;
 }
 
@@ -250,6 +251,14 @@ button:disabled{
 .btn-danger:hover {
   background: #ff2e44;
 }
+.btn-warning {
+  background: var(--warning);
+  color: #000;
+  font-weight: 600;
+}
+.btn-warning:hover {
+  background: #ff9a00;
+}
 
 /* audio */
 audio{
@@ -324,7 +333,7 @@ audio{
 }
 
 /* Delete confirmation modal */
-.delete-modal {
+.delete-modal, .request-modal {
   position: fixed;
   top: 0;
   left: 0;
@@ -338,7 +347,7 @@ audio{
   backdrop-filter: blur(10px);
   animation: fadeIn 0.3s ease;
 }
-.delete-content {
+.delete-content, .request-content {
   background: var(--glass-dark);
   padding: 32px;
   border-radius: 20px;
@@ -353,7 +362,7 @@ audio{
   from { opacity: 0; transform: scale(0.8); }
   to { opacity: 1; transform: scale(1); }
 }
-.delete-actions {
+.delete-actions, .request-actions {
   display: flex;
   gap: 12px;
   justify-content: center;
@@ -494,6 +503,30 @@ option:hover, option:checked{ background:#3b3b3b !important; color:#fff !importa
 }
 .status-active { background: rgba(46, 213, 115, 0.2); border-color: rgba(46, 213, 115, 0.3); }
 .status-expired { background: rgba(255, 71, 87, 0.2); border-color: rgba(255, 71, 87, 0.3); }
+.status-pending { background: rgba(255, 165, 2, 0.2); border-color: rgba(255, 165, 2, 0.3); }
+
+/* Notification styles */
+.notification {
+  position: fixed;
+  top: 100px;
+  right: 20px;
+  background: var(--accent);
+  color: #000;
+  padding: 12px 20px;
+  border-radius: 12px;
+  font-weight: 500;
+  z-index: 10000;
+  animation: slideInRight 0.3s ease-out;
+  font-family: var(--font-main);
+  box-shadow: 0 8px 25px rgba(0,0,0,0.3);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+@keyframes slideInRight {
+  from { transform: translateX(100%); opacity: 0; }
+  to { transform: translateX(0); opacity: 1; }
+}
 </style>
 </head>
 <body>
@@ -540,6 +573,14 @@ option:hover, option:checked{ background:#3b3b3b !important; color:#fff !importa
 
       <div id="result" style="margin-top:20px"></div>
 
+      <!-- Pending Requests Section -->
+      <div id="pendingRequestsSection" class="hidden">
+        <h3 style="margin-top:32px; font-family: var(--font-main);">Pending Requests</h3>
+        <div id="pendingRequestsList" class="grid">
+          <!-- Pending requests will appear here -->
+        </div>
+      </div>
+
       <h3 style="margin-top:32px; font-family: var(--font-main);">My Voice Messages</h3>
       <div id="grid" class="grid"></div>
     </div>
@@ -581,9 +622,12 @@ if (!localStorage.getItem('echo_id')) {
 }
 const SENDER_ID = localStorage.getItem('echo_id');
 
-// Initialize voices storage
+// Initialize storage
 if (!localStorage.getItem('echo_voices')) {
   localStorage.setItem('echo_voices', JSON.stringify([]));
+}
+if (!localStorage.getItem('echo_requests')) {
+  localStorage.setItem('echo_requests', JSON.stringify([]));
 }
 
 /* THEME */
@@ -596,7 +640,7 @@ themeBtn.onclick = () => {
 
 /* GUIDE */
 guideBtn.onclick = () => {
-  alert("🎵 Echo Voice Messenger\n\n★ Record voice messages\n★ Set privacy levels\n★ Share via link or QR code\n★ Track message statistics\n★ Delete messages anytime\n\nProfessional voice messaging made simple!");
+  alert("🎵 Echo Voice Messenger\n\n★ Record voice messages\n★ Set privacy levels\n★ Share via link or QR code\n★ Track message statistics\n★ Delete messages anytime\n★ Handle identity requests\n\nProfessional voice messaging made simple!");
 };
 
 /* -------------------------
@@ -614,6 +658,7 @@ window.addEventListener('load', () => {
       senderView.hidden = false;
       receiverView.hidden = true;
       loadDashboard();
+      loadPendingRequests();
     }
   }, 1000);
 });
@@ -706,6 +751,7 @@ uploadBtn.onclick = async () => {
     `;
 
     await loadDashboard();
+    loadPendingRequests();
   } catch (e) {
     result.innerHTML = `
       <div style="background: rgba(255, 71, 87, 0.1); border: 1px solid rgba(255, 71, 87, 0.3); border-radius: 12px; padding: 15px; text-align: center;">
@@ -717,6 +763,106 @@ uploadBtn.onclick = async () => {
     uploadBtn.innerHTML = '⬆️ Upload Voice';
   }
 };
+
+/* -------------------------
+   REQUEST SYSTEM - FIXED
+   ------------------------- */
+function loadPendingRequests() {
+  const pendingRequestsSection = document.getElementById('pendingRequestsSection');
+  const pendingRequestsList = document.getElementById('pendingRequestsList');
+  
+  const requests = getPendingRequests();
+  
+  if (requests.length === 0) {
+    pendingRequestsSection.classList.add('hidden');
+    return;
+  }
+  
+  pendingRequestsSection.classList.remove('hidden');
+  
+  pendingRequestsList.innerHTML = requests.map(request => {
+    const voice = getVoiceMessage(request.voiceId);
+    if (!voice) return '';
+    
+    return `
+      <div class="card fade-in">
+        <div style="display: flex; justify-content: between; align-items: flex-start; margin-bottom: 8px;">
+          <b style="font-size: 1.1rem;">Identity Request</b>
+          <span class="status-badge status-pending">Pending</span>
+        </div>
+        <small>Voice ID: ${request.voiceId}</small>
+        <div style="background: rgba(255, 165, 2, 0.1); border: 1px solid rgba(255, 165, 2, 0.3); border-radius: 10px; padding: 12px; margin: 8px 0;">
+          <small>Someone wants to know your identity for this voice message</small>
+        </div>
+        <div class="card-actions">
+          <button class="card-action-btn btn-primary" onclick="approveRequest('${request.id}')">
+            ✅ Approve
+          </button>
+          <button class="card-action-btn btn-danger" onclick="rejectRequest('${request.id}')">
+            ❌ Reject
+          </button>
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+function approveRequest(requestId) {
+  const requests = getPendingRequests();
+  const request = requests.find(req => req.id === requestId);
+  
+  if (request) {
+    // Update voice message to show identity
+    const voice = getVoiceMessage(request.voiceId);
+    if (voice) {
+      voice.revealApproved = true;
+      saveVoiceMessage(voice);
+    }
+    
+    // Remove the request
+    const updatedRequests = requests.filter(req => req.id !== requestId);
+    localStorage.setItem('echo_requests', JSON.stringify(updatedRequests));
+    
+    showNotification('Identity request approved!');
+    loadPendingRequests();
+    loadDashboard();
+  }
+}
+
+function rejectRequest(requestId) {
+  const requests = getPendingRequests();
+  const updatedRequests = requests.filter(req => req.id !== requestId);
+  localStorage.setItem('echo_requests', JSON.stringify(updatedRequests));
+  
+  showNotification('Identity request rejected');
+  loadPendingRequests();
+}
+
+function createIdentityRequest(voiceId) {
+  const request = {
+    id: 'req_' + Math.random().toString(36).slice(2,11),
+    voiceId: voiceId,
+    timestamp: new Date().toISOString(),
+    type: 'identity'
+  };
+  
+  const requests = getPendingRequests();
+  requests.push(request);
+  localStorage.setItem('echo_requests', JSON.stringify(requests));
+  
+  // Show notification to sender (in real app, this would be real-time)
+  showNotificationOnSender('New identity request received!');
+}
+
+function showNotificationOnSender(message) {
+  // This simulates a real-time notification
+  setTimeout(() => {
+    if (document.getElementById('senderView') && !document.getElementById('senderView').hidden) {
+      showNotification(message);
+      loadPendingRequests();
+    }
+  }, 1000);
+}
 
 /* -------------------------
    DASHBOARD MANAGEMENT
@@ -739,31 +885,38 @@ async function loadDashboard() {
       return;
     }
     
-    grid.innerHTML = voices.map(voice => `
-      <div class="card fade-in">
-        <div style="display: flex; justify-content: between; align-items: flex-start; margin-bottom: 8px;">
-          <b style="font-size: 1.1rem;">${voice.senderName || 'Anonymous'}</b>
-          <span class="status-badge status-active">Active</span>
+    grid.innerHTML = voices.map(voice => {
+      const hasPendingRequest = getPendingRequests().some(req => req.voiceId === voice.id);
+      
+      return `
+        <div class="card fade-in">
+          <div style="display: flex; justify-content: between; align-items: flex-start; margin-bottom: 8px;">
+            <b style="font-size: 1.1rem;">${voice.senderName || 'Anonymous'}</b>
+            <span class="status-badge ${hasPendingRequest ? 'status-pending' : 'status-active'}">
+              ${hasPendingRequest ? 'Request Pending' : 'Active'}
+            </span>
+          </div>
+          <a href="${window.location.origin}?v=${voice.id}" target="_blank">${voice.id}</a>
+          <small>Privacy: ${getPrivacyText(voice.privacy)} • Expiry: ${getExpiryText(voice.expiry)}</small>
+          <div style="display: flex; gap: 15px; font-size: 0.85rem; color: rgba(255,255,255,0.7);">
+            <span>👁️ ${voice.openCount || 0} views</span>
+            <span>▶️ ${voice.playCount || 0} plays</span>
+            ${hasPendingRequest ? '<span>🔔 1 request</span>' : ''}
+          </div>
+          <div class="card-actions">
+            <button class="card-action-btn" onclick="generateQRCode('${window.location.origin}?v=${voice.id}')">
+              📱 QR Code
+            </button>
+            <button class="card-action-btn btn-primary" onclick="copyToClipboard('${window.location.origin}?v=${voice.id}')">
+              📋 Copy Link
+            </button>
+            <button class="card-action-btn btn-danger" onclick="confirmDelete('${voice.id}')">
+              🗑️ Delete
+            </button>
+          </div>
         </div>
-        <a href="${window.location.origin}?v=${voice.id}" target="_blank">${voice.id}</a>
-        <small>Privacy: ${getPrivacyText(voice.privacy)} • Expiry: ${getExpiryText(voice.expiry)}</small>
-        <div style="display: flex; gap: 15px; font-size: 0.85rem; color: rgba(255,255,255,0.7);">
-          <span>👁️ ${voice.openCount || 0} views</span>
-          <span>▶️ ${voice.playCount || 0} plays</span>
-        </div>
-        <div class="card-actions">
-          <button class="card-action-btn" onclick="generateQRCode('${window.location.origin}?v=${voice.id}')">
-            📱 QR Code
-          </button>
-          <button class="card-action-btn btn-primary" onclick="copyToClipboard('${window.location.origin}?v=${voice.id}')">
-            📋 Copy Link
-          </button>
-          <button class="card-action-btn btn-danger" onclick="confirmDelete('${voice.id}')">
-            🗑️ Delete
-          </button>
-        </div>
-      </div>
-    `).join('');
+      `;
+    }).join('');
   }, 500);
 }
 
@@ -800,14 +953,20 @@ function deleteVoiceMessage(voiceId) {
   const updatedVoices = voices.filter(voice => voice.id !== voiceId);
   localStorage.setItem('echo_voices', JSON.stringify(updatedVoices));
   
+  // Also remove any pending requests for this voice
+  const requests = getPendingRequests();
+  const updatedRequests = requests.filter(req => req.voiceId !== voiceId);
+  localStorage.setItem('echo_requests', JSON.stringify(updatedRequests));
+  
   // Remove modal
   document.querySelector('.delete-modal').remove();
   
   // Show success message
   showNotification('Voice message deleted successfully');
   
-  // Reload dashboard
+  // Reload dashboard and requests
   loadDashboard();
+  loadPendingRequests();
 }
 
 /* -------------------------
@@ -867,7 +1026,7 @@ function generateQRCode(link) {
 }
 
 /* -------------------------
-   RECEIVER FUNCTIONALITY
+   RECEIVER FUNCTIONALITY - FIXED
    ------------------------- */
 async function loadReceiver() {
   try {
@@ -902,28 +1061,57 @@ async function loadReceiver() {
       `;
     };
     
-    // Handle identity reveal
+    // Handle identity reveal - FIXED SYSTEM
     const revealSection = document.getElementById('revealSection');
     if (voiceData.privacy === 'auto_reveal') {
       revealSection.innerHTML = `
-        <div style="background: rgba(255,255,255,0.08); border-radius: 12px; padding: 15px; text-align: center;">
+        <div style="background: rgba(46, 213, 115, 0.1); border: 1px solid rgba(46, 213, 115, 0.3); border-radius: 12px; padding: 15px; text-align: center;">
           <span>👤 Sender: <b>${voiceData.senderName}</b></span>
         </div>
       `;
     } else if (voiceData.privacy === 'reveal_on_request') {
-      revealSection.innerHTML = `
-        <div style="background: rgba(255,255,255,0.08); border-radius: 12px; padding: 20px; text-align: center;">
-          <h4 style="margin-bottom: 10px;">Request Sender Identity</h4>
-          <button class="btn-primary" id="reqBtn">🔍 Request Identity</button>
-        </div>
-      `;
-      document.getElementById('reqBtn').onclick = async () => {
+      if (voiceData.revealApproved) {
+        // Identity already approved
         revealSection.innerHTML = `
-          <div style="background: rgba(255, 193, 7, 0.1); border: 1px solid rgba(255, 193, 7, 0.3); border-radius: 12px; padding: 15px; text-align: center;">
-            <span>⏳ Identity request sent. Waiting for approval...</span>
+          <div style="background: rgba(46, 213, 115, 0.1); border: 1px solid rgba(46, 213, 115, 0.3); border-radius: 12px; padding: 15px; text-align: center;">
+            <span>👤 Sender: <b>${voiceData.senderName}</b></span>
           </div>
         `;
-      };
+      } else {
+        // Show request button
+        revealSection.innerHTML = `
+          <div style="background: rgba(255,255,255,0.08); border-radius: 12px; padding: 20px; text-align: center;">
+            <h4 style="margin-bottom: 10px;">🔒 Sender Identity Hidden</h4>
+            <p style="color: rgba(255,255,255,0.7); margin-bottom: 15px; font-size: 0.9rem;">
+              You can request to know who sent this message
+            </p>
+            <button class="btn-primary" id="reqBtn" style="padding: 12px 24px;">
+              🔍 Request Sender Identity
+            </button>
+          </div>
+        `;
+        
+        document.getElementById('reqBtn').onclick = async () => {
+          // Create identity request
+          createIdentityRequest(voiceId);
+          
+          revealSection.innerHTML = `
+            <div style="background: rgba(255, 165, 2, 0.1); border: 1px solid rgba(255, 165, 2, 0.3); border-radius: 12px; padding: 15px; text-align: center;">
+              <span>⏳ Identity request sent to sender...</span>
+              <p style="color: rgba(255,255,255,0.7); margin-top: 8px; font-size: 0.85rem;">
+                You'll see the sender's name when they approve your request
+              </p>
+            </div>
+          `;
+        };
+      }
+    } else {
+      // Anonymous - no identity reveal
+      revealSection.innerHTML = `
+        <div style="background: rgba(255,255,255,0.08); border-radius: 12px; padding: 15px; text-align: center;">
+          <span>🔒 Sender prefers to remain anonymous</span>
+        </div>
+      `;
     }
     
   } catch (e) {
@@ -960,6 +1148,10 @@ function getVoiceMessage(voiceId) {
   return voices.find(v => v.id === voiceId);
 }
 
+function getPendingRequests() {
+  return JSON.parse(localStorage.getItem('echo_requests') || '[]');
+}
+
 /* -------------------------
    UTILITY FUNCTIONS
    ------------------------- */
@@ -988,30 +1180,19 @@ function copyToClipboard(text) {
 }
 
 function showNotification(message) {
-  // Create a simple notification
   const notification = document.createElement('div');
-  notification.style.cssText = `
-    position: fixed;
-    top: 100px;
-    right: 20px;
-    background: var(--accent);
-    color: #000;
-    padding: 12px 20px;
-    border-radius: 12px;
-    font-weight: 500;
-    z-index: 10000;
-    animation: slideInRight 0.3s ease-out;
-    font-family: var(--font-main);
-    box-shadow: 0 8px 25px rgba(0,0,0,0.3);
+  notification.className = 'notification';
+  notification.innerHTML = `
+    <span>🔔</span>
+    <span>${message}</span>
   `;
-  notification.textContent = message;
   document.body.appendChild(notification);
   
   setTimeout(() => {
     if (notification.parentNode) {
       notification.parentNode.removeChild(notification);
     }
-  }, 3000);
+  }, 4000);
 }
 </script>
 </body>
