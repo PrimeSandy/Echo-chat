@@ -1,1048 +1,1395 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>Echo – Anonymous Voice Connect</title>
-<link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-<style>
-:root {
-  /* Color Palette - Professional with High Contrast */
-  --primary: #4361ee;
-  --primary-dark: #3a56d4;
-  --primary-light: #eef2ff;
-  --secondary: #7209b7;
-  --success: #06d6a0;
-  --warning: #ffd166;
-  --danger: #ef476f;
-  --dark: #1a1a2e;
-  --darker: #0d0d1a;
-  --light: #f8f9fa;
-  --gray: #6c757d;
-  --gray-light: #e9ecef;
-  --border-radius: 12px;
-  --shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
-  --shadow-lg: 0 10px 40px rgba(0, 0, 0, 0.15);
-  --transition: all 0.3s ease;
-  --font-main: 'Roboto', sans-serif;
-}
-
-/* Dark Theme (Default) */
-[data-theme="dark"] {
-  --bg-primary: var(--darker);
-  --bg-secondary: var(--dark);
-  --bg-card: #252540;
-  --text-primary: #ffffff;
-  --text-secondary: #b8b8d1;
-  --border-color: #38385a;
-  --input-bg: #1e1e3a;
-}
-
-/* Light Theme */
-[data-theme="light"] {
-  --bg-primary: #f5f7ff;
-  --bg-secondary: #ffffff;
-  --bg-card: #ffffff;
-  --text-primary: #1a1a2e;
-  --text-secondary: #4a4a68;
-  --border-color: #d1d5e6;
-  --input-bg: #f0f2f8;
-}
-
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-}
-
-body {
-  font-family: var(--font-main);
-  background-color: var(--bg-primary);
-  color: var(--text-primary);
-  line-height: 1.6;
-  transition: var(--transition);
-  min-height: 100vh;
-}
-
-.container {
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 0 20px;
-}
-
-/* Header */
-.header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 20px 0;
-  border-bottom: 1px solid var(--border-color);
-  margin-bottom: 30px;
-}
-
-.logo {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  font-size: 1.8rem;
-  font-weight: 700;
-  color: var(--primary);
-}
-
-.logo-icon {
-  font-size: 2rem;
-}
-
-.header-buttons {
-  display: flex;
-  gap: 12px;
-}
-
-.header-btn {
-  background: var(--bg-card);
-  border: 1px solid var(--border-color);
-  color: var(--text-primary);
-  padding: 10px 16px;
-  border-radius: var(--border-radius);
-  cursor: pointer;
-  font-weight: 500;
-  transition: var(--transition);
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.header-btn:hover {
-  background: var(--primary);
-  color: white;
-  transform: translateY(-2px);
-  box-shadow: var(--shadow);
-}
-
-/* Main App */
-.app {
-  padding-bottom: 40px;
-}
-
-.hero-section {
-  text-align: center;
-  margin-bottom: 40px;
-  padding: 30px 0;
-}
-
-.hero-section h1 {
-  font-size: 2.5rem;
-  margin-bottom: 16px;
-  background: linear-gradient(135deg, var(--primary), var(--secondary));
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-}
-
-.hero-section p {
-  font-size: 1.2rem;
-  color: var(--text-secondary);
-  max-width: 600px;
-  margin: 0 auto;
-}
-
-/* Cards */
-.card {
-  background: var(--bg-card);
-  border-radius: var(--border-radius);
-  padding: 24px;
-  box-shadow: var(--shadow);
-  border: 1px solid var(--border-color);
-  transition: var(--transition);
-}
-
-.card:hover {
-  transform: translateY(-5px);
-  box-shadow: var(--shadow-lg);
-}
-
-.card-header {
-  display: flex;
-  justify-content: between;
-  align-items: center;
-  margin-bottom: 16px;
-  padding-bottom: 16px;
-  border-bottom: 1px solid var(--border-color);
-}
-
-.card-title {
-  font-size: 1.3rem;
-  font-weight: 600;
-  color: var(--text-primary);
-}
-
-/* Mobile Warning */
-.mobile-warning {
-  background: linear-gradient(135deg, var(--warning), #ff9e00);
-  color: #000;
-  padding: 20px;
-  border-radius: var(--border-radius);
-  margin-bottom: 30px;
-  box-shadow: var(--shadow);
-}
-
-.mobile-warning h3 {
-  margin-bottom: 12px;
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-
-.mobile-warning ul {
-  padding-left: 20px;
-}
-
-.mobile-warning li {
-  margin-bottom: 8px;
-}
-
-/* Form Elements */
-.form-group {
-  margin-bottom: 24px;
-}
-
-.form-label {
-  display: block;
-  margin-bottom: 8px;
-  font-weight: 500;
-  color: var(--text-primary);
-}
-
-.form-control {
-  width: 100%;
-  padding: 14px 16px;
-  border-radius: var(--border-radius);
-  border: 1px solid var(--border-color);
-  background: var(--input-bg);
-  color: var(--text-primary);
-  font-size: 1rem;
-  transition: var(--transition);
-}
-
-.form-control:focus {
-  outline: none;
-  border-color: var(--primary);
-  box-shadow: 0 0 0 3px rgba(67, 97, 238, 0.2);
-}
-
-.select-wrap {
-  position: relative;
-}
-
-.select-wrap::after {
-  content: "▼";
-  font-size: 0.8rem;
-  position: absolute;
-  right: 16px;
-  top: 50%;
-  transform: translateY(-50%);
-  pointer-events: none;
-  color: var(--text-secondary);
-}
-
-/* Recording Section */
-.recording-section {
-  text-align: center;
-  margin: 30px 0;
-  padding: 30px;
-  background: var(--bg-secondary);
-  border-radius: var(--border-radius);
-  box-shadow: var(--shadow);
-}
-
-.mic-container {
-  display: flex;
-  justify-content: center;
-  margin-bottom: 24px;
-}
-
-.mic-btn {
-  width: 100px;
-  height: 100px;
-  border-radius: 50%;
-  background: linear-gradient(135deg, var(--primary), var(--secondary));
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  transition: var(--transition);
-  box-shadow: var(--shadow);
-  border: none;
-  color: white;
-  font-size: 2.5rem;
-}
-
-.mic-btn:hover {
-  transform: scale(1.05);
-  box-shadow: var(--shadow-lg);
-}
-
-.mic-btn.recording {
-  background: linear-gradient(135deg, var(--danger), #ff2e63);
-  animation: pulse 1.5s infinite;
-}
-
-@keyframes pulse {
-  0% {
-    box-shadow: 0 0 0 0 rgba(239, 71, 111, 0.7);
-  }
-  70% {
-    box-shadow: 0 0 0 15px rgba(239, 71, 111, 0);
-  }
-  100% {
-    box-shadow: 0 0 0 0 rgba(239, 71, 111, 0);
-  }
-}
-
-.recording-controls {
-  display: flex;
-  gap: 12px;
-  justify-content: center;
-  flex-wrap: wrap;
-  margin-top: 20px;
-}
-
-/* Buttons */
-.btn {
-  padding: 12px 24px;
-  border-radius: var(--border-radius);
-  border: none;
-  font-weight: 500;
-  cursor: pointer;
-  transition: var(--transition);
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  font-size: 1rem;
-}
-
-.btn-primary {
-  background: var(--primary);
-  color: white;
-}
-
-.btn-primary:hover {
-  background: var(--primary-dark);
-  transform: translateY(-2px);
-  box-shadow: var(--shadow);
-}
-
-.btn-secondary {
-  background: var(--bg-card);
-  color: var(--text-primary);
-  border: 1px solid var(--border-color);
-}
-
-.btn-secondary:hover {
-  background: var(--primary-light);
-  border-color: var(--primary);
-}
-
-.btn-danger {
-  background: var(--danger);
-  color: white;
-}
-
-.btn-danger:hover {
-  background: #e0355f;
-  transform: translateY(-2px);
-  box-shadow: var(--shadow);
-}
-
-.btn:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
-  transform: none !important;
-}
-
-/* Audio Preview */
-.audio-preview {
-  margin-top: 30px;
-  padding: 20px;
-  background: var(--bg-secondary);
-  border-radius: var(--border-radius);
-  box-shadow: var(--shadow);
-}
-
-.audio-preview-title {
-  text-align: center;
-  margin-bottom: 16px;
-  font-weight: 600;
-  color: var(--text-primary);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 10px;
-}
-
-.audio-player {
-  width: 100%;
-  margin-bottom: 16px;
-  border-radius: 8px;
-}
-
-.audio-fallback {
-  text-align: center;
-  margin-top: 16px;
-  padding: 16px;
-  background: rgba(255, 209, 102, 0.2);
-  border-radius: var(--border-radius);
-  color: var(--text-primary);
-}
-
-/* Grid Layout */
-.grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-  gap: 24px;
-  margin-top: 24px;
-}
-
-.grid-card {
-  background: var(--bg-card);
-  border-radius: var(--border-radius);
-  padding: 20px;
-  box-shadow: var(--shadow);
-  border: 1px solid var(--border-color);
-  transition: var(--transition);
-}
-
-.grid-card:hover {
-  transform: translateY(-5px);
-  box-shadow: var(--shadow-lg);
-}
-
-.grid-card-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  margin-bottom: 12px;
-}
-
-.grid-card-title {
-  font-weight: 600;
-  color: var(--text-primary);
-  margin-bottom: 4px;
-}
-
-.status-badge {
-  padding: 4px 10px;
-  border-radius: 20px;
-  font-size: 0.75rem;
-  font-weight: 500;
-}
-
-.status-active {
-  background: rgba(6, 214, 160, 0.2);
-  color: var(--success);
-}
-
-.status-pending {
-  background: rgba(255, 209, 102, 0.2);
-  color: #e6a700;
-}
-
-.status-expired {
-  background: rgba(239, 71, 111, 0.2);
-  color: var(--danger);
-}
-
-.grid-card-meta {
-  font-size: 0.85rem;
-  color: var(--text-secondary);
-  margin-bottom: 8px;
-}
-
-.grid-card-actions {
-  display: flex;
-  gap: 8px;
-  margin-top: 16px;
-}
-
-.card-action-btn {
-  flex: 1;
-  padding: 8px 12px;
-  border-radius: var(--border-radius);
-  border: none;
-  font-size: 0.85rem;
-  cursor: pointer;
-  transition: var(--transition);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 6px;
-}
-
-/* Result Section */
-.result-section {
-  margin-top: 30px;
-  padding: 24px;
-  background: var(--bg-secondary);
-  border-radius: var(--border-radius);
-  box-shadow: var(--shadow);
-}
-
-.result-header {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  margin-bottom: 16px;
-}
-
-.result-title {
-  font-weight: 600;
-  font-size: 1.2rem;
-}
-
-.result-actions {
-  display: flex;
-  gap: 12px;
-  flex-wrap: wrap;
-  margin-top: 20px;
-}
-
-/* Receiver View */
-.receiver-view {
-  padding: 30px;
-  background: var(--bg-secondary);
-  border-radius: var(--border-radius);
-  box-shadow: var(--shadow);
-  text-align: center;
-}
-
-.receiver-header {
-  margin-bottom: 24px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 12px;
-}
-
-.receiver-audio-section {
-  margin-bottom: 24px;
-}
-
-.receiver-controls {
-  margin-top: 24px;
-}
-
-/* Loader */
-.loader {
-  position: fixed;
-  inset: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: var(--darker);
-  color: white;
-  z-index: 1400;
-  font-family: var(--font-main);
-}
-
-.loader-content {
-  text-align: center;
-}
-
-.loader-icon {
-  font-size: 4rem;
-  margin-bottom: 20px;
-  animation: spin 2s linear infinite;
-}
-
-@keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
-}
-
-/* Notification */
-.notification {
-  position: fixed;
-  top: 20px;
-  right: 20px;
-  padding: 16px 24px;
-  background: var(--success);
-  color: white;
-  border-radius: var(--border-radius);
-  box-shadow: var(--shadow-lg);
-  z-index: 1500;
-  animation: slideIn 0.3s ease;
-  max-width: 350px;
-}
-
-@keyframes slideIn {
-  from {
-    transform: translateX(100%);
-    opacity: 0;
-  }
-  to {
-    transform: translateX(0);
-    opacity: 1;
-  }
-}
-
-/* Hidden Utility */
-.hidden {
-  display: none !important;
-}
-
-/* Responsive Design */
-@media (max-width: 768px) {
-  .container {
-    padding: 0 16px;
-  }
-  
-  .header {
-    flex-direction: column;
-    gap: 16px;
-    padding: 16px 0;
-  }
-  
-  .hero-section h1 {
-    font-size: 2rem;
-  }
-  
-  .hero-section p {
-    font-size: 1rem;
-  }
-  
-  .grid {
-    grid-template-columns: 1fr;
-  }
-  
-  .recording-controls {
-    flex-direction: column;
-    align-items: center;
-  }
-  
-  .btn {
-    width: 100%;
-    justify-content: center;
-  }
-  
-  .result-actions {
-    flex-direction: column;
-  }
-  
-  .grid-card-actions {
-    flex-direction: column;
-  }
-}
-
-@media (max-width: 480px) {
-  .mic-btn {
-    width: 80px;
-    height: 80px;
-    font-size: 2rem;
-  }
-  
-  .card {
-    padding: 20px 16px;
-  }
-  
-  .recording-section {
-    padding: 20px 16px;
-  }
-}
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Echo - Professional Voice Messenger</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            /* Color Palette */
+            --primary: #4361ee;
+            --primary-dark: #3a56d4;
+            --secondary: #7209b7;
+            --accent: #f72585;
+            --success: #4cc9f0;
+            --warning: #f8961e;
+            --danger: #f94144;
+            
+            /* Neutral Colors */
+            --dark-bg: #121826;
+            --dark-card: #1e293b;
+            --dark-border: #334155;
+            --dark-text: #f8fafc;
+            --dark-text-secondary: #cbd5e1;
+            
+            --light-bg: #f8fafc;
+            --light-card: #ffffff;
+            --light-border: #e2e8f0;
+            --light-text: #1e293b;
+            --light-text-secondary: #64748b;
+            
+            /* Typography */
+            --font-main: 'Inter', sans-serif;
+            
+            /* Spacing */
+            --space-xs: 0.5rem;
+            --space-sm: 1rem;
+            --space-md: 1.5rem;
+            --space-lg: 2rem;
+            --space-xl: 3rem;
+            
+            /* Border Radius */
+            --radius-sm: 8px;
+            --radius-md: 12px;
+            --radius-lg: 16px;
+            --radius-xl: 24px;
+            
+            /* Shadows */
+            --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.1);
+            --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.15);
+            --shadow-lg: 0 10px 25px rgba(0, 0, 0, 0.2);
+            --shadow-xl: 0 20px 40px rgba(0, 0, 0, 0.25);
+            
+            /* Transitions */
+            --transition-fast: 0.2s ease;
+            --transition-normal: 0.3s ease;
+            --transition-slow: 0.5s ease;
+        }
+
+        /* Base Styles */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            transition: color var(--transition-fast), background-color var(--transition-fast), border-color var(--transition-fast);
+        }
+
+        html, body {
+            height: 100%;
+            font-family: var(--font-main);
+            font-size: 16px;
+            line-height: 1.6;
+        }
+
+        body {
+            background: linear-gradient(135deg, var(--dark-bg) 0%, #1a2238 100%);
+            color: var(--dark-text);
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        body.light-mode {
+            background: linear-gradient(135deg, var(--light-bg) 0%, #e2e8f0 100%);
+            color: var(--light-text);
+        }
+
+        /* Typography */
+        h1, h2, h3, h4, h5, h6 {
+            font-weight: 700;
+            line-height: 1.3;
+            margin-bottom: var(--space-sm);
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        h2 {
+            font-size: 2rem;
+        }
+
+        h3 {
+            font-size: 1.5rem;
+        }
+
+        p {
+            margin-bottom: var(--space-sm);
+            color: var(--dark-text-secondary);
+        }
+
+        body.light-mode p {
+            color: var(--light-text-secondary);
+        }
+
+        a {
+            color: var(--primary);
+            text-decoration: none;
+            transition: color var(--transition-fast);
+        }
+
+        a:hover {
+            color: var(--primary-dark);
+        }
+
+        /* Layout */
+        .container {
+            width: 100%;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 var(--space-md);
+        }
+
+        .app {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            padding: var(--space-lg) 0;
+        }
+
+        /* Header */
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: var(--space-md) 0;
+            margin-bottom: var(--space-lg);
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: var(--space-sm);
+        }
+
+        .logo-icon {
+            font-size: 2rem;
+            color: var(--primary);
+        }
+
+        .header-actions {
+            display: flex;
+            gap: var(--space-sm);
+        }
+
+        /* Buttons */
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: var(--space-xs);
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: var(--radius-md);
+            font-family: var(--font-main);
+            font-weight: 600;
+            font-size: 0.95rem;
+            cursor: pointer;
+            transition: all var(--transition-normal);
+            text-decoration: none;
+            white-space: nowrap;
+        }
+
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none !important;
+        }
+
+        .btn-primary {
+            background: var(--primary);
+            color: white;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .btn-primary:hover:not(:disabled) {
+            background: var(--primary-dark);
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-md);
+        }
+
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.1);
+            color: var(--dark-text);
+            border: 1px solid var(--dark-border);
+        }
+
+        body.light-mode .btn-secondary {
+            background: rgba(0, 0, 0, 0.05);
+            color: var(--light-text);
+            border: 1px solid var(--light-border);
+        }
+
+        .btn-secondary:hover:not(:disabled) {
+            background: rgba(255, 255, 255, 0.15);
+            transform: translateY(-2px);
+        }
+
+        body.light-mode .btn-secondary:hover:not(:disabled) {
+            background: rgba(0, 0, 0, 0.08);
+        }
+
+        .btn-danger {
+            background: var(--danger);
+            color: white;
+        }
+
+        .btn-danger:hover:not(:disabled) {
+            background: #e03131;
+            transform: translateY(-2px);
+        }
+
+        .btn-success {
+            background: var(--success);
+            color: #000;
+        }
+
+        .btn-success:hover:not(:disabled) {
+            background: #3aa8d0;
+            transform: translateY(-2px);
+        }
+
+        .btn-warning {
+            background: var(--warning);
+            color: #000;
+        }
+
+        .btn-warning:hover:not(:disabled) {
+            background: #e0861b;
+            transform: translateY(-2px);
+        }
+
+        .btn-sm {
+            padding: 0.5rem 1rem;
+            font-size: 0.85rem;
+        }
+
+        .btn-icon {
+            padding: 0.75rem;
+            width: 3rem;
+            height: 3rem;
+        }
+
+        /* Cards */
+        .card {
+            background: var(--dark-card);
+            border-radius: var(--radius-lg);
+            padding: var(--space-lg);
+            box-shadow: var(--shadow-md);
+            border: 1px solid var(--dark-border);
+            transition: transform var(--transition-normal), box-shadow var(--transition-normal);
+        }
+
+        body.light-mode .card {
+            background: var(--light-card);
+            border: 1px solid var(--light-border);
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: var(--space-md);
+        }
+
+        .card-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: var(--dark-text);
+        }
+
+        body.light-mode .card-title {
+            color: var(--light-text);
+        }
+
+        /* Forms */
+        .form-group {
+            margin-bottom: var(--space-md);
+        }
+
+        label {
+            display: block;
+            margin-bottom: var(--space-xs);
+            font-weight: 500;
+            color: var(--dark-text);
+        }
+
+        body.light-mode label {
+            color: var(--light-text);
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 0.875rem 1rem;
+            border: 1px solid var(--dark-border);
+            border-radius: var(--radius-md);
+            background: rgba(255, 255, 255, 0.05);
+            color: var(--dark-text);
+            font-family: var(--font-main);
+            font-size: 1rem;
+            transition: all var(--transition-fast);
+        }
+
+        body.light-mode .form-control {
+            background: white;
+            border: 1px solid var(--light-border);
+            color: var(--light-text);
+        }
+
+        .form-control:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(67, 97, 238, 0.2);
+        }
+
+        select.form-control {
+            appearance: none;
+            background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+            background-repeat: no-repeat;
+            background-position: right 1rem center;
+            background-size: 1rem;
+            padding-right: 3rem;
+        }
+
+        /* Recording Section */
+        .recording-section {
+            text-align: center;
+            padding: var(--space-lg) 0;
+        }
+
+        .mic-container {
+            position: relative;
+            display: inline-block;
+            margin-bottom: var(--space-md);
+        }
+
+        .mic-btn {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+            color: white;
+            font-size: 2.5rem;
+            cursor: pointer;
+            border: none;
+            box-shadow: var(--shadow-lg);
+            transition: all var(--transition-normal);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .mic-btn:hover:not(:disabled) {
+            transform: scale(1.05);
+            box-shadow: var(--shadow-xl);
+        }
+
+        .mic-btn.recording {
+            background: linear-gradient(135deg, var(--danger) 0%, #c1121f 100%);
+            animation: pulse 1.5s infinite;
+        }
+
+        @keyframes pulse {
+            0% {
+                box-shadow: 0 0 0 0 rgba(244, 67, 54, 0.7);
+            }
+            70% {
+                box-shadow: 0 0 0 15px rgba(244, 67, 54, 0);
+            }
+            100% {
+                box-shadow: 0 0 0 0 rgba(244, 67, 54, 0);
+            }
+        }
+
+        .recording-indicator {
+            position: absolute;
+            top: -10px;
+            right: -10px;
+            width: 30px;
+            height: 30px;
+            background: var(--danger);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 0.8rem;
+            animation: blink 1s infinite;
+        }
+
+        @keyframes blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        .recording-timer {
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin-top: var(--space-sm);
+            color: var(--dark-text);
+        }
+
+        body.light-mode .recording-timer {
+            color: var(--light-text);
+        }
+
+        /* Audio Player */
+        .audio-player {
+            width: 100%;
+            margin: var(--space-md) 0;
+            border-radius: var(--radius-md);
+            background: rgba(255, 255, 255, 0.05);
+            padding: var(--space-md);
+        }
+
+        body.light-mode .audio-player {
+            background: rgba(0, 0, 0, 0.03);
+        }
+
+        .audio-player audio {
+            width: 100%;
+            border-radius: var(--radius-sm);
+        }
+
+        /* Grid Layout */
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: var(--space-md);
+            margin-top: var(--space-md);
+        }
+
+        /* Voice Message Card */
+        .voice-card {
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+        }
+
+        .voice-card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: var(--space-sm);
+        }
+
+        .voice-card-title {
+            font-weight: 600;
+            font-size: 1.1rem;
+            color: var(--dark-text);
+        }
+
+        body.light-mode .voice-card-title {
+            color: var(--light-text);
+        }
+
+        .voice-card-meta {
+            display: flex;
+            flex-direction: column;
+            gap: 0.25rem;
+            margin-bottom: var(--space-sm);
+        }
+
+        .voice-card-meta-item {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.85rem;
+            color: var(--dark-text-secondary);
+        }
+
+        body.light-mode .voice-card-meta-item {
+            color: var(--light-text-secondary);
+        }
+
+        .voice-card-actions {
+            display: flex;
+            gap: var(--space-xs);
+            margin-top: auto;
+        }
+
+        .status-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.25rem;
+            padding: 0.25rem 0.75rem;
+            border-radius: 50px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+
+        .status-active {
+            background: rgba(76, 201, 240, 0.2);
+            color: var(--success);
+        }
+
+        .status-expired {
+            background: rgba(249, 65, 68, 0.2);
+            color: var(--danger);
+        }
+
+        .status-pending {
+            background: rgba(248, 150, 30, 0.2);
+            color: var(--warning);
+        }
+
+        /* Tabs */
+        .tabs {
+            display: flex;
+            border-bottom: 1px solid var(--dark-border);
+            margin-bottom: var(--space-lg);
+        }
+
+        body.light-mode .tabs {
+            border-bottom: 1px solid var(--light-border);
+        }
+
+        .tab {
+            padding: var(--space-sm) var(--space-md);
+            cursor: pointer;
+            font-weight: 500;
+            border-bottom: 2px solid transparent;
+            transition: all var(--transition-fast);
+            color: var(--dark-text-secondary);
+        }
+
+        body.light-mode .tab {
+            color: var(--light-text-secondary);
+        }
+
+        .tab.active {
+            color: var(--primary);
+            border-bottom-color: var(--primary);
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        /* Stats */
+        .stats-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: var(--space-md);
+            margin-bottom: var(--space-lg);
+        }
+
+        .stat-card {
+            text-align: center;
+            padding: var(--space-md);
+        }
+
+        .stat-value {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: var(--space-xs);
+            color: var(--primary);
+        }
+
+        .stat-label {
+            font-size: 0.9rem;
+            color: var(--dark-text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            font-weight: 600;
+        }
+
+        body.light-mode .stat-label {
+            color: var(--light-text-secondary);
+        }
+
+        /* Empty State */
+        .empty-state {
+            text-align: center;
+            padding: var(--space-xl);
+            color: var(--dark-text-secondary);
+        }
+
+        body.light-mode .empty-state {
+            color: var(--light-text-secondary);
+        }
+
+        .empty-state-icon {
+            font-size: 4rem;
+            margin-bottom: var(--space-md);
+            opacity: 0.5;
+        }
+
+        /* Notification */
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: var(--dark-card);
+            color: var(--dark-text);
+            padding: var(--space-md);
+            border-radius: var(--radius-md);
+            box-shadow: var(--shadow-lg);
+            border-left: 4px solid var(--primary);
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            gap: var(--space-sm);
+            max-width: 400px;
+            transform: translateX(120%);
+            transition: transform var(--transition-normal);
+        }
+
+        body.light-mode .notification {
+            background: var(--light-card);
+            color: var(--light-text);
+        }
+
+        .notification.show {
+            transform: translateX(0);
+        }
+
+        .notification-icon {
+            font-size: 1.5rem;
+        }
+
+        .notification-success {
+            border-left-color: var(--success);
+        }
+
+        .notification-error {
+            border-left-color: var(--danger);
+        }
+
+        .notification-warning {
+            border-left-color: var(--warning);
+        }
+
+        /* Footer */
+        .footer {
+            text-align: center;
+            padding: var(--space-lg) 0;
+            margin-top: var(--space-xl);
+            border-top: 1px solid var(--dark-border);
+            color: var(--dark-text-secondary);
+        }
+
+        body.light-mode .footer {
+            border-top: 1px solid var(--light-border);
+            color: var(--light-text-secondary);
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            h1 {
+                font-size: 2rem;
+            }
+            
+            h2 {
+                font-size: 1.75rem;
+            }
+            
+            .header {
+                flex-direction: column;
+                gap: var(--space-md);
+                text-align: center;
+            }
+            
+            .grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .mic-btn {
+                width: 100px;
+                height: 100px;
+                font-size: 2rem;
+            }
+            
+            .stats-container {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            
+            .voice-card-actions {
+                flex-wrap: wrap;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .container {
+                padding: 0 var(--space-sm);
+            }
+            
+            .card {
+                padding: var(--space-md);
+            }
+            
+            .stats-container {
+                grid-template-columns: 1fr;
+            }
+            
+            .tabs {
+                flex-wrap: wrap;
+            }
+            
+            .tab {
+                flex: 1;
+                min-width: 120px;
+                text-align: center;
+            }
+        }
+
+        /* Utility Classes */
+        .hidden {
+            display: none !important;
+        }
+
+        .text-center {
+            text-align: center;
+        }
+
+        .mt-1 { margin-top: var(--space-xs); }
+        .mt-2 { margin-top: var(--space-sm); }
+        .mt-3 { margin-top: var(--space-md); }
+        .mt-4 { margin-top: var(--space-lg); }
+        .mt-5 { margin-top: var(--space-xl); }
+
+        .mb-1 { margin-bottom: var(--space-xs); }
+        .mb-2 { margin-bottom: var(--space-sm); }
+        .mb-3 { margin-bottom: var(--space-md); }
+        .mb-4 { margin-bottom: var(--space-lg); }
+        .mb-5 { margin-bottom: var(--space-xl); }
+
+        .flex {
+            display: flex;
+        }
+
+        .flex-center {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .flex-between {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .flex-column {
+            flex-direction: column;
+        }
+
+        .gap-1 { gap: var(--space-xs); }
+        .gap-2 { gap: var(--space-sm); }
+        .gap-3 { gap: var(--space-md); }
+        .gap-4 { gap: var(--space-lg); }
+        .gap-5 { gap: var(--space-xl); }
+    </style>
 </head>
-<body data-theme="dark">
-  <div class="container">
-    <header class="header">
-      <div class="logo">
-        <i class="fas fa-wave-square logo-icon"></i>
-        <span>Echo</span>
-      </div>
-      <div class="header-buttons">
-        <button id="guideBtn" class="header-btn" title="Guide">
-          <i class="fas fa-question-circle"></i>
-          Guide
-        </button>
-        <button id="themeBtn" class="header-btn" title="Toggle theme">
-          <i class="fas fa-moon"></i>
-          Theme
-        </button>
-      </div>
-    </header>
-
-    <div class="app" id="app" hidden>
-      <section class="hero-section">
-        <h1>Anonymous Voice Connect</h1>
-        <p>Record → Upload → Share. Professional voice messaging made simple.</p>
-      </section>
-
-      <!-- Enhanced Mobile Warning -->
-      <div class="mobile-warning" id="mobileWarning">
-        <h3><i class="fas fa-mobile-alt"></i> Mobile Tips</h3>
-        <ul>
-          <li>Use headphones for better recording quality</li>
-          <li>Allow microphone permissions when prompted</li>
-          <li>Use Chrome or Safari for best compatibility</li>
-          <li>Make sure your device volume is turned up</li>
-        </ul>
-      </div>
-
-      <!-- Sender View -->
-      <div id="senderView">
-        <div class="card">
-          <div class="card-header">
-            <h2 class="card-title">Create Voice Message</h2>
-          </div>
-          
-          <div class="form-group">
-            <label for="senderName" class="form-label">Your Display Name</label>
-            <input type="text" id="senderName" class="form-control" placeholder="Enter your name or stay anonymous" />
-          </div>
-          
-          <div class="form-group">
-            <label for="privacy" class="form-label">Privacy Setting</label>
-            <div class="select-wrap">
-              <select id="privacy" name="privacy" class="form-control">
-                <option value="anonymous">Anonymous - Hide identity</option>
-                <option value="reveal_on_request">Reveal on Request - Approve identity requests</option>
-                <option value="auto_reveal">Auto Reveal - Show identity automatically</option>
-              </select>
-            </div>
-          </div>
-          
-          <div class="form-group">
-            <label for="expiry" class="form-label">Message Expiry</label>
-            <div class="select-wrap">
-              <select id="expiry" name="expiry" class="form-control">
-                <option value="permanent">Permanent - Never expires</option>
-                <option value="24h">24 hours - Auto-deletes after 1 day</option>
-                <option value="1h">1 hour - Quick temporary message</option>
-              </select>
-            </div>
-          </div>
-          
-          <!-- Enhanced Recording Section -->
-          <div class="recording-section">
-            <div class="mic-container">
-              <button id="micBtn" class="mic-btn" title="Start recording">
-                <i class="fas fa-microphone"></i>
-              </button>
-            </div>
-            <div id="recordingStatus" class="recording-status"></div>
-            <div class="recording-controls">
-              <button id="stopBtn" class="btn btn-danger" disabled>
-                <i class="fas fa-stop"></i>
-                Stop Recording
-              </button>
-              <button id="uploadBtn" class="btn btn-primary" hidden>
-                <i class="fas fa-cloud-upload-alt"></i>
-                Upload Voice
-              </button>
-            </div>
-          </div>
-          
-          <!-- Audio Preview -->
-          <div id="audioPreviewSection" class="audio-preview hidden">
-            <div class="audio-preview-title">
-              <i class="fas fa-headphones"></i>
-              Preview Your Recording
-            </div>
-            <audio id="preview" controls class="audio-player"></audio>
-            <div id="audioFallback" class="audio-fallback hidden">
-              <p>Audio player not working?</p>
-              <button onclick="downloadAudio()" class="btn btn-warning">
-                <i class="fas fa-download"></i>
-                Download Recording
-              </button>
-            </div>
-          </div>
-
-          <div id="result" class="result-section hidden"></div>
-        </div>
-
-        <!-- Pending Requests Section -->
-        <div id="pendingRequestsSection" class="hidden">
-          <div class="card">
-            <div class="card-header">
-              <h2 class="card-title">Pending Identity Requests</h2>
-            </div>
-            <div id="pendingRequestsList" class="grid">
-              <!-- Pending requests will appear here -->
-            </div>
-          </div>
-        </div>
-
-        <!-- My Voice Messages -->
-        <div class="card">
-          <div class="card-header">
-            <h2 class="card-title">My Voice Messages</h2>
-          </div>
-          <div id="grid" class="grid">
-            <!-- Voice messages will appear here -->
-          </div>
-        </div>
-      </div>
-
-      <!-- Receiver View -->
-      <div id="receiverView" class="receiver-view hidden">
-        <div class="receiver-header">
-          <i class="fas fa-message"></i>
-          <h2>Incoming Voice Message</h2>
-        </div>
-        
-        <!-- Enhanced Audio Player -->
-        <div id="audioPlayerSection" class="receiver-audio-section">
-          <audio id="playAudio" controls class="audio-player" preload="auto"></audio>
-          <div id="receiverAudioFallback" class="audio-fallback hidden">
-            <p>Can't play audio? Try downloading the voice message:</p>
-            <button onclick="downloadReceiverAudio()" class="btn btn-warning">
-              <i class="fas fa-download"></i>
-              Download Voice Message
-            </button>
-          </div>
-        </div>
-        
-        <div class="receiver-controls">
-          <button id="playBtn" class="btn btn-primary">
-            <i class="fas fa-play"></i>
-            Play Message
-          </button>
-        </div>
-        
-        <div id="receiverStatus" class="receiver-status"></div>
-        <div id="revealSection" class="reveal-section"></div>
-      </div>
+<body>
+    <!-- Notification System -->
+    <div id="notification" class="notification">
+        <div class="notification-icon"></div>
+        <div class="notification-content"></div>
     </div>
 
-    <div id="loader" class="loader">
-      <div class="loader-content">
-        <div class="loader-icon">
-          <i class="fas fa-wave-square"></i>
+    <div class="container">
+        <div class="app">
+            <!-- Header -->
+            <header class="header">
+                <div class="logo">
+                    <i class="fas fa-wave-square logo-icon"></i>
+                    <h1>Echo Voice</h1>
+                </div>
+                <div class="header-actions">
+                    <button id="themeToggle" class="btn btn-secondary">
+                        <i class="fas fa-moon"></i>
+                        <span>Dark Mode</span>
+                    </button>
+                    <button id="guideBtn" class="btn btn-secondary">
+                        <i class="fas fa-question-circle"></i>
+                        <span>Guide</span>
+                    </button>
+                </div>
+            </header>
+
+            <!-- Main Content -->
+            <main>
+                <!-- Stats Section -->
+                <section class="stats-container">
+                    <div class="card stat-card">
+                        <div class="stat-value">12</div>
+                        <div class="stat-label">Voice Messages</div>
+                    </div>
+                    <div class="card stat-card">
+                        <div class="stat-value">47</div>
+                        <div class="stat-label">Total Plays</div>
+                    </div>
+                    <div class="card stat-card">
+                        <div class="stat-value">3</div>
+                        <div class="stat-label">Pending Requests</div>
+                    </div>
+                    <div class="card stat-card">
+                        <div class="stat-value">86%</div>
+                        <div class="stat-label">Success Rate</div>
+                    </div>
+                </section>
+
+                <!-- Tabs -->
+                <div class="tabs">
+                    <div class="tab active" data-tab="record">Record New</div>
+                    <div class="tab" data-tab="messages">My Messages</div>
+                    <div class="tab" data-tab="requests">Pending Requests</div>
+                </div>
+
+                <!-- Record Tab -->
+                <div id="record-tab" class="tab-content active">
+                    <div class="card">
+                        <div class="card-header">
+                            <h2 class="card-title">Record Voice Message</h2>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="senderName">Your Name</label>
+                            <input type="text" id="senderName" class="form-control" placeholder="Enter your name or stay anonymous">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="privacy">Privacy Setting</label>
+                            <select id="privacy" class="form-control">
+                                <option value="anonymous">Anonymous - Hide identity</option>
+                                <option value="reveal_on_request">Reveal on Request - Approve identity requests</option>
+                                <option value="auto_reveal">Auto Reveal - Show identity automatically</option>
+                            </select>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="expiry">Message Expiry</label>
+                            <select id="expiry" class="form-control">
+                                <option value="permanent">Permanent - Never expires</option>
+                                <option value="24h">24 hours - Auto-deletes after 1 day</option>
+                                <option value="1h">1 hour - Quick temporary message</option>
+                            </select>
+                        </div>
+                        
+                        <div class="recording-section">
+                            <div class="mic-container">
+                                <button id="micBtn" class="mic-btn">
+                                    <i class="fas fa-microphone"></i>
+                                </button>
+                                <div id="recordingIndicator" class="recording-indicator hidden">
+                                    <i class="fas fa-circle"></i>
+                                </div>
+                            </div>
+                            
+                            <div id="recordingTimer" class="recording-timer hidden">00:00</div>
+                            
+                            <div class="flex-center gap-2 mt-3">
+                                <button id="stopBtn" class="btn btn-danger" disabled>
+                                    <i class="fas fa-stop"></i>
+                                    Stop Recording
+                                </button>
+                                <button id="uploadBtn" class="btn btn-success hidden">
+                                    <i class="fas fa-cloud-upload-alt"></i>
+                                    Upload Voice
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <div id="audioPreviewSection" class="hidden mt-4">
+                            <h3>Preview Recording</h3>
+                            <div class="audio-player">
+                                <audio id="preview" controls></audio>
+                            </div>
+                            <div class="flex-center gap-2 mt-2">
+                                <button id="reRecordBtn" class="btn btn-warning">
+                                    <i class="fas fa-redo"></i>
+                                    Re-record
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Messages Tab -->
+                <div id="messages-tab" class="tab-content">
+                    <div class="card">
+                        <div class="card-header">
+                            <h2 class="card-title">My Voice Messages</h2>
+                            <div class="flex gap-2">
+                                <button class="btn btn-secondary btn-sm">
+                                    <i class="fas fa-filter"></i>
+                                    Filter
+                                </button>
+                                <button class="btn btn-secondary btn-sm">
+                                    <i class="fas fa-sort"></i>
+                                    Sort
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <div class="grid" id="voiceMessagesGrid">
+                            <!-- Voice message cards will be dynamically inserted here -->
+                            <div class="voice-card card">
+                                <div class="voice-card-header">
+                                    <div class="voice-card-title">Meeting Notes</div>
+                                    <div class="status-badge status-active">
+                                        <i class="fas fa-circle"></i>
+                                        Active
+                                    </div>
+                                </div>
+                                <div class="voice-card-meta">
+                                    <div class="voice-card-meta-item">
+                                        <i class="fas fa-user"></i>
+                                        <span>John Doe</span>
+                                    </div>
+                                    <div class="voice-card-meta-item">
+                                        <i class="fas fa-calendar"></i>
+                                        <span>Created: 2 days ago</span>
+                                    </div>
+                                    <div class="voice-card-meta-item">
+                                        <i class="fas fa-play-circle"></i>
+                                        <span>Plays: 12</span>
+                                    </div>
+                                </div>
+                                <div class="voice-card-actions">
+                                    <button class="btn btn-primary btn-sm">
+                                        <i class="fas fa-play"></i>
+                                        Play
+                                    </button>
+                                    <button class="btn btn-secondary btn-sm">
+                                        <i class="fas fa-share"></i>
+                                        Share
+                                    </button>
+                                    <button class="btn btn-danger btn-sm">
+                                        <i class="fas fa-trash"></i>
+                                        Delete
+                                    </button>
+                                </div>
+                            </div>
+                            
+                            <div class="voice-card card">
+                                <div class="voice-card-header">
+                                    <div class="voice-card-title">Project Update</div>
+                                    <div class="status-badge status-active">
+                                        <i class="fas fa-circle"></i>
+                                        Active
+                                    </div>
+                                </div>
+                                <div class="voice-card-meta">
+                                    <div class="voice-card-meta-item">
+                                        <i class="fas fa-user"></i>
+                                        <span>Anonymous</span>
+                                    </div>
+                                    <div class="voice-card-meta-item">
+                                        <i class="fas fa-calendar"></i>
+                                        <span>Created: 1 week ago</span>
+                                    </div>
+                                    <div class="voice-card-meta-item">
+                                        <i class="fas fa-play-circle"></i>
+                                        <span>Plays: 8</span>
+                                    </div>
+                                </div>
+                                <div class="voice-card-actions">
+                                    <button class="btn btn-primary btn-sm">
+                                        <i class="fas fa-play"></i>
+                                        Play
+                                    </button>
+                                    <button class="btn btn-secondary btn-sm">
+                                        <i class="fas fa-share"></i>
+                                        Share
+                                    </button>
+                                    <button class="btn btn-danger btn-sm">
+                                        <i class="fas fa-trash"></i>
+                                        Delete
+                                    </button>
+                                </div>
+                            </div>
+                            
+                            <div class="voice-card card">
+                                <div class="voice-card-header">
+                                    <div class="voice-card-title">Weekly Report</div>
+                                    <div class="status-badge status-expired">
+                                        <i class="fas fa-circle"></i>
+                                        Expired
+                                    </div>
+                                </div>
+                                <div class="voice-card-meta">
+                                    <div class="voice-card-meta-item">
+                                        <i class="fas fa-user"></i>
+                                        <span>Sarah Johnson</span>
+                                    </div>
+                                    <div class="voice-card-meta-item">
+                                        <i class="fas fa-calendar"></i>
+                                        <span>Created: 3 weeks ago</span>
+                                    </div>
+                                    <div class="voice-card-meta-item">
+                                        <i class="fas fa-play-circle"></i>
+                                        <span>Plays: 24</span>
+                                    </div>
+                                </div>
+                                <div class="voice-card-actions">
+                                    <button class="btn btn-primary btn-sm" disabled>
+                                        <i class="fas fa-play"></i>
+                                        Play
+                                    </button>
+                                    <button class="btn btn-secondary btn-sm" disabled>
+                                        <i class="fas fa-share"></i>
+                                        Share
+                                    </button>
+                                    <button class="btn btn-danger btn-sm">
+                                        <i class="fas fa-trash"></i>
+                                        Delete
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Requests Tab -->
+                <div id="requests-tab" class="tab-content">
+                    <div class="card">
+                        <div class="card-header">
+                            <h2 class="card-title">Pending Identity Requests</h2>
+                        </div>
+                        
+                        <div class="grid" id="requestsGrid">
+                            <!-- Request cards will be dynamically inserted here -->
+                            <div class="voice-card card">
+                                <div class="voice-card-header">
+                                    <div class="voice-card-title">Meeting Notes</div>
+                                    <div class="status-badge status-pending">
+                                        <i class="fas fa-clock"></i>
+                                        Pending
+                                    </div>
+                                </div>
+                                <div class="voice-card-meta">
+                                    <div class="voice-card-meta-item">
+                                        <i class="fas fa-calendar"></i>
+                                        <span>Requested: 1 day ago</span>
+                                    </div>
+                                    <div class="voice-card-meta-item">
+                                        <i class="fas fa-play-circle"></i>
+                                        <span>Message Plays: 5</span>
+                                    </div>
+                                </div>
+                                <div class="voice-card-actions">
+                                    <button class="btn btn-success btn-sm">
+                                        <i class="fas fa-check"></i>
+                                        Approve
+                                    </button>
+                                    <button class="btn btn-danger btn-sm">
+                                        <i class="fas fa-times"></i>
+                                        Deny
+                                    </button>
+                                    <button class="btn btn-secondary btn-sm">
+                                        <i class="fas fa-play"></i>
+                                        Listen
+                                    </button>
+                                </div>
+                            </div>
+                            
+                            <div class="voice-card card">
+                                <div class="voice-card-header">
+                                    <div class="voice-card-title">Feedback Response</div>
+                                    <div class="status-badge status-pending">
+                                        <i class="fas fa-clock"></i>
+                                        Pending
+                                    </div>
+                                </div>
+                                <div class="voice-card-meta">
+                                    <div class="voice-card-meta-item">
+                                        <i class="fas fa-calendar"></i>
+                                        <span>Requested: 3 hours ago</span>
+                                    </div>
+                                    <div class="voice-card-meta-item">
+                                        <i class="fas fa-play-circle"></i>
+                                        <span>Message Plays: 2</span>
+                                    </div>
+                                </div>
+                                <div class="voice-card-actions">
+                                    <button class="btn btn-success btn-sm">
+                                        <i class="fas fa-check"></i>
+                                        Approve
+                                    </button>
+                                    <button class="btn btn-danger btn-sm">
+                                        <i class="fas fa-times"></i>
+                                        Deny
+                                    </button>
+                                    <button class="btn btn-secondary btn-sm">
+                                        <i class="fas fa-play"></i>
+                                        Listen
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </main>
         </div>
-        <div>Loading Echo...</div>
-      </div>
     </div>
-  </div>
 
-<script>
-// Your existing JavaScript code remains the same, but now with enhanced UI interactions
-// I'm including only the parts that need to be modified for the new UI
-
-// Initialize the app with the new UI
-window.addEventListener('load', () => {
-  setTimeout(() => {
-    document.getElementById('loader').style.display = 'none';
-    document.getElementById('app').hidden = false;
-    
-    // Check if we're in receiver mode
-    const params = new URLSearchParams(window.location.search);
-    const voiceId = params.get("v");
-    
-    if (voiceId) {
-      document.getElementById('senderView').hidden = true;
-      document.getElementById('receiverView').hidden = false;
-      loadReceiver();
-    } else {
-      document.getElementById('senderView').hidden = false;
-      document.getElementById('receiverView').hidden = true;
-      loadDashboard();
-      loadPendingRequests();
-    }
-  }, 1000);
-});
-
-// Theme toggle
-let dark = true;
-document.getElementById('themeBtn').onclick = () => {
-  dark = !dark;
-  document.body.setAttribute('data-theme', dark ? 'dark' : 'light');
-  document.getElementById('themeBtn').innerHTML = dark ? 
-    '<i class="fas fa-moon"></i> Theme' : 
-    '<i class="fas fa-sun"></i> Theme';
-};
-
-// Guide button
-document.getElementById('guideBtn').onclick = () => {
-  alert("🎵 Echo Voice Messenger\n\n★ Record voice messages\n★ Set privacy levels\n★ Share via link or QR code\n★ Track message statistics\n★ Delete messages anytime\n★ Handle identity requests\n\n📱 Mobile Tips: Use headphones for better quality! Allow microphone permissions when prompted.");
-};
-
-// Enhanced mobile detection
-function isMobileDevice() {
-  return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
-}
-
-// Show/hide mobile warning
-if (isMobileDevice()) {
-  document.getElementById('mobileWarning').style.display = 'block';
-} else {
-  document.getElementById('mobileWarning').style.display = 'none';
-}
-
-// Your existing recording, upload, and other functionality remains the same
-// All the functions like micBtn.onclick, stopBtn.onclick, uploadBtn.onclick, etc.
-// The UI will now use the new styling but the functionality is unchanged
-
-// Enhanced notification system
-function showNotification(message, duration = 3000) {
-  // Remove existing notification
-  const existingNotification = document.querySelector('.notification');
-  if (existingNotification) {
-    existingNotification.remove();
-  }
-  
-  const notification = document.createElement('div');
-  notification.className = 'notification';
-  notification.innerHTML = `<i class="fas fa-info-circle"></i> ${message}`;
-  document.body.appendChild(notification);
-  
-  setTimeout(() => {
-    if (notification.parentNode) {
-      notification.parentNode.removeChild(notification);
-    }
-  }, duration);
-}
-
-// The rest of your JavaScript code remains the same
-// All the functions for recording, uploading, dashboard, etc.
-
-// For demonstration purposes, I'm including a simplified version of the dashboard loading
-function loadDashboard() {
-  const voices = getVoiceMessages().filter(v => v.senderId === SENDER_ID);
-  const grid = document.getElementById('grid');
-  
-  if (voices.length === 0) {
-    grid.innerHTML = `
-      <div style="text-align: center; padding: 40px; color: var(--text-secondary);">
-        <div style="font-size: 3rem; margin-bottom: 20px;"><i class="fas fa-wave-square"></i></div>
-        <p>No voice messages yet. Record your first message above!</p>
-      </div>
-    `;
-    return;
-  }
-  
-  grid.innerHTML = voices.map(voice => `
-    <div class="grid-card">
-      <div class="grid-card-header">
-        <div>
-          <div class="grid-card-title">${voice.senderName}</div>
-          <div class="grid-card-meta">Created: ${new Date(voice.timestamp).toLocaleDateString()}</div>
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <p>&copy; 2023 Echo Voice Messenger. All rights reserved.</p>
+            <p class="mt-1">Secure, private voice messaging for professionals.</p>
         </div>
-        <span class="status-badge status-active">${getExpiryText(voice.expiry)}</span>
-      </div>
-      <div class="grid-card-meta">
-        Plays: ${voice.playCount || 0} • Opens: ${voice.openCount || 0}
-      </div>
-      <div class="grid-card-actions">
-        <button class="card-action-btn btn-primary" onclick="window.open('?v=${voice.id}', '_blank')">
-          <i class="fas fa-external-link-alt"></i> Open
-        </button>
-        <button class="card-action-btn btn-secondary" onclick="copyToClipboard('${window.location.origin}${window.location.pathname}?v=${voice.id}')">
-          <i class="fas fa-copy"></i> Copy
-        </button>
-        <button class="card-action-btn btn-danger" onclick="confirmDelete('${voice.id}')">
-          <i class="fas fa-trash"></i> Delete
-        </button>
-      </div>
-    </div>
-  `).join('');
-}
+    </footer>
 
-// Initialize user ID and other variables
-if (!localStorage.getItem('echo_id')) {
-  localStorage.setItem('echo_id', 'echo_' + Math.random().toString(36).slice(2,9));
-}
-const SENDER_ID = localStorage.getItem('echo_id');
+    <script>
+        // DOM Elements
+        const themeToggle = document.getElementById('themeToggle');
+        const guideBtn = document.getElementById('guideBtn');
+        const tabs = document.querySelectorAll('.tab');
+        const tabContents = document.querySelectorAll('.tab-content');
+        const micBtn = document.getElementById('micBtn');
+        const stopBtn = document.getElementById('stopBtn');
+        const uploadBtn = document.getElementById('uploadBtn');
+        const reRecordBtn = document.getElementById('reRecordBtn');
+        const recordingIndicator = document.getElementById('recordingIndicator');
+        const recordingTimer = document.getElementById('recordingTimer');
+        const audioPreviewSection = document.getElementById('audioPreviewSection');
+        const preview = document.getElementById('preview');
+        const notification = document.getElementById('notification');
+        const notificationIcon = notification.querySelector('.notification-icon');
+        const notificationContent = notification.querySelector('.notification-content');
 
-// Initialize storage
-if (!localStorage.getItem('echo_voices')) {
-  localStorage.setItem('echo_voices', JSON.stringify([]));
-}
-if (!localStorage.getItem('echo_requests')) {
-  localStorage.setItem('echo_requests', JSON.stringify([]));
-}
+        // App State
+        let isRecording = false;
+        let recordingStartTime;
+        let timerInterval;
+        let mediaRecorder;
+        let audioChunks = [];
 
-// Placeholder for other functions that would be in your original code
-let mediaRecorder, chunks = [];
-let recordedBlob = null;
-let audioStream = null;
-const AppState = {
-  currentUser: null,
-  currentVoiceMessage: null,
-  activeChats: [],
-  isRecording: false,
-  mediaRecorder: null,
-  audioChunks: []
-};
+        // Theme Toggle
+        themeToggle.addEventListener('click', () => {
+            document.body.classList.toggle('light-mode');
+            const isLightMode = document.body.classList.contains('light-mode');
+            themeToggle.innerHTML = isLightMode ? 
+                '<i class="fas fa-sun"></i><span>Light Mode</span>' : 
+                '<i class="fas fa-moon"></i><span>Dark Mode</span>';
+        });
 
-function getVoiceMessages() {
-  return JSON.parse(localStorage.getItem('echo_voices') || '[]');
-}
+        // Guide Button
+        guideBtn.addEventListener('click', () => {
+            showNotification('info', 'Echo Voice Messenger allows you to record and share voice messages securely. Record a message, set privacy options, and share the link with recipients.');
+        });
 
-function getVoiceMessage(id) {
-  const voices = JSON.parse(localStorage.getItem('echo_voices') || '[]');
-  return voices.find(v => v.id === id);
-}
+        // Tab Switching
+        tabs.forEach(tab => {
+            tab.addEventListener('click', () => {
+                const tabId = tab.getAttribute('data-tab');
+                
+                // Update active tab
+                tabs.forEach(t => t.classList.remove('active'));
+                tab.classList.add('active');
+                
+                // Show corresponding content
+                tabContents.forEach(content => {
+                    content.classList.remove('active');
+                    if (content.id === `${tabId}-tab`) {
+                        content.classList.add('active');
+                    }
+                });
+            });
+        });
 
-function saveVoiceMessage(voiceData) {
-  const voices = JSON.parse(localStorage.getItem('echo_voices') || '[]');
-  const existingIndex = voices.findIndex(v => v.id === voiceData.id);
-  
-  if (existingIndex >= 0) {
-    voices[existingIndex] = voiceData;
-  } else {
-    voices.push(voiceData);
-  }
-  
-  localStorage.setItem('echo_voices', JSON.stringify(voices));
-}
+        // Recording Functionality
+        micBtn.addEventListener('click', startRecording);
+        stopBtn.addEventListener('click', stopRecording);
+        reRecordBtn.addEventListener('click', resetRecording);
 
-function getExpiryText(expiry) {
-  const expiryTexts = {
-    'permanent': 'Permanent',
-    '24h': '24 Hours',
-    '1h': '1 Hour'
-  };
-  return expiryTexts[expiry] || expiry;
-}
+        function startRecording() {
+            if (isRecording) return;
+            
+            // Check if browser supports media recording
+            if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+                showNotification('error', 'Your browser does not support audio recording. Please try Chrome, Firefox, or Edge.');
+                return;
+            }
+            
+            navigator.mediaDevices.getUserMedia({ audio: true })
+                .then(stream => {
+                    isRecording = true;
+                    mediaRecorder = new MediaRecorder(stream);
+                    audioChunks = [];
+                    
+                    mediaRecorder.ondataavailable = event => {
+                        audioChunks.push(event.data);
+                    };
+                    
+                    mediaRecorder.onstop = () => {
+                        const audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
+                        const audioUrl = URL.createObjectURL(audioBlob);
+                        preview.src = audioUrl;
+                        
+                        // Stop all tracks in the stream
+                        stream.getTracks().forEach(track => track.stop());
+                        
+                        // Show preview section
+                        audioPreviewSection.classList.remove('hidden');
+                        uploadBtn.classList.remove('hidden');
+                    };
+                    
+                    mediaRecorder.start();
+                    recordingStartTime = Date.now();
+                    
+                    // Update UI
+                    micBtn.classList.add('recording');
+                    recordingIndicator.classList.remove('hidden');
+                    stopBtn.disabled = false;
+                    
+                    // Start timer
+                    startTimer();
+                    
+                    showNotification('success', 'Recording started. Speak now!');
+                })
+                .catch(err => {
+                    console.error('Error accessing microphone:', err);
+                    showNotification('error', 'Could not access microphone. Please check permissions and try again.');
+                });
+        }
 
-function confirmDelete(voiceId) {
-  if (confirm('Are you sure you want to delete this voice message? This action cannot be undone.')) {
-    deleteVoiceMessage(voiceId);
-  }
-}
+        function stopRecording() {
+            if (!isRecording) return;
+            
+            mediaRecorder.stop();
+            isRecording = false;
+            
+            // Update UI
+            micBtn.classList.remove('recording');
+            recordingIndicator.classList.add('hidden');
+            stopBtn.disabled = true;
+            
+            // Stop timer
+            clearInterval(timerInterval);
+            
+            showNotification('success', 'Recording stopped. Preview your message below.');
+        }
 
-function deleteVoiceMessage(voiceId) {
-  const voices = JSON.parse(localStorage.getItem('echo_voices') || '[]');
-  const filteredVoices = voices.filter(v => v.id !== voiceId);
-  localStorage.setItem('echo_voices', JSON.stringify(filteredVoices));
-  loadDashboard();
-  showNotification('Voice message deleted');
-}
+        function resetRecording() {
+            audioPreviewSection.classList.add('hidden');
+            uploadBtn.classList.add('hidden');
+            preview.src = '';
+            recordingTimer.textContent = '00:00';
+        }
 
-function copyToClipboard(text) {
-  navigator.clipboard.writeText(text).then(() => {
-    showNotification('Link copied to clipboard!');
-  }).catch(err => {
-    // Fallback for older browsers
-    const textArea = document.createElement('textarea');
-    textArea.value = text;
-    document.body.appendChild(textArea);
-    textArea.select();
-    try {
-      document.execCommand('copy');
-      showNotification('Link copied to clipboard!');
-    } catch (fallbackErr) {
-      showNotification('Failed to copy link');
-    }
-    document.body.removeChild(textArea);
-  });
-}
+        function startTimer() {
+            recordingTimer.classList.remove('hidden');
+            timerInterval = setInterval(() => {
+                const elapsedTime = Date.now() - recordingStartTime;
+                const seconds = Math.floor(elapsedTime / 1000);
+                const minutes = Math.floor(seconds / 60);
+                const displaySeconds = seconds % 60;
+                recordingTimer.textContent = `${minutes.toString().padStart(2, '0')}:${displaySeconds.toString().padStart(2, '0')}`;
+            }, 1000);
+        }
 
-// Placeholder for other functions that would be in your original code
-function loadPendingRequests() {}
-function loadReceiver() {}
-function downloadAudio() {}
-function downloadReceiverAudio() {}
-</script>
+        // Upload Button
+        uploadBtn.addEventListener('click', () => {
+            // In a real app, this would upload to a server
+            // For demo purposes, we'll simulate the process
+            
+            uploadBtn.disabled = true;
+            uploadBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Uploading...';
+            
+            setTimeout(() => {
+                showNotification('success', 'Voice message uploaded successfully! Share the link with your recipients.');
+                uploadBtn.disabled = false;
+                uploadBtn.innerHTML = '<i class="fas fa-cloud-upload-alt"></i> Upload Voice';
+                
+                // Reset the recording UI
+                resetRecording();
+                
+                // Switch to messages tab to see the new message
+                document.querySelector('.tab[data-tab="messages"]').click();
+            }, 2000);
+        });
+
+        // Notification System
+        function showNotification(type, message) {
+            // Set notification type
+            notification.className = 'notification';
+            notification.classList.add(`notification-${type}`);
+            
+            // Set icon based on type
+            let iconClass;
+            switch(type) {
+                case 'success':
+                    iconClass = 'fas fa-check-circle';
+                    break;
+                case 'error':
+                    iconClass = 'fas fa-exclamation-circle';
+                    break;
+                case 'warning':
+                    iconClass = 'fas fa-exclamation-triangle';
+                    break;
+                case 'info':
+                default:
+                    iconClass = 'fas fa-info-circle';
+                    break;
+            }
+            
+            notificationIcon.className = `notification-icon ${iconClass}`;
+            notificationContent.textContent = message;
+            
+            // Show notification
+            notification.classList.add('show');
+            
+            // Auto-hide after 5 seconds
+            setTimeout(() => {
+                notification.classList.remove('show');
+            }, 5000);
+        }
+
+        // Close notification when clicked
+        notification.addEventListener('click', () => {
+            notification.classList.remove('show');
+        });
+
+        // Demo functionality for message cards
+        document.querySelectorAll('.voice-card-actions .btn').forEach(button => {
+            button.addEventListener('click', function(e) {
+                e.stopPropagation();
+                
+                const card = this.closest('.voice-card');
+                const title = card.querySelector('.voice-card-title').textContent;
+                
+                if (this.querySelector('.fa-play')) {
+                    showNotification('info', `Playing: ${title}`);
+                } else if (this.querySelector('.fa-share')) {
+                    showNotification('success', `Share link copied for: ${title}`);
+                } else if (this.querySelector('.fa-trash')) {
+                    if (confirm(`Are you sure you want to delete "${title}"?`)) {
+                        card.style.opacity = '0.5';
+                        setTimeout(() => {
+                            card.remove();
+                            showNotification('success', `"${title}" has been deleted`);
+                        }, 500);
+                    }
+                } else if (this.querySelector('.fa-check')) {
+                    const badge = card.querySelector('.status-badge');
+                    badge.className = 'status-badge status-active';
+                    badge.innerHTML = '<i class="fas fa-circle"></i> Approved';
+                    showNotification('success', `Identity request for "${title}" approved`);
+                } else if (this.querySelector('.fa-times')) {
+                    const badge = card.querySelector('.status-badge');
+                    badge.className = 'status-badge status-expired';
+                    badge.innerHTML = '<i class="fas fa-times-circle"></i> Denied';
+                    showNotification('info', `Identity request for "${title}" denied`);
+                }
+            });
+        });
+
+        // Initialize the app
+        document.addEventListener('DOMContentLoaded', () => {
+            showNotification('info', 'Welcome to Echo Voice Messenger! Click the guide button for instructions.');
+        });
+    </script>
 </body>
 </html>
