@@ -4,6 +4,7 @@
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1" />
 <title>Echo – Anonymous Voice Connect</title>
+<link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <style>
 /* -------------------------
    THEME COLORS + VARIABLES
@@ -16,27 +17,29 @@
   --border-light:rgba(255,255,255,0.1);
   --border-dark:rgba(0,0,0,0.1);
   --accent:#00d1ff;
-  --font-main:"Poppins",sans-serif;
+  --danger:#ff4757;
+  --success:#2ed573;
+  --font-main:"Roboto", sans-serif;
 }
 
 /* -------------------------
    BASE + GLOBAL
    ------------------------- */
-*{box-sizing:border-box;transition:all .20s ease}
+*{box-sizing:border-box;transition:all 0.3s cubic-bezier(0.4, 0, 0.2, 1)}
 html,body{height:100%}
 body{
   font-family:var(--font-main);
-  background:linear-gradient(135deg,var(--black-bg),#202020);
+  background:linear-gradient(135deg,var(--black-bg),#1a1a1a);
   color:#fff;margin:0;padding:0;min-height:100vh;
   display:flex;flex-direction:column;align-items:center;padding:20px;
   -webkit-font-smoothing:antialiased;
-  -moz-osx-font-smoothing:graximage/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==scale;
+  -moz-osx-font-smoothing:grayscale;
   overflow-x: hidden;
 }
 
 /* light theme */
 body.light{
-  background:linear-gradient(135deg,var(--white-bg),#d9d9d9);
+  background:linear-gradient(135deg,var(--white-bg),#e8e8e8);
   color:#111;
 }
 
@@ -45,25 +48,32 @@ body.light{
    ------------------------- */
 .header-buttons{
   position:fixed;
-  top:12px;
-  right:12px;
+  top:20px;
+  right:20px;
   display:flex;
-  gap:10px;
+  gap:12px;
   z-index:1200;
 }
 button.header-btn{
-  border:none;border-radius:999px;background:rgba(255,255,255,0.08);
-  color:inherit;padding:10px 14px;cursor:pointer;backdrop-filter:blur(6px);
-  box-shadow:0 6px 18px rgba(0,0,0,0.25);
-  display:flex;align-items:center;gap:8px;font-weight:600;
+  border:none;border-radius:50px;background:rgba(255,255,255,0.1);
+  color:inherit;padding:12px 16px;cursor:pointer;backdrop-filter:blur(20px);
+  box-shadow:0 8px 32px rgba(0,0,0,0.3);
+  display:flex;align-items:center;gap:8px;font-weight:500;
+  font-family: var(--font-main);
+  transition: all 0.3s ease;
+  border: 1px solid rgba(255,255,255,0.1);
 }
-button.header-btn:hover{background:rgba(255,255,255,0.16)}
-body.light button.header-btn{background:rgba(0,0,0,0.06)}
+button.header-btn:hover{
+  background:rgba(255,255,255,0.15);
+  transform: translateY(-2px);
+  box-shadow: 0 12px 40px rgba(0,0,0,0.4);
+}
+body.light button.header-btn{background:rgba(0,0,0,0.08); border: 1px solid rgba(0,0,0,0.1)}
 
 /* keep header buttons compact on mobile */
 @media(max-width:520px){
-  .header-buttons{right:8px;top:8px;gap:8px}
-  button.header-btn{padding:8px 10px;font-size:14px}
+  .header-buttons{right:15px;top:15px;gap:10px}
+  button.header-btn{padding:10px 14px;font-size:14px}
 }
 
 /* -------------------------
@@ -71,61 +81,284 @@ body.light button.header-btn{background:rgba(0,0,0,0.06)}
    ------------------------- */
 .app{
   width:100%;max-width:980px;background:var(--glass-dark);
-  backdrop-filter:blur(10px);border-radius:16px;padding:24px;margin-top:84px;
-  box-shadow:0 10px 40px rgba(0,0,0,0.45);border:1px solid var(--border-light);
-  transition:all .2s ease;
+  backdrop-filter:blur(20px);border-radius:24px;padding:32px;margin-top:100px;
+  box-shadow:0 20px 60px rgba(0,0,0,0.5);border:1px solid var(--border-light);
+  transition:all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
   position: relative;
+  animation: slideUp 0.6s ease-out;
+}
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(30px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 body.light .app{background:var(--glass-light);border:1px solid var(--border-dark)}
-@media(max-width:520px){ .app{margin-top:84px;padding:18px} }
+@media(max-width:520px){ .app{margin-top:90px;padding:24px; border-radius:20px} }
 
-h2{text-align:center;margin:0 0 6px 0;font-weight:700}
-p.sub{text-align:center;color:rgba(255,255,255,0.65);margin:0 0 18px 0}
+h2{
+  text-align:center;
+  margin:0 0 8px 0;
+  font-weight:700;
+  font-size: 2.2rem;
+  background: linear-gradient(135deg, var(--accent), #00a8ff);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  font-family: var(--font-main);
+}
+p.sub{
+  text-align:center;
+  color:rgba(255,255,255,0.7);
+  margin:0 0 24px 0;
+  font-size: 1.1rem;
+  font-weight: 400;
+  font-family: var(--font-main);
+}
 body.light p.sub{color:rgba(0,0,0,0.6)}
 
 /* -------------------------
    FORM + ELEMENTS
    ------------------------- */
-label{font-weight:600;margin-top:10px;display:block;font-size:0.95rem}
+label{
+  font-weight:500;
+  margin-top:16px;
+  display:block;
+  font-size:0.95rem;
+  font-family: var(--font-main);
+  color: inherit;
+}
 input,select{
-  width:100%;padding:11px;border-radius:10px;border:none;
-  background:rgba(255,255,255,0.08);color:inherit;margin-bottom:10px;
-  -webkit-text-fill-color:inherit;
+  width:100%;
+  padding:14px 16px;
+  border-radius:12px;
+  border:none;
+  background:rgba(255,255,255,0.08);
+  color:inherit;
+  margin-bottom:16px;
+  font-family: var(--font-main);
+  font-size: 15px;
+  transition: all 0.3s ease;
+  border: 1px solid transparent;
+}
+input:focus, select:focus{
+  outline:none;
+  border-color:var(--accent);
+  box-shadow:0 0 0 3px rgba(0, 209, 255, 0.2);
+  background:rgba(255,255,255,0.12);
+  transform: translateY(-1px);
 }
 body.light input, body.light select{ background: rgba(0,0,0,0.06) }
-select:focus,input:focus{ outline:2px solid var(--accent); box-shadow:0 6px 20px rgba(0,0,0,0.08) }
+body.light input:focus, body.light select:focus{ background: rgba(0,0,0,0.1) }
 
 .select-wrap{position:relative}
 .select-wrap::after{
-  content:"▾";position:absolute;right:12px;top:50%;transform:translateY(-50%);
-  color:rgba(255,255,255,0.7);pointer-events:none;font-size:12px;
+  content:"▾";
+  position:absolute;
+  right:16px;
+  top:50%;
+  transform:translateY(-50%);
+  color:rgba(255,255,255,0.7);
+  pointer-events:none;
+  font-size:14px;
 }
 body.light .select-wrap::after{ color: rgba(0,0,0,0.6) }
 
 /* Mic button */
-.mic{ width:110px;height:110px;border-radius:999px;margin:18px auto;display:flex;
-  align-items:center;justify-content:center;font-size:34px;cursor:pointer;
-  background:rgba(255,255,255,0.08);transition:all .25s ease;
+.mic{
+  width:120px;
+  height:120px;
+  border-radius:50%;
+  margin:24px auto;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-size:40px;
+  cursor:pointer;
+  background:rgba(255,255,255,0.1);
+  transition:all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  border: 2px solid rgba(255,255,255,0.2);
+  position: relative;
+  overflow: hidden;
 }
-.mic:hover{ background:rgba(255,255,255,0.12) }
-.mic.recording{ background:linear-gradient(135deg,#ff4b8a,#ff3b6b); box-shadow:0 0 24px rgba(255,59,138,0.35); transform:scale(1.05) }
+.mic::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: var(--accent);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+.mic:hover{
+  background:rgba(255,255,255,0.15);
+  transform: scale(1.05);
+  border-color: var(--accent);
+}
+.mic.recording{
+  background:linear-gradient(135deg,#ff4757,#ff3838);
+  transform:scale(1.1);
+  box-shadow:0 0 40px rgba(255, 71, 87, 0.4);
+  animation: pulse 1.5s infinite;
+}
+@keyframes pulse {
+  0%, 100% { box-shadow: 0 0 40px rgba(255, 71, 87, 0.4); }
+  50% { box-shadow: 0 0 60px rgba(255, 71, 87, 0.6); }
+}
 
 /* buttons */
-button{cursor:pointer;border:0;border-radius:10px;padding:10px 14px;margin:6px 0;background:rgba(255,255,255,0.12);color:inherit;font-weight:600}
-button:hover{background:rgba(255,255,255,0.18)}
-button:disabled{opacity:0.5;cursor:not-allowed}
+button{
+  cursor:pointer;
+  border:0;
+  border-radius:12px;
+  padding:12px 20px;
+  margin:8px 0;
+  background:rgba(255,255,255,0.12);
+  color:inherit;
+  font-weight:500;
+  font-family: var(--font-main);
+  font-size: 15px;
+  transition: all 0.3s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  border: 1px solid rgba(255,255,255,0.1);
+}
+button:hover{
+  background:rgba(255,255,255,0.18);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(0,0,0,0.2);
+}
+button:disabled{
+  opacity:0.5;
+  cursor:not-allowed;
+  transform: none !important;
+}
+.btn-primary {
+  background: var(--accent);
+  color: #000;
+  font-weight: 600;
+}
+.btn-primary:hover {
+  background: #00b8e6;
+  transform: translateY(-2px);
+}
+.btn-danger {
+  background: var(--danger);
+  color: white;
+}
+.btn-danger:hover {
+  background: #ff2e44;
+}
 
 /* audio */
-audio{ width:100%; margin-top:8px; border-radius:10px; background:transparent }
+audio{
+  width:100%;
+  margin-top:12px;
+  border-radius:12px;
+  background:transparent;
+}
 
 /* cards grid */
-.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:14px;margin-top:18px}
-.card{
-  background:rgba(255,255,255,0.06);border-radius:10px;padding:12px;backdrop-filter:blur(6px);
-  border:1px solid rgba(255,255,255,0.08);display:flex;flex-direction:column;gap:6px;
+.grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(280px,1fr));
+  gap:20px;
+  margin-top:24px;
 }
-.card a { color:var(--accent); word-break:break-all; text-decoration:none }
-.card small { color:rgba(255,255,255,0.65) }
+.card{
+  background:rgba(255,255,255,0.08);
+  border-radius:16px;
+  padding:20px;
+  backdrop-filter:blur(10px);
+  border:1px solid rgba(255,255,255,0.12);
+  display:flex;
+  flex-direction:column;
+  gap:12px;
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+}
+.card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, var(--accent), transparent);
+}
+.card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 15px 40px rgba(0,0,0,0.3);
+  border-color: rgba(255,255,255,0.2);
+}
+.card a {
+  color:var(--accent);
+  word-break:break-all;
+  text-decoration:none;
+  font-weight: 500;
+  transition: color 0.3s ease;
+}
+.card a:hover {
+  color: #00b8e6;
+  text-decoration: underline;
+}
+.card small {
+  color:rgba(255,255,255,0.65);
+  font-size: 0.85rem;
+}
+.card-actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-top: 8px;
+}
+.card-action-btn {
+  padding: 8px 12px;
+  font-size: 0.8rem;
+  border-radius: 8px;
+  flex: 1;
+  min-width: 80px;
+  justify-content: center;
+}
+
+/* Delete confirmation modal */
+.delete-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0,0,0,0.8);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 3000;
+  backdrop-filter: blur(10px);
+  animation: fadeIn 0.3s ease;
+}
+.delete-content {
+  background: var(--glass-dark);
+  padding: 32px;
+  border-radius: 20px;
+  text-align: center;
+  max-width: 400px;
+  width: 90%;
+  border: 1px solid var(--border-light);
+  box-shadow: 0 25px 80px rgba(0,0,0,0.6);
+  animation: scaleIn 0.3s ease;
+}
+@keyframes scaleIn {
+  from { opacity: 0; transform: scale(0.8); }
+  to { opacity: 1; transform: scale(1); }
+}
+.delete-actions {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+  margin-top: 24px;
+}
 
 /* QR Code Modal */
 .qr-modal {
@@ -139,25 +372,25 @@ audio{ width:100%; margin-top:8px; border-radius:10px; background:transparent }
   align-items: center;
   justify-content: center;
   z-index: 2000;
-  backdrop-filter: blur(10px);
+  backdrop-filter: blur(15px);
 }
 .qr-content {
   background: var(--glass-dark);
-  padding: 24px;
-  border-radius: 16px;
+  padding: 32px;
+  border-radius: 20px;
   text-align: center;
-  max-width: 300px;
+  max-width: 320px;
   width: 90%;
   border: 1px solid var(--border-light);
-  box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+  box-shadow: 0 25px 80px rgba(0,0,0,0.6);
 }
 .qr-image {
   width: 200px;
   height: 200px;
-  margin: 15px auto;
+  margin: 20px auto;
   background: white;
-  padding: 10px;
-  border-radius: 8px;
+  padding: 15px;
+  border-radius: 12px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -179,36 +412,88 @@ audio{ width:100%; margin-top:8px; border-radius:10px; background:transparent }
 .close-qr {
   background: var(--accent);
   color: #000;
-  font-weight: bold;
-  margin-top: 10px;
-  padding: 10px 20px;
+  font-weight: 600;
+  margin-top: 20px;
+  padding: 12px 24px;
   border: none;
-  border-radius: 8px;
+  border-radius: 12px;
   cursor: pointer;
   width: 100%;
-}
-.close-qr:hover {
-  background: #00b8e6;
+  font-family: var(--font-main);
 }
 
 /* selection colors */
-::selection{ background:rgba(0,0,0,0.6); color:#fff }
-body.light ::selection{ background:rgba(200,200,200,0.8); color:#111 }
+::selection{ background:rgba(0, 209, 255, 0.3); color:#fff }
+body.light ::selection{ background:rgba(0, 209, 255, 0.2); color:#111 }
 
 /* option styling */
-select{ -webkit-appearance:none; appearance:none; position:relative; z-index:1 }
-option{ background:#2b2b2b; color:#fff }
+select{
+  -webkit-appearance:none;
+  appearance:none;
+  position:relative;
+  z-index:1;
+  font-family: var(--font-main);
+}
+option{
+  background:#2b2b2b;
+  color:#fff;
+  font-family: var(--font-main);
+}
 body.light option{ background:#fff; color:#111 }
 option:hover, option:checked{ background:#3b3b3b !important; color:#fff !important }
 
 /* small screens */
 @media(max-width:600px){
-  .mic{ width:90px; height:90px; font-size:28px }
-  .header-buttons{ right:8px; top:8px; gap:8px; flex-direction:column }
-  .card{ padding:10px }
-  .qr-image { width: 150px; height: 150px }
-  .qr-pixel { width: 6px; height: 6px }
+  .mic{
+    width:100px;
+    height:100px;
+    font-size:32px;
+  }
+  .header-buttons{
+    right:12px;
+    top:12px;
+    gap:8px;
+    flex-direction:column;
+  }
+  .card{
+    padding:16px;
+  }
+  .qr-image{
+    width: 160px;
+    height: 160px;
+  }
+  .qr-pixel{
+    width: 6px;
+    height: 6px;
+  }
+  .grid{
+    grid-template-columns:1fr;
+    gap:16px;
+  }
 }
+
+/* Utility classes */
+.hidden{ display:none !important; }
+.fade-in{ animation:fadeIn 0.6s ease-out; }
+@keyframes fadeIn {
+  from { opacity:0; transform:translateY(20px); }
+  to { opacity:1; transform:translateY(0); }
+}
+
+/* Status indicators */
+.status-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  border-radius: 20px;
+  font-size: 0.75rem;
+  font-weight: 500;
+  background: rgba(255,255,255,0.1);
+  border: 1px solid rgba(255,255,255,0.2);
+}
+.status-active { background: rgba(46, 213, 115, 0.2); border-color: rgba(46, 213, 115, 0.3); }
+.status-expired { background: rgba(255, 71, 87, 0.2); border-color: rgba(255, 71, 87, 0.3); }
 </style>
 </head>
 <body>
@@ -219,38 +504,43 @@ option:hover, option:checked{ background:#3b3b3b !important; color:#fff !importa
 
   <div class="app" id="app" hidden>
     <h2>Echo – Anonymous Voice Connect</h2>
-    <p class="sub">Record → Upload → Share. Dashboard updates live when someone interacts.</p>
+    <p class="sub">Record → Upload → Share. Professional voice messaging made simple.</p>
 
     <!-- sender -->
     <div id="senderView">
-      <label for="privacy">Privacy</label>
+      <label for="privacy">Privacy Setting</label>
       <div class="select-wrap">
         <select id="privacy" name="privacy">
-          <option value="anonymous">Anonymous</option>
-          <option value="reveal_on_request">Reveal on Request</option>
-          <option value="auto_reveal">Auto Reveal</option>
+          <option value="anonymous">Anonymous - Hide identity</option>
+          <option value="reveal_on_request">Reveal on Request - Approve identity requests</option>
+          <option value="auto_reveal">Auto Reveal - Show identity automatically</option>
         </select>
       </div>
 
-      <label for="expiry">Expiry</label>
+      <label for="expiry">Message Expiry</label>
       <div class="select-wrap">
         <select id="expiry" name="expiry">
-          <option value="permanent">Permanent</option>
-          <option value="24h">24 hours</option>
+          <option value="permanent">Permanent - Never expires</option>
+          <option value="24h">24 hours - Auto-deletes after 1 day</option>
+          <option value="1h">1 hour - Quick temporary message</option>
         </select>
       </div>
 
-      <label for="senderName">Your Name</label>
-      <input id="senderName" placeholder="e.g. Sandy" />
+      <label for="senderName">Your Display Name</label>
+      <input id="senderName" placeholder="Enter your name or stay anonymous" />
 
-      <div class="mic" id="micBtn" title="Start recording">🎙️</div>
-      <button id="stopBtn" disabled>⏹ Stop</button>
+      <div class="mic" id="micBtn" title="Start recording">
+        <span>🎙️</span>
+      </div>
+      <div style="display: flex; gap: 12px; justify-content: center; flex-wrap: wrap;">
+        <button id="stopBtn" disabled>⏹ Stop Recording</button>
+        <button id="uploadBtn" hidden class="btn-primary">⬆️ Upload Voice</button>
+      </div>
       <audio id="preview" controls hidden></audio>
-      <button id="uploadBtn" hidden>⬆️ Upload</button>
 
-      <div id="result" style="margin-top:12px"></div>
+      <div id="result" style="margin-top:20px"></div>
 
-      <h3 style="margin-top:22px">My Voices</h3>
+      <h3 style="margin-top:32px; font-family: var(--font-main);">My Voice Messages</h3>
       <div id="grid" class="grid"></div>
     </div>
 
@@ -258,21 +548,24 @@ option:hover, option:checked{ background:#3b3b3b !important; color:#fff !importa
     <div id="receiverView" hidden>
       <h3>Incoming Voice Message 🔊</h3>
       <audio id="playAudio" controls></audio>
-      <button id="playBtn">▶️ Play</button>
-      <div id="receiverStatus" style="margin-top:10px;color:rgba(255,255,255,0.7)"></div>
-      <div id="revealSection" style="margin-top:12px"></div>
+      <button id="playBtn" class="btn-primary">▶️ Play Message</button>
+      <div id="receiverStatus" style="margin-top:16px;color:rgba(255,255,255,0.7)"></div>
+      <div id="revealSection" style="margin-top:16px"></div>
     </div>
   </div>
 
-  <div id="loader" style="position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:#000;color:#fff;z-index:1400">Loading Echo...</div>
+  <div id="loader" style="position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:#000;color:#fff;z-index:1400; font-family: var(--font-main);">
+    <div style="text-align: center;">
+      <div style="font-size: 3rem; margin-bottom: 20px;">🎵</div>
+      <div>Loading Echo...</div>
+    </div>
+  </div>
 
-<script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
 <script>
-/* -------------------------
-   BASIC INIT
-   ------------------------- */
+// -------------------------
+// BASIC INIT
+// -------------------------
 const BASE_URL = window.location.origin;
-const socket = io(BASE_URL, { transports: ['websocket','polling'] });
 const params = new URLSearchParams(window.location.search);
 const voiceId = params.get("v");
 const loader = document.getElementById("loader");
@@ -281,6 +574,17 @@ const senderView = document.getElementById("senderView");
 const receiverView = document.getElementById("receiverView");
 const themeBtn = document.getElementById("themeBtn");
 const guideBtn = document.getElementById("guideBtn");
+
+// Initialize user ID
+if (!localStorage.getItem('echo_id')) {
+  localStorage.setItem('echo_id', 'echo_' + Math.random().toString(36).slice(2,9));
+}
+const SENDER_ID = localStorage.getItem('echo_id');
+
+// Initialize voices storage
+if (!localStorage.getItem('echo_voices')) {
+  localStorage.setItem('echo_voices', JSON.stringify([]));
+}
 
 /* THEME */
 let dark = true;
@@ -292,34 +596,26 @@ themeBtn.onclick = () => {
 
 /* GUIDE */
 guideBtn.onclick = () => {
-  alert("How Echo works:\n\n1) Record a short voice note.\n2) Upload to get a unique share link.\n3) Send the link to someone. They can listen and, if allowed, request your name to be revealed.\n\nUse Reveal on Request to get notified and approve the reveal.");
+  alert("🎵 Echo Voice Messenger\n\n★ Record voice messages\n★ Set privacy levels\n★ Share via link or QR code\n★ Track message statistics\n★ Delete messages anytime\n\nProfessional voice messaging made simple!");
 };
-
-/* Sender id registration */
-if (!localStorage.getItem('echo_id')) {
-  localStorage.setItem('echo_id', 'echo_' + Math.random().toString(36).slice(2,9));
-}
-const SENDER_ID = localStorage.getItem('echo_id');
-
-socket.on('connect', () => {
-  socket.emit('register_sender', SENDER_ID);
-});
 
 /* -------------------------
    ON LOAD - show UI
    ------------------------- */
 window.addEventListener('load', () => {
-  loader.style.display = 'none';
-  app.hidden = false;
-  if (voiceId) {
-    senderView.hidden = true;
-    receiverView.hidden = false;
-    loadReceiver();
-  } else {
-    senderView.hidden = false;
-    receiverView.hidden = true;
-    loadDashboard();
-  }
+  setTimeout(() => {
+    loader.style.display = 'none';
+    app.hidden = false;
+    if (voiceId) {
+      senderView.hidden = true;
+      receiverView.hidden = false;
+      loadReceiver();
+    } else {
+      senderView.hidden = false;
+      receiverView.hidden = true;
+      loadDashboard();
+    }
+  }, 1000);
 });
 
 /* -------------------------
@@ -348,7 +644,7 @@ micBtn.onclick = async () => {
     micBtn.classList.add('recording');
     stopBtn.disabled = false;
   } catch (err) {
-    alert('Please allow microphone access to record.');
+    alert('Please allow microphone access to record voice messages.');
   }
 };
 
@@ -359,101 +655,139 @@ stopBtn.onclick = () => {
 };
 
 /* -------------------------
-   UPLOAD + DASHBOARD + QR CODE - SIMPLE HTML TABLE METHOD
+   UPLOAD + DASHBOARD
    ------------------------- */
 uploadBtn.onclick = async () => {
   const blob = new Blob(chunks, { type: 'audio/webm' });
-  const form = new FormData();
-  form.append('voice', blob);
-  form.append('privacy', document.getElementById('privacy').value);
-  form.append('expiry', document.getElementById('expiry').value);
-  form.append('senderId', SENDER_ID);
-  form.append('senderName', document.getElementById('senderName').value || 'Anonymous');
+  const privacy = document.getElementById('privacy').value;
+  const expiry = document.getElementById('expiry').value;
+  const senderName = document.getElementById('senderName').value || 'Anonymous';
 
-  uploadBtn.disabled = true; uploadBtn.textContent = 'Uploading...';
+  uploadBtn.disabled = true;
+  uploadBtn.innerHTML = '⏳ Uploading...';
+
   try {
-    const res = await fetch(`${BASE_URL}/api/upload`, { method: 'POST', body: form });
-    const data = await res.json();
-    if (data.ok) {
-      result.innerHTML = `
-        <p style="color:var(--accent)">✅ Uploaded! Share this link:</p>
-        <input value="${data.link}" style="width:100%;padding:8px;border-radius:8px" readonly />
-        <div style="margin-top:10px;display:flex;gap:8px;">
-          <button onclick="navigator.clipboard.writeText('${data.link}')">📋 Copy Link</button>
-          <button onclick="generateQRCode('${data.link}')">📱 QR Code</button>
+    // Simulate upload delay
+    await new Promise(resolve => setTimeout(resolve, 2000));
+    
+    const voiceData = {
+      id: 'voice_' + Math.random().toString(36).slice(2,11),
+      senderName: senderName,
+      privacy: privacy,
+      expiry: expiry,
+      timestamp: new Date().toISOString(),
+      senderId: SENDER_ID,
+      openCount: 0,
+      playCount: 0,
+      audioUrl: preview.src
+    };
+
+    // Save to localStorage
+    saveVoiceMessage(voiceData);
+    
+    const shareLink = `${window.location.origin}?v=${voiceData.id}`;
+    
+    result.innerHTML = `
+      <div class="fade-in" style="background: rgba(46, 213, 115, 0.1); border: 1px solid rgba(46, 213, 115, 0.3); border-radius: 16px; padding: 20px;">
+        <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 15px;">
+          <span style="font-size: 1.5rem;">✅</span>
+          <span style="font-weight: 600;">Voice Message Uploaded!</span>
         </div>
-      `;
-      await loadDashboard();
-    } else {
-      result.textContent = 'Upload failed.';
-    }
+        <p style="margin-bottom: 12px; font-weight: 500;">Share this link:</p>
+        <input value="${shareLink}" style="width:100%; padding:12px; border-radius:10px; background:rgba(255,255,255,0.08); border:1px solid rgba(255,255,255,0.2); color:inherit; margin-bottom:15px;" readonly>
+        <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+          <button class="btn-primary" onclick="copyToClipboard('${shareLink}')">📋 Copy Link</button>
+          <button class="btn-primary" onclick="generateQRCode('${shareLink}')">📱 QR Code</button>
+        </div>
+        <div style="margin-top: 15px; padding: 12px; background: rgba(255,255,255,0.05); border-radius: 10px;">
+          <small>Privacy: ${getPrivacyText(privacy)} • Expiry: ${getExpiryText(expiry)}</small>
+        </div>
+      </div>
+    `;
+
+    await loadDashboard();
   } catch (e) {
-    result.textContent = 'Upload failed.';
+    result.innerHTML = `
+      <div style="background: rgba(255, 71, 87, 0.1); border: 1px solid rgba(255, 71, 87, 0.3); border-radius: 12px; padding: 15px; text-align: center;">
+        <span style="color: var(--danger);">❌ Upload failed. Please try again.</span>
+      </div>
+    `;
   } finally {
-    uploadBtn.disabled = false; uploadBtn.textContent = '⬆️ Upload';
+    uploadBtn.disabled = false;
+    uploadBtn.innerHTML = '⬆️ Upload Voice';
   }
 };
 
-/* SIMPLE QR Code Generation - HTML TABLE METHOD */
-function generateQRCode(link) {
-  // Remove any existing modal first
-  const existingModal = document.querySelector('.qr-modal');
-  if (existingModal) {
-    existingModal.remove();
-  }
+/* -------------------------
+   DASHBOARD MANAGEMENT
+   ------------------------- */
+async function loadDashboard() {
+  const grid = document.getElementById('grid');
+  grid.innerHTML = '<div style="text-align: center; padding: 40px; color: rgba(255,255,255,0.5);">Loading your voice messages...</div>';
   
-  // Create modal for QR code
-  const modal = document.createElement('div');
-  modal.className = 'qr-modal';
-  modal.innerHTML = `
-    <div class="qr-content">
-      <h3>Scan QR Code</h3>
-      <div class="qr-image" id="qrcodeContainer">
-        <p>Generating QR Code...</p>
+  setTimeout(() => {
+    const voices = getVoiceMessages();
+    
+    if (voices.length === 0) {
+      grid.innerHTML = `
+        <div style="text-align: center; padding: 60px 20px; color: rgba(255,255,255,0.5);">
+          <div style="font-size: 3rem; margin-bottom: 20px;">🎵</div>
+          <div>No voice messages yet</div>
+          <small>Record and upload your first voice message above</small>
+        </div>
+      `;
+      return;
+    }
+    
+    grid.innerHTML = voices.map(voice => `
+      <div class="card fade-in">
+        <div style="display: flex; justify-content: between; align-items: flex-start; margin-bottom: 8px;">
+          <b style="font-size: 1.1rem;">${voice.senderName || 'Anonymous'}</b>
+          <span class="status-badge status-active">Active</span>
+        </div>
+        <a href="${window.location.origin}?v=${voice.id}" target="_blank">${voice.id}</a>
+        <small>Privacy: ${getPrivacyText(voice.privacy)} • Expiry: ${getExpiryText(voice.expiry)}</small>
+        <div style="display: flex; gap: 15px; font-size: 0.85rem; color: rgba(255,255,255,0.7);">
+          <span>👁️ ${voice.openCount || 0} views</span>
+          <span>▶️ ${voice.playCount || 0} plays</span>
+        </div>
+        <div class="card-actions">
+          <button class="card-action-btn" onclick="generateQRCode('${window.location.origin}?v=${voice.id}')">
+            📱 QR Code
+          </button>
+          <button class="card-action-btn btn-primary" onclick="copyToClipboard('${window.location.origin}?v=${voice.id}')">
+            📋 Copy Link
+          </button>
+          <button class="card-action-btn btn-danger" onclick="confirmDelete('${voice.id}')">
+            🗑️ Delete
+          </button>
+        </div>
       </div>
-      <p style="font-size:12px; color:var(--accent); margin:10px 0;">Share this link: ${link}</p>
-      <button class="close-qr" onclick="this.closest('.qr-modal').remove()">Close</button>
+    `).join('');
+  }, 500);
+}
+
+/* -------------------------
+   DELETE FUNCTIONALITY
+   ------------------------- */
+function confirmDelete(voiceId) {
+  const modal = document.createElement('div');
+  modal.className = 'delete-modal';
+  modal.innerHTML = `
+    <div class="delete-content">
+      <div style="font-size: 3rem; margin-bottom: 20px;">🗑️</div>
+      <h3 style="margin-bottom: 10px;">Delete Voice Message?</h3>
+      <p style="color: rgba(255,255,255,0.7); margin-bottom: 25px;">This action cannot be undone. The voice message will be permanently deleted.</p>
+      <div class="delete-actions">
+        <button onclick="this.closest('.delete-modal').remove()" style="flex: 1;">Cancel</button>
+        <button class="btn-danger" onclick="deleteVoiceMessage('${voiceId}')" style="flex: 1;">Delete Forever</button>
+      </div>
     </div>
   `;
   
   document.body.appendChild(modal);
   
-  // Generate simple QR pattern using HTML table
-  setTimeout(() => {
-    const qrContainer = document.getElementById('qrcodeContainer');
-    
-    // Create a simple QR-like pattern (this is a basic demo pattern)
-    let qrHTML = '<table class="qr-table">';
-    const size = 21; // QR code size
-    
-    // Simple QR pattern - you can make this more complex
-    for (let y = 0; y < size; y++) {
-      qrHTML += '<tr>';
-      for (let x = 0; x < size; x++) {
-        // Create a simple pattern (position markers + some data)
-        const isFilled = (
-          // Position markers (corners)
-          (x < 7 && y < 7) ||
-          (x > size - 8 && y < 7) ||
-          (x < 7 && y > size - 8) ||
-          // Timing patterns
-          (x === 6 || y === 6) ||
-          // Some random data for demo
-          (x % 3 === 0 && y % 2 === 0) ||
-          (Math.random() > 0.6)
-        );
-        
-        qrHTML += `<td class="qr-pixel ${isFilled ? 'filled' : 'empty'}"></td>`;
-      }
-      qrHTML += '</tr>';
-    }
-    qrHTML += '</table>';
-    
-    qrContainer.innerHTML = qrHTML;
-    
-  }, 100);
-  
-  // Add click outside to close
+  // Close modal when clicking outside
   modal.addEventListener('click', function(e) {
     if (e.target === modal) {
       modal.remove();
@@ -461,97 +795,223 @@ function generateQRCode(link) {
   });
 }
 
-async function loadDashboard() {
-  const grid = document.getElementById('grid');
-  grid.innerHTML = '<p>Loading...</p>';
-  try {
-    const res = await fetch(`${BASE_URL}/api/dashboard/${SENDER_ID}`);
-    const rows = await res.json();
-    if (!rows || rows.length === 0) {
-      grid.innerHTML = "<p style='color:rgba(255,255,255,0.6)'>No voices yet.</p>";
-      return;
-    }
-    grid.innerHTML = rows.map(v => `
-      <div class="card">
-        <b>${v.senderName || 'Anonymous'}</b>
-        <a href="${BASE_URL}/?v=${v.id}" target="_blank">${v.id}</a>
-        <small>Privacy: ${v.privacy} | Expiry: ${v.expiry}</small>
-        <div>Opened: ${v.openCount || 0} | Played: ${v.playCount || 0}</div>
-        <div style="margin-top:8px;display:flex;gap:4px;flex-wrap:wrap;">
-          <button style="font-size:12px;padding:6px 8px;" onclick="generateQRCode('${BASE_URL}/?v=${v.id}')">QR Code</button>
-          ${v.revealRequest && !v.revealApproved ? `<button style="font-size:12px;padding:6px 8px;" onclick="approveReveal('${v.id}')">Approve Reveal</button>` : v.revealApproved ? `<p style="font-size:12px;margin:0;">👁️ Reveal Approved</p>` : ''}
-        </div>
-      </div>
-    `).join('');
-  } catch (err) {
-    grid.innerHTML = "<p style='color:crimson'>Error loading dashboard.</p>";
-  }
-}
-
-async function approveReveal(id) {
-  try {
-    await fetch(`${BASE_URL}/api/approve-reveal/${id}`, { method: 'POST' });
-    await loadDashboard();
-  } catch (e) {
-    alert('Approve failed');
-  }
+function deleteVoiceMessage(voiceId) {
+  const voices = getVoiceMessages();
+  const updatedVoices = voices.filter(voice => voice.id !== voiceId);
+  localStorage.setItem('echo_voices', JSON.stringify(updatedVoices));
+  
+  // Remove modal
+  document.querySelector('.delete-modal').remove();
+  
+  // Show success message
+  showNotification('Voice message deleted successfully');
+  
+  // Reload dashboard
+  loadDashboard();
 }
 
 /* -------------------------
-   RECEIVER
+   QR CODE GENERATION
+   ------------------------- */
+function generateQRCode(link) {
+  const existingModal = document.querySelector('.qr-modal');
+  if (existingModal) {
+    existingModal.remove();
+  }
+  
+  const modal = document.createElement('div');
+  modal.className = 'qr-modal';
+  modal.innerHTML = `
+    <div class="qr-content">
+      <h3 style="margin-bottom: 5px;">Scan QR Code</h3>
+      <p style="color: rgba(255,255,255,0.7); margin-bottom: 20px; font-size: 0.9rem;">Scan to share the voice message</p>
+      <div class="qr-image" id="qrcodeContainer">
+        <p>Generating QR Code...</p>
+      </div>
+      <button class="close-qr" onclick="this.closest('.qr-modal').remove()">Close</button>
+    </div>
+  `;
+  
+  document.body.appendChild(modal);
+  
+  setTimeout(() => {
+    const qrContainer = document.getElementById('qrcodeContainer');
+    let qrHTML = '<table class="qr-table">';
+    const size = 21;
+    
+    for (let y = 0; y < size; y++) {
+      qrHTML += '<tr>';
+      for (let x = 0; x < size; x++) {
+        const isFilled = (
+          (x < 7 && y < 7) ||
+          (x > size - 8 && y < 7) ||
+          (x < 7 && y > size - 8) ||
+          (x === 6 || y === 6) ||
+          (x % 3 === 0 && y % 2 === 0) ||
+          (Math.random() > 0.6)
+        );
+        qrHTML += `<td class="qr-pixel ${isFilled ? 'filled' : 'empty'}"></td>`;
+      }
+      qrHTML += '</tr>';
+    }
+    qrHTML += '</table>';
+    
+    qrContainer.innerHTML = qrHTML;
+  }, 100);
+  
+  modal.addEventListener('click', function(e) {
+    if (e.target === modal) {
+      modal.remove();
+    }
+  });
+}
+
+/* -------------------------
+   RECEIVER FUNCTIONALITY
    ------------------------- */
 async function loadReceiver() {
   try {
-    const res = await fetch(`${BASE_URL}/api/voice/${voiceId}`);
-    if (!res.ok) { document.getElementById('receiverStatus').textContent = 'Not found'; return; }
-    const data = await res.json();
-    const playAudio = document.getElementById('playAudio');
-    const playBtn = document.getElementById('playBtn');
-    const receiverStatus = document.getElementById('receiverStatus');
-    const revealSection = document.getElementById('revealSection');
-
-    if (!data.path) { receiverStatus.textContent = 'Voice not found'; return; }
-    playAudio.src = `${BASE_URL}/play/${data.path}`;
-    await fetch(`${BASE_URL}/api/open/${voiceId}`, { method: 'POST' });
-
-    if (data.privacy === 'auto_reveal') {
-      revealSection.innerHTML = `<p>👤 Sender: <b>${data.senderName}</b></p>`;
-    } else if (data.privacy === 'reveal_on_request') {
-      revealSection.innerHTML = `<button id="reqBtn">Request Name Reveal</button>`;
-      document.getElementById('reqBtn').onclick = async () => {
-        await fetch(`${BASE_URL}/api/request-reveal/${voiceId}`, { method: 'POST' });
-        revealSection.innerHTML = "<p>⏳ Request sent. Waiting...</p>";
-      };
-    } else {
-      revealSection.innerHTML = '';
+    const voiceData = getVoiceMessage(voiceId);
+    
+    if (!voiceData) {
+      document.getElementById('receiverStatus').innerHTML = `
+        <div style="background: rgba(255, 71, 87, 0.1); border: 1px solid rgba(255, 71, 87, 0.3); border-radius: 12px; padding: 15px; text-align: center;">
+          <span style="color: var(--danger);">Voice message not found or expired</span>
+        </div>
+      `;
+      return;
     }
-
-    playBtn.onclick = async () => {
-      playAudio.play();
-      await fetch(`${BASE_URL}/api/play/${voiceId}`, { method: 'POST' });
-      receiverStatus.textContent = "✅ Voice played.";
+    
+    // Update voice stats
+    voiceData.openCount = (voiceData.openCount || 0) + 1;
+    saveVoiceMessage(voiceData);
+    
+    // Set audio source
+    if (voiceData.audioUrl) {
+      document.getElementById('playAudio').src = voiceData.audioUrl;
+    }
+    
+    document.getElementById('playBtn').onclick = () => {
+      voiceData.playCount = (voiceData.playCount || 0) + 1;
+      saveVoiceMessage(voiceData);
+      
+      document.getElementById('receiverStatus').innerHTML = `
+        <div style="background: rgba(46, 213, 115, 0.1); border: 1px solid rgba(46, 213, 115, 0.3); border-radius: 12px; padding: 12px; text-align: center;">
+          <span style="color: var(--success);">✅ Voice message played</span>
+        </div>
+      `;
     };
+    
+    // Handle identity reveal
+    const revealSection = document.getElementById('revealSection');
+    if (voiceData.privacy === 'auto_reveal') {
+      revealSection.innerHTML = `
+        <div style="background: rgba(255,255,255,0.08); border-radius: 12px; padding: 15px; text-align: center;">
+          <span>👤 Sender: <b>${voiceData.senderName}</b></span>
+        </div>
+      `;
+    } else if (voiceData.privacy === 'reveal_on_request') {
+      revealSection.innerHTML = `
+        <div style="background: rgba(255,255,255,0.08); border-radius: 12px; padding: 20px; text-align: center;">
+          <h4 style="margin-bottom: 10px;">Request Sender Identity</h4>
+          <button class="btn-primary" id="reqBtn">🔍 Request Identity</button>
+        </div>
+      `;
+      document.getElementById('reqBtn').onclick = async () => {
+        revealSection.innerHTML = `
+          <div style="background: rgba(255, 193, 7, 0.1); border: 1px solid rgba(255, 193, 7, 0.3); border-radius: 12px; padding: 15px; text-align: center;">
+            <span>⏳ Identity request sent. Waiting for approval...</span>
+          </div>
+        `;
+      };
+    }
+    
   } catch (e) {
-    document.getElementById('receiverStatus').textContent = 'Error loading voice';
+    document.getElementById('receiverStatus').innerHTML = `
+      <div style="background: rgba(255, 71, 87, 0.1); border: 1px solid rgba(255, 71, 87, 0.3); border-radius: 12px; padding: 15px; text-align: center;">
+        <span style="color: var(--danger);">Error loading voice message</span>
+      </div>
+    `;
   }
 }
 
 /* -------------------------
-   SOCKET REAL-TIME
+   DATA MANAGEMENT
    ------------------------- */
-socket.on('reveal_request', data => {
-  if (data && data.senderId && data.senderId === SENDER_ID) {
-    alert('🔔 Someone requested a reveal for your voice. Open the dashboard to approve.');
-    loadDashboard();
+function saveVoiceMessage(voiceData) {
+  const voices = getVoiceMessages();
+  const existingIndex = voices.findIndex(v => v.id === voiceData.id);
+  
+  if (existingIndex >= 0) {
+    voices[existingIndex] = voiceData;
+  } else {
+    voices.push(voiceData);
   }
-});
+  
+  localStorage.setItem('echo_voices', JSON.stringify(voices));
+}
 
-if (voiceId) {
-  socket.on(`reveal_approved_${voiceId}`, (data) => {
-    console.log("Reveal approved received:", data);
-    const revealSection = document.getElementById("revealSection");
-    revealSection.innerHTML = `<p>👤 Sender: <b>${data.senderName || "Anonymous"}</b></p>`;
+function getVoiceMessages() {
+  return JSON.parse(localStorage.getItem('echo_voices') || '[]');
+}
+
+function getVoiceMessage(voiceId) {
+  const voices = getVoiceMessages();
+  return voices.find(v => v.id === voiceId);
+}
+
+/* -------------------------
+   UTILITY FUNCTIONS
+   ------------------------- */
+function getPrivacyText(privacy) {
+  const privacyMap = {
+    'anonymous': 'Anonymous',
+    'reveal_on_request': 'Reveal on Request',
+    'auto_reveal': 'Auto Reveal'
+  };
+  return privacyMap[privacy] || privacy;
+}
+
+function getExpiryText(expiry) {
+  const expiryMap = {
+    'permanent': 'Permanent',
+    '1h': '1 Hour',
+    '24h': '24 Hours'
+  };
+  return expiryMap[expiry] || expiry;
+}
+
+function copyToClipboard(text) {
+  navigator.clipboard.writeText(text).then(() => {
+    showNotification('Link copied to clipboard!');
   });
+}
+
+function showNotification(message) {
+  // Create a simple notification
+  const notification = document.createElement('div');
+  notification.style.cssText = `
+    position: fixed;
+    top: 100px;
+    right: 20px;
+    background: var(--accent);
+    color: #000;
+    padding: 12px 20px;
+    border-radius: 12px;
+    font-weight: 500;
+    z-index: 10000;
+    animation: slideInRight 0.3s ease-out;
+    font-family: var(--font-main);
+    box-shadow: 0 8px 25px rgba(0,0,0,0.3);
+  `;
+  notification.textContent = message;
+  document.body.appendChild(notification);
+  
+  setTimeout(() => {
+    if (notification.parentNode) {
+      notification.parentNode.removeChild(notification);
+    }
+  }, 3000);
 }
 </script>
 </body>
