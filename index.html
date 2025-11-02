@@ -31,7 +31,7 @@ body{
   display:flex;flex-direction:column;align-items:center;padding:20px;
   -webkit-font-smoothing:antialiased;
   -moz-osx-font-smoothing:grayscale;
-  overflow-x: hidden; /* Prevent horizontal scroll */
+  overflow-x: hidden;
 }
 
 /* light theme */
@@ -74,10 +74,9 @@ body.light button.header-btn{background:rgba(0,0,0,0.06)}
   backdrop-filter:blur(10px);border-radius:16px;padding:24px;margin-top:84px;
   box-shadow:0 10px 40px rgba(0,0,0,0.45);border:1px solid var(--border-light);
   transition:all .2s ease;
-  position: relative; /* Ensure proper positioning */
+  position: relative;
 }
 body.light .app{background:var(--glass-light);border:1px solid var(--border-dark)}
-/* ensure header doesn't overlap content on tiny screens */
 @media(max-width:520px){ .app{margin-top:84px;padding:18px} }
 
 h2{text-align:center;margin:0 0 6px 0;font-weight:700}
@@ -96,7 +95,6 @@ input,select{
 body.light input, body.light select{ background: rgba(0,0,0,0.06) }
 select:focus,input:focus{ outline:2px solid var(--accent); box-shadow:0 6px 20px rgba(0,0,0,0.08) }
 
-/* style select wrapper & caret so it's more consistent */
 .select-wrap{position:relative}
 .select-wrap::after{
   content:"▾";position:absolute;right:12px;top:50%;transform:translateY(-50%);
@@ -129,14 +127,14 @@ audio{ width:100%; margin-top:8px; border-radius:10px; background:transparent }
 .card a { color:var(--accent); word-break:break-all; text-decoration:none }
 .card small { color:rgba(255,255,255,0.65) }
 
-/* QR Code Modal - FIXED */
+/* QR Code Modal */
 .qr-modal {
   position: fixed;
   top: 0;
   left: 0;
   width: 100%;
   height: 100%;
-  background: rgba(0,0,0,0.85);
+  background: rgba(0,0,0,0.9);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -148,18 +146,18 @@ audio{ width:100%; margin-top:8px; border-radius:10px; background:transparent }
   padding: 24px;
   border-radius: 16px;
   text-align: center;
-  max-width: 300px;
+  max-width: 280px;
   width: 90%;
   border: 1px solid var(--border-light);
   box-shadow: 0 20px 60px rgba(0,0,0,0.5);
 }
-.qr-content img {
+.qr-image {
   width: 200px;
   height: 200px;
-  margin: 15px 0;
-  border-radius: 8px;
+  margin: 15px auto;
   background: white;
   padding: 10px;
+  border-radius: 8px;
 }
 .close-qr {
   background: var(--accent);
@@ -170,6 +168,7 @@ audio{ width:100%; margin-top:8px; border-radius:10px; background:transparent }
   border: none;
   border-radius: 8px;
   cursor: pointer;
+  width: 100%;
 }
 .close-qr:hover {
   background: #00b8e6;
@@ -179,7 +178,7 @@ audio{ width:100%; margin-top:8px; border-radius:10px; background:transparent }
 ::selection{ background:rgba(0,0,0,0.6); color:#fff }
 body.light ::selection{ background:rgba(200,200,200,0.8); color:#111 }
 
-/* option styling (works in many browsers, not all details controllable) */
+/* option styling */
 select{ -webkit-appearance:none; appearance:none; position:relative; z-index:1 }
 option{ background:#2b2b2b; color:#fff }
 body.light option{ background:#fff; color:#111 }
@@ -190,7 +189,7 @@ option:hover, option:checked{ background:#3b3b3b !important; color:#fff !importa
   .mic{ width:90px; height:90px; font-size:28px }
   .header-buttons{ right:8px; top:8px; gap:8px; flex-direction:column }
   .card{ padding:10px }
-  .qr-content img { width: 150px; height: 150px }
+  .qr-image { width: 150px; height: 150px }
 }
 </style>
 </head>
@@ -249,8 +248,8 @@ option:hover, option:checked{ background:#3b3b3b !important; color:#fff !importa
 
   <div id="loader" style="position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:#000;color:#fff;z-index:1400">Loading Echo...</div>
 
-<!-- BETTER QR Code Library -->
-<script src="https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.min.js"></script>
+<!-- SIMPLE QR Code Library -->
+<script src="https://cdn.jsdelivr.net/npm/qr-code-styling@1.5.0/lib/qr-code-styling.js"></script>
 <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
 <script>
 /* -------------------------
@@ -280,13 +279,12 @@ guideBtn.onclick = () => {
   alert("How Echo works:\n\n1) Record a short voice note.\n2) Upload to get a unique share link.\n3) Send the link to someone. They can listen and, if allowed, request your name to be revealed.\n\nUse Reveal on Request to get notified and approve the reveal.");
 };
 
-/* Sender id registration (persisted locally) */
+/* Sender id registration */
 if (!localStorage.getItem('echo_id')) {
   localStorage.setItem('echo_id', 'echo_' + Math.random().toString(36).slice(2,9));
 }
 const SENDER_ID = localStorage.getItem('echo_id');
 
-/* When socket connects register sender to a private room so server can notify only them */
 socket.on('connect', () => {
   socket.emit('register_sender', SENDER_ID);
 });
@@ -345,7 +343,7 @@ stopBtn.onclick = () => {
 };
 
 /* -------------------------
-   UPLOAD + DASHBOARD + QR CODE - FIXED
+   UPLOAD + DASHBOARD + QR CODE - WORKING VERSION
    ------------------------- */
 uploadBtn.onclick = async () => {
   const blob = new Blob(chunks, { type: 'audio/webm' });
@@ -380,7 +378,7 @@ uploadBtn.onclick = async () => {
   }
 };
 
-/* FIXED QR Code Generation Function */
+/* WORKING QR Code Generation - SIMPLE METHOD */
 function generateQRCode(link) {
   // Remove any existing modal first
   const existingModal = document.querySelector('.qr-modal');
@@ -394,33 +392,32 @@ function generateQRCode(link) {
   modal.innerHTML = `
     <div class="qr-content">
       <h3>Scan QR Code</h3>
-      <div id="qrcodeContainer" style="display: flex; justify-content: center; margin: 15px 0;"></div>
+      <div class="qr-image" id="qrcodeContainer">
+        <p style="color:#666; padding: 80px 20px; text-align: center;">
+          Generating QR Code...
+        </p>
+      </div>
       <button class="close-qr" onclick="this.closest('.qr-modal').remove()">Close</button>
     </div>
   `;
   
   document.body.appendChild(modal);
   
-  // Generate QR Code using the correct library
-  try {
-    const qrcode = qrcodeGenerator(0, 'M');
-    qrcode.addData(link);
-    qrcode.make();
+  // Generate QR Code using Google Charts API - SIMPLE & RELIABLE
+  setTimeout(() => {
+    const qrSize = 200;
+    const qrUrl = `https://chart.googleapis.com/chart?cht=qr&chs=${qrSize}x${qrSize}&chl=${encodeURIComponent(link)}`;
     
     const qrContainer = document.getElementById('qrcodeContainer');
-    qrContainer.innerHTML = qrcode.createImgTag(4); // 4 = size
-    
-    // Add click outside to close
-    modal.addEventListener('click', function(e) {
-      if (e.target === modal) {
-        modal.remove();
-      }
-    });
-  } catch (error) {
-    console.error('QR Code generation error:', error);
-    modal.remove();
-    alert('QR Code generation failed. Please try again.');
-  }
+    qrContainer.innerHTML = `<img src="${qrUrl}" alt="QR Code" style="width:100%; height:100%; border-radius:4px;" />`;
+  }, 100);
+  
+  // Add click outside to close
+  modal.addEventListener('click', function(e) {
+    if (e.target === modal) {
+      modal.remove();
+    }
+  });
 }
 
 async function loadDashboard() {
@@ -508,7 +505,6 @@ socket.on('reveal_request', data => {
   }
 });
 
-/* dynamically listen for reveal approval specific to this voice */
 if (voiceId) {
   socket.on(`reveal_approved_${voiceId}`, (data) => {
     console.log("Reveal approved received:", data);
