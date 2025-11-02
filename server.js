@@ -1,147 +1,164 @@
-// server.js
+// === Echo App Server (Render Compatible, FINAL) ===
 require("dotenv").config();
 const express = require("express");
-const { MongoClient, ObjectId } = require("mongodb");
-const cors = require("cors");
-const path = require("path");
-const http = require("http");
-const { Server } = require("socket.io");
+const { MongoClient } = require("mongodb");
 const multer = require("multer");
+const http = require("http");
+const cors = require("cors");
 const fs = require("fs");
+const path = require("path");
+const shortid = require("shortid");
 
+// === Initialize ===
 const app = express();
 const server = http.createServer(app);
-const io = new Server(server, {
-  cors: { origin: "*" },
-});
+const io = require("socket.io")(server, { cors: { origin: "*" } });
+
+const PORT = process.env.PORT || 10000;
+const MONGO_URI =
+  process.env.MONGO_URI ||
+  "mongodb+srv://Sandydb456:Sandydb456@cluster0.o4lr4zd.mongodb.net/?appName=Cluster0";
+const BASE_URL = process.env.BASE_URL || `https://sandy-echo.onrender.com`;
 
 app.use(cors());
 app.use(express.json());
-app.use("/public", express.static(path.join(__dirname, "public")));
+app.use(express.static(__dirname)); // Serve everything in same folder
 
-const upload = multer({ dest: "public/voices/" });
-
-const BASE_URL = process.env.BASE_URL || "https://sandy-echo.onrender.com";
-const DB_URL = process.env.MONGO_URL || "mongodb+srv://<your_connection_string>";
-const DB_NAME = "echoApp";
-let db, voices;
-
-// Connect MongoDB
-(async () => {
-  const client = new MongoClient(DB_URL);
-  await client.connect();
-  db = client.db(DB_NAME);
-  voices = db.collection("voices");
-  console.log("✅ MongoDB connected");
-})();
-
-// socket.io connections
-io.on("connection", (socket) => {
-  console.log("🔗 Socket connected:", socket.id);
-
-  // Register sender room
-  socket.on("register_sender", (senderId) => {
-    socket.join(senderId);
-    console.log(`✅ Sender registered room: ${senderId}`);
-  });
+// === Multer ===
+const upload = multer({
+  storage: multer.diskStorage({
+    destination: __dirname,
+    filename: (req, file, cb) => cb(null, shortid.generate() + ".webm"),
+  }),
 });
 
-// ========== API ROUTES ==========
+// === MongoDB ===
+let db;
+(async () => {
+  try {
+    const client = new MongoClient(MONGO_URI);
+    await client.connect();
+    db = client.db("EchoApp");
+    console.log("✅ MongoDB connected");
+  } catch (err) {
+    console.error("❌ MongoDB connection failed:", err);
+  }
+})();
 
-// Upload voice
+// === Upload Voice ===
 app.post("/api/upload", upload.single("voice"), async (req, res) => {
   try {
-    const { privacy, expiry, senderId, senderName } = req.body;
-    const id = Math.random().toString(36).substring(2, 10);
+    const { privacy = "anonymous", expiry = "permanent", senderId, senderName } = req.body;
+    const id = shortid.generate();
+    const expireAt = expiry === "24h" ? new Date(Date.now() + 86400000) : null;
+
     const voice = {
       id,
       path: req.file.filename,
-      senderId,
-      senderName,
       privacy,
       expiry,
+      senderId,
+      senderName,
+      createdAt: new Date(),
+      expireAt,
       openCount: 0,
       playCount: 0,
       revealRequest: false,
-      revealApproved: false,
-      createdAt: new Date(),
+      revealApproved: privacy === "auto_reveal",
     };
-    await voices.insertOne(voice);
+
+    await db.collection("voices").insertOne(voice);
+
+    // ✅ FIXED: Correct working share link (/?v=ID)
     res.json({ ok: true, link: `${BASE_URL}/?v=${id}` });
-  } catch (e) {
-    console.error(e);
-    res.status(500).json({ ok: false });
+
+  } catch (err) {
+    console.error(err);
+    res.json({ ok: false });
   }
 });
 
-// Get dashboard
-app.get("/api/dashboard/:senderId", async (req, res) => {
-  const docs = await voices.find({ senderId: req.params.senderId }).toArray();
-  res.json(docs);
-});
-
-// Open voice
-app.post("/api/open/:id", async (req, res) => {
-  await voices.updateOne({ id: req.params.id }, { $inc: { openCount: 1 } });
-  res.json({ ok: true });
-});
-
-// Play voice
-app.post("/api/play/:id", async (req, res) => {
-  await voices.updateOne({ id: req.params.id }, { $inc: { playCount: 1 } });
-  res.json({ ok: true });
-});
-
-// Get voice details
+// === Voice APIs ===
 app.get("/api/voice/:id", async (req, res) => {
-  const voice = await voices.findOne({ id: req.params.id });
-  if (!voice) return res.status(404).json({ error: "Not found" });
-  res.json(voice);
+  const v = await db.collection("voices").findOne({ id: req.params.id });
+  if (!v) return res.status(404).json({});
+  res.json(v);
 });
 
-// Request reveal
-app.post("/api/request-reveal/:id", async (req, res) => {
-  const voice = await voices.findOne({ id: req.params.id });
-  if (!voice) return res.status(404).json({ error: "Not found" });
+app.get("/play/:file", (req, res) => {
+  const filePath = path.join(__dirname, req.params.file);
+  if (fs.existsSync(filePath)) res.sendFile(filePath);
+  else res.status(404).send("File not found");
+});
 
-  await voices.updateOne({ id: req.params.id }, { $set: { revealRequest: true } });
-
-  // notify sender realtime
-  io.to(voice.senderId).emit("reveal_request", { id: voice.id, senderId: voice.senderId });
+app.post("/api/open/:id", async (req, res) => {
+  await db.collection("voices").updateOne({ id: req.params.id }, { $inc: { openCount: 1 } });
   res.json({ ok: true });
 });
 
-// Approve reveal
-app.post("/api/approve-reveal/:id", async (req, res) => {
-  const voice = await voices.findOne({ id: req.params.id });
-  if (!voice) return res.status(404).json({ error: "Not found" });
+app.post("/api/play/:id", async (req, res) => {
+  await db.collection("voices").updateOne({ id: req.params.id }, { $inc: { playCount: 1 } });
+  res.json({ ok: true });
+});
 
-  await voices.updateOne(
+// === Reveal System ===
+app.post("/api/request-reveal/:id", async (req, res) => {
+  const voice = await db.collection("voices").findOne({ id: req.params.id });
+  if (!voice) return res.status(404).json({ ok: false });
+
+  await db.collection("voices").updateOne(
+    { id: req.params.id },
+    { $set: { revealRequest: true } }
+  );
+
+  io.to(voice.senderId).emit("reveal_request", {
+    id: voice.id,
+    senderId: voice.senderId,
+  });
+
+  res.json({ ok: true });
+});
+
+app.post("/api/approve-reveal/:id", async (req, res) => {
+  const voice = await db.collection("voices").findOne({ id: req.params.id });
+  if (!voice) return res.status(404).json({ ok: false });
+
+  await db.collection("voices").updateOne(
     { id: req.params.id },
     { $set: { revealApproved: true } }
   );
 
-  // notify receiver + include senderName
-  io.emit("reveal_approved", {
-    id: voice.id,
-    senderName: voice.senderName || "Anonymous",
-  });
-
+  io.emit("reveal_approved", { id: voice.id });
   res.json({ ok: true });
 });
 
-// play file
-app.get("/play/:filename", (req, res) => {
-  const file = path.join(__dirname, "public/voices", req.params.filename);
-  if (!fs.existsSync(file)) return res.status(404).send("File not found");
-  res.sendFile(file);
+// === Dashboard ===
+app.get("/api/dashboard/:senderId", async (req, res) => {
+  const data = await db
+    .collection("voices")
+    .find({ senderId: req.params.senderId })
+    .sort({ createdAt: -1 })
+    .toArray();
+  res.json(data);
 });
 
-// fallback frontend
-app.get("*", (req, res) => {
+// === Serve main index (for both root and /v/:id) ===
+app.get("/", (req, res) => {
   res.sendFile(path.join(__dirname, "index.html"));
 });
 
-// start server
-const PORT = process.env.PORT || 10000;
-server.listen(PORT, () => console.log(`🚀 Echo server running on ${PORT}`));
+app.get("/v/:id", (req, res) => {
+  res.sendFile(path.join(__dirname, "index.html"));
+});
+
+// === Socket.io ===
+io.on("connection", (socket) => {
+  console.log("🔗 Connected:", socket.id);
+  socket.on("register_sender", (senderId) => {
+    if (senderId) socket.join(senderId);
+  });
+  socket.on("disconnect", () => console.log("❌ Disconnected:", socket.id));
+});
+
+// === Start ===
+server.listen(PORT, () => console.log(`🚀 Server live on ${BASE_URL}`));
