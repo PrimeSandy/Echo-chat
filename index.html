@@ -821,19 +821,19 @@
                 <!-- Stats Section -->
                 <section class="stats-container">
                     <div class="card stat-card">
-                        <div class="stat-value">12</div>
+                        <div class="stat-value" id="totalMessages">0</div>
                         <div class="stat-label">Voice Messages</div>
                     </div>
                     <div class="card stat-card">
-                        <div class="stat-value">47</div>
+                        <div class="stat-value" id="totalPlays">0</div>
                         <div class="stat-label">Total Plays</div>
                     </div>
                     <div class="card stat-card">
-                        <div class="stat-value">3</div>
+                        <div class="stat-value" id="pendingRequests">0</div>
                         <div class="stat-label">Pending Requests</div>
                     </div>
                     <div class="card stat-card">
-                        <div class="stat-value">86%</div>
+                        <div class="stat-value" id="successRate">0%</div>
                         <div class="stat-label">Success Rate</div>
                     </div>
                 </section>
@@ -920,131 +920,21 @@
                         <div class="card-header">
                             <h2 class="card-title">My Voice Messages</h2>
                             <div class="flex gap-2">
-                                <button class="btn btn-secondary btn-sm">
-                                    <i class="fas fa-filter"></i>
-                                    Filter
-                                </button>
-                                <button class="btn btn-secondary btn-sm">
-                                    <i class="fas fa-sort"></i>
-                                    Sort
+                                <button class="btn btn-secondary btn-sm" id="clearAllBtn">
+                                    <i class="fas fa-trash"></i>
+                                    Clear All
                                 </button>
                             </div>
                         </div>
                         
                         <div class="grid" id="voiceMessagesGrid">
                             <!-- Voice message cards will be dynamically inserted here -->
-                            <div class="voice-card card">
-                                <div class="voice-card-header">
-                                    <div class="voice-card-title">Meeting Notes</div>
-                                    <div class="status-badge status-active">
-                                        <i class="fas fa-circle"></i>
-                                        Active
-                                    </div>
+                            <div class="empty-state" id="emptyMessages">
+                                <div class="empty-state-icon">
+                                    <i class="fas fa-microphone-slash"></i>
                                 </div>
-                                <div class="voice-card-meta">
-                                    <div class="voice-card-meta-item">
-                                        <i class="fas fa-user"></i>
-                                        <span>John Doe</span>
-                                    </div>
-                                    <div class="voice-card-meta-item">
-                                        <i class="fas fa-calendar"></i>
-                                        <span>Created: 2 days ago</span>
-                                    </div>
-                                    <div class="voice-card-meta-item">
-                                        <i class="fas fa-play-circle"></i>
-                                        <span>Plays: 12</span>
-                                    </div>
-                                </div>
-                                <div class="voice-card-actions">
-                                    <button class="btn btn-primary btn-sm">
-                                        <i class="fas fa-play"></i>
-                                        Play
-                                    </button>
-                                    <button class="btn btn-secondary btn-sm">
-                                        <i class="fas fa-share"></i>
-                                        Share
-                                    </button>
-                                    <button class="btn btn-danger btn-sm">
-                                        <i class="fas fa-trash"></i>
-                                        Delete
-                                    </button>
-                                </div>
-                            </div>
-                            
-                            <div class="voice-card card">
-                                <div class="voice-card-header">
-                                    <div class="voice-card-title">Project Update</div>
-                                    <div class="status-badge status-active">
-                                        <i class="fas fa-circle"></i>
-                                        Active
-                                    </div>
-                                </div>
-                                <div class="voice-card-meta">
-                                    <div class="voice-card-meta-item">
-                                        <i class="fas fa-user"></i>
-                                        <span>Anonymous</span>
-                                    </div>
-                                    <div class="voice-card-meta-item">
-                                        <i class="fas fa-calendar"></i>
-                                        <span>Created: 1 week ago</span>
-                                    </div>
-                                    <div class="voice-card-meta-item">
-                                        <i class="fas fa-play-circle"></i>
-                                        <span>Plays: 8</span>
-                                    </div>
-                                </div>
-                                <div class="voice-card-actions">
-                                    <button class="btn btn-primary btn-sm">
-                                        <i class="fas fa-play"></i>
-                                        Play
-                                    </button>
-                                    <button class="btn btn-secondary btn-sm">
-                                        <i class="fas fa-share"></i>
-                                        Share
-                                    </button>
-                                    <button class="btn btn-danger btn-sm">
-                                        <i class="fas fa-trash"></i>
-                                        Delete
-                                    </button>
-                                </div>
-                            </div>
-                            
-                            <div class="voice-card card">
-                                <div class="voice-card-header">
-                                    <div class="voice-card-title">Weekly Report</div>
-                                    <div class="status-badge status-expired">
-                                        <i class="fas fa-circle"></i>
-                                        Expired
-                                    </div>
-                                </div>
-                                <div class="voice-card-meta">
-                                    <div class="voice-card-meta-item">
-                                        <i class="fas fa-user"></i>
-                                        <span>Sarah Johnson</span>
-                                    </div>
-                                    <div class="voice-card-meta-item">
-                                        <i class="fas fa-calendar"></i>
-                                        <span>Created: 3 weeks ago</span>
-                                    </div>
-                                    <div class="voice-card-meta-item">
-                                        <i class="fas fa-play-circle"></i>
-                                        <span>Plays: 24</span>
-                                    </div>
-                                </div>
-                                <div class="voice-card-actions">
-                                    <button class="btn btn-primary btn-sm" disabled>
-                                        <i class="fas fa-play"></i>
-                                        Play
-                                    </button>
-                                    <button class="btn btn-secondary btn-sm" disabled>
-                                        <i class="fas fa-share"></i>
-                                        Share
-                                    </button>
-                                    <button class="btn btn-danger btn-sm">
-                                        <i class="fas fa-trash"></i>
-                                        Delete
-                                    </button>
-                                </div>
+                                <h3>No Voice Messages Yet</h3>
+                                <p>Record your first voice message to get started!</p>
                             </div>
                         </div>
                     </div>
@@ -1059,72 +949,12 @@
                         
                         <div class="grid" id="requestsGrid">
                             <!-- Request cards will be dynamically inserted here -->
-                            <div class="voice-card card">
-                                <div class="voice-card-header">
-                                    <div class="voice-card-title">Meeting Notes</div>
-                                    <div class="status-badge status-pending">
-                                        <i class="fas fa-clock"></i>
-                                        Pending
-                                    </div>
+                            <div class="empty-state" id="emptyRequests">
+                                <div class="empty-state-icon">
+                                    <i class="fas fa-user-clock"></i>
                                 </div>
-                                <div class="voice-card-meta">
-                                    <div class="voice-card-meta-item">
-                                        <i class="fas fa-calendar"></i>
-                                        <span>Requested: 1 day ago</span>
-                                    </div>
-                                    <div class="voice-card-meta-item">
-                                        <i class="fas fa-play-circle"></i>
-                                        <span>Message Plays: 5</span>
-                                    </div>
-                                </div>
-                                <div class="voice-card-actions">
-                                    <button class="btn btn-success btn-sm">
-                                        <i class="fas fa-check"></i>
-                                        Approve
-                                    </button>
-                                    <button class="btn btn-danger btn-sm">
-                                        <i class="fas fa-times"></i>
-                                        Deny
-                                    </button>
-                                    <button class="btn btn-secondary btn-sm">
-                                        <i class="fas fa-play"></i>
-                                        Listen
-                                    </button>
-                                </div>
-                            </div>
-                            
-                            <div class="voice-card card">
-                                <div class="voice-card-header">
-                                    <div class="voice-card-title">Feedback Response</div>
-                                    <div class="status-badge status-pending">
-                                        <i class="fas fa-clock"></i>
-                                        Pending
-                                    </div>
-                                </div>
-                                <div class="voice-card-meta">
-                                    <div class="voice-card-meta-item">
-                                        <i class="fas fa-calendar"></i>
-                                        <span>Requested: 3 hours ago</span>
-                                    </div>
-                                    <div class="voice-card-meta-item">
-                                        <i class="fas fa-play-circle"></i>
-                                        <span>Message Plays: 2</span>
-                                    </div>
-                                </div>
-                                <div class="voice-card-actions">
-                                    <button class="btn btn-success btn-sm">
-                                        <i class="fas fa-check"></i>
-                                        Approve
-                                    </button>
-                                    <button class="btn btn-danger btn-sm">
-                                        <i class="fas fa-times"></i>
-                                        Deny
-                                    </button>
-                                    <button class="btn btn-secondary btn-sm">
-                                        <i class="fas fa-play"></i>
-                                        Listen
-                                    </button>
-                                </div>
+                                <h3>No Pending Requests</h3>
+                                <p>When someone requests to know your identity, it will appear here.</p>
                             </div>
                         </div>
                     </div>
@@ -1142,6 +972,118 @@
     </footer>
 
     <script>
+        // Data Management System
+        class VoiceMessageManager {
+            constructor() {
+                this.messages = JSON.parse(localStorage.getItem('echoMessages')) || [];
+                this.requests = JSON.parse(localStorage.getItem('echoRequests')) || [];
+                this.stats = JSON.parse(localStorage.getItem('echoStats')) || {
+                    totalMessages: 0,
+                    totalPlays: 0,
+                    pendingRequests: 0,
+                    successRate: 0
+                };
+            }
+
+            saveMessages() {
+                localStorage.setItem('echoMessages', JSON.stringify(this.messages));
+                this.updateStats();
+            }
+
+            saveRequests() {
+                localStorage.setItem('echoRequests', JSON.stringify(this.requests));
+                this.updateStats();
+            }
+
+            saveStats() {
+                localStorage.setItem('echoStats', JSON.stringify(this.stats));
+            }
+
+            addMessage(message) {
+                const newMessage = {
+                    id: 'msg_' + Date.now(),
+                    title: message.title || 'Voice Message',
+                    senderName: message.senderName || 'Anonymous',
+                    privacy: message.privacy || 'anonymous',
+                    expiry: message.expiry || 'permanent',
+                    timestamp: new Date().toISOString(),
+                    playCount: 0,
+                    audioUrl: message.audioUrl,
+                    status: 'active'
+                };
+                
+                this.messages.unshift(newMessage);
+                this.saveMessages();
+                return newMessage;
+            }
+
+            deleteMessage(messageId) {
+                this.messages = this.messages.filter(msg => msg.id !== messageId);
+                this.saveMessages();
+            }
+
+            clearAllMessages() {
+                this.messages = [];
+                this.saveMessages();
+            }
+
+            addRequest(messageId, requesterInfo) {
+                const message = this.messages.find(msg => msg.id === messageId);
+                if (!message) return null;
+
+                const newRequest = {
+                    id: 'req_' + Date.now(),
+                    messageId: messageId,
+                    messageTitle: message.title,
+                    requesterInfo: requesterInfo,
+                    timestamp: new Date().toISOString(),
+                    status: 'pending'
+                };
+
+                this.requests.unshift(newRequest);
+                this.saveRequests();
+                return newRequest;
+            }
+
+            resolveRequest(requestId, approved = false) {
+                const request = this.requests.find(req => req.id === requestId);
+                if (!request) return;
+
+                if (approved) {
+                    request.status = 'approved';
+                    // In a real app, you'd notify the requester here
+                } else {
+                    request.status = 'denied';
+                }
+
+                this.saveRequests();
+            }
+
+            updateStats() {
+                this.stats.totalMessages = this.messages.length;
+                this.stats.pendingRequests = this.requests.filter(req => req.status === 'pending').length;
+                this.stats.totalPlays = this.messages.reduce((total, msg) => total + (msg.playCount || 0), 0);
+                
+                const activeMessages = this.messages.filter(msg => msg.status === 'active').length;
+                this.stats.successRate = this.messages.length > 0 ? 
+                    Math.round((activeMessages / this.messages.length) * 100) : 0;
+                
+                this.saveStats();
+            }
+
+            getMessages() {
+                return this.messages;
+            }
+
+            getRequests() {
+                return this.requests.filter(req => req.status === 'pending');
+            }
+
+            getStats() {
+                return this.stats;
+            }
+        }
+
         // DOM Elements
         const themeToggle = document.getElementById('themeToggle');
         const guideBtn = document.getElementById('guideBtn');
@@ -1158,6 +1100,20 @@
         const notification = document.getElementById('notification');
         const notificationIcon = notification.querySelector('.notification-icon');
         const notificationContent = notification.querySelector('.notification-content');
+        const voiceMessagesGrid = document.getElementById('voiceMessagesGrid');
+        const requestsGrid = document.getElementById('requestsGrid');
+        const emptyMessages = document.getElementById('emptyMessages');
+        const emptyRequests = document.getElementById('emptyRequests');
+        const clearAllBtn = document.getElementById('clearAllBtn');
+
+        // Stats Elements
+        const totalMessagesEl = document.getElementById('totalMessages');
+        const totalPlaysEl = document.getElementById('totalPlays');
+        const pendingRequestsEl = document.getElementById('pendingRequests');
+        const successRateEl = document.getElementById('successRate');
+
+        // Initialize Data Manager
+        const voiceManager = new VoiceMessageManager();
 
         // App State
         let isRecording = false;
@@ -1165,6 +1121,19 @@
         let timerInterval;
         let mediaRecorder;
         let audioChunks = [];
+        let currentAudioBlob = null;
+
+        // Initialize App
+        function initApp() {
+            updateStatsDisplay();
+            renderMessages();
+            renderRequests();
+            
+            // Show welcome notification
+            setTimeout(() => {
+                showNotification('info', 'Welcome to Echo Voice Messenger! Record and share voice messages securely.');
+            }, 1000);
+        }
 
         // Theme Toggle
         themeToggle.addEventListener('click', () => {
@@ -1177,7 +1146,14 @@
 
         // Guide Button
         guideBtn.addEventListener('click', () => {
-            showNotification('info', 'Echo Voice Messenger allows you to record and share voice messages securely. Record a message, set privacy options, and share the link with recipients.');
+            showNotification('info', 
+                'Echo Voice Messenger Guide:\n\n' +
+                '1. Record a voice message with the microphone button\n' +
+                '2. Set privacy and expiry options\n' +
+                '3. Upload and share the generated link\n' +
+                '4. Manage your messages and requests in the tabs\n' +
+                '5. All data is stored locally in your browser'
+            );
         });
 
         // Tab Switching
@@ -1203,6 +1179,7 @@
         micBtn.addEventListener('click', startRecording);
         stopBtn.addEventListener('click', stopRecording);
         reRecordBtn.addEventListener('click', resetRecording);
+        clearAllBtn.addEventListener('click', clearAllMessages);
 
         function startRecording() {
             if (isRecording) return;
@@ -1224,8 +1201,8 @@
                     };
                     
                     mediaRecorder.onstop = () => {
-                        const audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
-                        const audioUrl = URL.createObjectURL(audioBlob);
+                        currentAudioBlob = new Blob(audioChunks, { type: 'audio/webm' });
+                        const audioUrl = URL.createObjectURL(currentAudioBlob);
                         preview.src = audioUrl;
                         
                         // Stop all tracks in the stream
@@ -1277,6 +1254,7 @@
             uploadBtn.classList.add('hidden');
             preview.src = '';
             recordingTimer.textContent = '00:00';
+            currentAudioBlob = null;
         }
 
         function startTimer() {
@@ -1292,24 +1270,263 @@
 
         // Upload Button
         uploadBtn.addEventListener('click', () => {
-            // In a real app, this would upload to a server
-            // For demo purposes, we'll simulate the process
+            const senderName = document.getElementById('senderName').value || 'Anonymous';
+            const privacy = document.getElementById('privacy').value;
+            const expiry = document.getElementById('expiry').value;
+            
+            if (!currentAudioBlob) {
+                showNotification('error', 'No recording found. Please record a message first.');
+                return;
+            }
             
             uploadBtn.disabled = true;
             uploadBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Uploading...';
             
+            // Simulate upload process
             setTimeout(() => {
-                showNotification('success', 'Voice message uploaded successfully! Share the link with your recipients.');
+                // Create a unique URL for the audio (in a real app, this would be a server URL)
+                const audioUrl = URL.createObjectURL(currentAudioBlob);
+                
+                // Add message to data manager
+                const newMessage = voiceManager.addMessage({
+                    title: `Voice Message ${voiceManager.getMessages().length + 1}`,
+                    senderName: senderName,
+                    privacy: privacy,
+                    expiry: expiry,
+                    audioUrl: audioUrl
+                });
+                
+                showNotification('success', 
+                    `Voice message "${newMessage.title}" uploaded successfully!\n\n` +
+                    `Share this link: ${window.location.origin}?voice=${newMessage.id}`
+                );
+                
                 uploadBtn.disabled = false;
                 uploadBtn.innerHTML = '<i class="fas fa-cloud-upload-alt"></i> Upload Voice';
                 
                 // Reset the recording UI
                 resetRecording();
                 
+                // Clear form
+                document.getElementById('senderName').value = '';
+                
+                // Update displays
+                updateStatsDisplay();
+                renderMessages();
+                
                 // Switch to messages tab to see the new message
                 document.querySelector('.tab[data-tab="messages"]').click();
             }, 2000);
         });
+
+        // Render Messages
+        function renderMessages() {
+            const messages = voiceManager.getMessages();
+            
+            if (messages.length === 0) {
+                emptyMessages.style.display = 'block';
+                voiceMessagesGrid.innerHTML = '';
+                voiceMessagesGrid.appendChild(emptyMessages);
+                return;
+            }
+            
+            emptyMessages.style.display = 'none';
+            
+            voiceMessagesGrid.innerHTML = messages.map(message => `
+                <div class="voice-card card" data-message-id="${message.id}">
+                    <div class="voice-card-header">
+                        <div class="voice-card-title">${message.title}</div>
+                        <div class="status-badge status-active">
+                            <i class="fas fa-circle"></i>
+                            ${message.status === 'active' ? 'Active' : 'Expired'}
+                        </div>
+                    </div>
+                    <div class="voice-card-meta">
+                        <div class="voice-card-meta-item">
+                            <i class="fas fa-user"></i>
+                            <span>${message.senderName}</span>
+                        </div>
+                        <div class="voice-card-meta-item">
+                            <i class="fas fa-calendar"></i>
+                            <span>Created: ${new Date(message.timestamp).toLocaleDateString()}</span>
+                        </div>
+                        <div class="voice-card-meta-item">
+                            <i class="fas fa-play-circle"></i>
+                            <span>Plays: ${message.playCount || 0}</span>
+                        </div>
+                        <div class="voice-card-meta-item">
+                            <i class="fas fa-shield-alt"></i>
+                            <span>Privacy: ${message.privacy}</span>
+                        </div>
+                    </div>
+                    <div class="voice-card-actions">
+                        <button class="btn btn-primary btn-sm play-btn">
+                            <i class="fas fa-play"></i>
+                            Play
+                        </button>
+                        <button class="btn btn-secondary btn-sm share-btn">
+                            <i class="fas fa-share"></i>
+                            Share
+                        </button>
+                        <button class="btn btn-danger btn-sm delete-btn">
+                            <i class="fas fa-trash"></i>
+                            Delete
+                        </button>
+                    </div>
+                </div>
+            `).join('');
+            
+            // Add event listeners to message cards
+            document.querySelectorAll('.play-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const card = this.closest('.voice-card');
+                    const messageId = card.getAttribute('data-message-id');
+                    playMessage(messageId);
+                });
+            });
+            
+            document.querySelectorAll('.share-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const card = this.closest('.voice-card');
+                    const messageId = card.getAttribute('data-message-id');
+                    shareMessage(messageId);
+                });
+            });
+            
+            document.querySelectorAll('.delete-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const card = this.closest('.voice-card');
+                    const messageId = card.getAttribute('data-message-id');
+                    deleteMessage(messageId);
+                });
+            });
+        }
+
+        // Render Requests
+        function renderRequests() {
+            const requests = voiceManager.getRequests();
+            
+            if (requests.length === 0) {
+                emptyRequests.style.display = 'block';
+                requestsGrid.innerHTML = '';
+                requestsGrid.appendChild(emptyRequests);
+                return;
+            }
+            
+            emptyRequests.style.display = 'none';
+            
+            requestsGrid.innerHTML = requests.map(request => `
+                <div class="voice-card card" data-request-id="${request.id}">
+                    <div class="voice-card-header">
+                        <div class="voice-card-title">${request.messageTitle}</div>
+                        <div class="status-badge status-pending">
+                            <i class="fas fa-clock"></i>
+                            Pending
+                        </div>
+                    </div>
+                    <div class="voice-card-meta">
+                        <div class="voice-card-meta-item">
+                            <i class="fas fa-calendar"></i>
+                            <span>Requested: ${new Date(request.timestamp).toLocaleDateString()}</span>
+                        </div>
+                        <div class="voice-card-meta-item">
+                            <i class="fas fa-info-circle"></i>
+                            <span>Someone wants to know your identity</span>
+                        </div>
+                    </div>
+                    <div class="voice-card-actions">
+                        <button class="btn btn-success btn-sm approve-btn">
+                            <i class="fas fa-check"></i>
+                            Approve
+                        </button>
+                        <button class="btn btn-danger btn-sm deny-btn">
+                            <i class="fas fa-times"></i>
+                            Deny
+                        </button>
+                    </div>
+                </div>
+            `).join('');
+            
+            // Add event listeners to request cards
+            document.querySelectorAll('.approve-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const card = this.closest('.voice-card');
+                    const requestId = card.getAttribute('data-request-id');
+                    resolveRequest(requestId, true);
+                });
+            });
+            
+            document.querySelectorAll('.deny-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const card = this.closest('.voice-card');
+                    const requestId = card.getAttribute('data-request-id');
+                    resolveRequest(requestId, false);
+                });
+            });
+        }
+
+        // Message Actions
+        function playMessage(messageId) {
+            const message = voiceManager.messages.find(msg => msg.id === messageId);
+            if (message && message.audioUrl) {
+                // In a real app, you would play the audio
+                message.playCount = (message.playCount || 0) + 1;
+                voiceManager.saveMessages();
+                updateStatsDisplay();
+                showNotification('success', `Playing: ${message.title}`);
+            }
+        }
+
+        function shareMessage(messageId) {
+            const message = voiceManager.messages.find(msg => msg.id === messageId);
+            if (message) {
+                const shareUrl = `${window.location.origin}?voice=${message.id}`;
+                // In a real app, you would use the Web Share API or copy to clipboard
+                showNotification('success', `Share this link: ${shareUrl}`);
+            }
+        }
+
+        function deleteMessage(messageId) {
+            if (confirm('Are you sure you want to delete this voice message?')) {
+                voiceManager.deleteMessage(messageId);
+                updateStatsDisplay();
+                renderMessages();
+                showNotification('success', 'Voice message deleted successfully');
+            }
+        }
+
+        function clearAllMessages() {
+            if (voiceManager.getMessages().length === 0) {
+                showNotification('info', 'No messages to clear');
+                return;
+            }
+            
+            if (confirm('Are you sure you want to delete ALL voice messages? This action cannot be undone.')) {
+                voiceManager.clearAllMessages();
+                updateStatsDisplay();
+                renderMessages();
+                showNotification('success', 'All voice messages have been cleared');
+            }
+        }
+
+        // Request Actions
+        function resolveRequest(requestId, approved) {
+            voiceManager.resolveRequest(requestId, approved);
+            updateStatsDisplay();
+            renderRequests();
+            showNotification('success', 
+                `Identity request ${approved ? 'approved' : 'denied'} successfully`
+            );
+        }
+
+        // Stats Management
+        function updateStatsDisplay() {
+            const stats = voiceManager.getStats();
+            totalMessagesEl.textContent = stats.totalMessages;
+            totalPlaysEl.textContent = stats.totalPlays;
+            pendingRequestsEl.textContent = stats.pendingRequests;
+            successRateEl.textContent = stats.successRate + '%';
+        }
 
         // Notification System
         function showNotification(type, message) {
@@ -1352,44 +1569,8 @@
             notification.classList.remove('show');
         });
 
-        // Demo functionality for message cards
-        document.querySelectorAll('.voice-card-actions .btn').forEach(button => {
-            button.addEventListener('click', function(e) {
-                e.stopPropagation();
-                
-                const card = this.closest('.voice-card');
-                const title = card.querySelector('.voice-card-title').textContent;
-                
-                if (this.querySelector('.fa-play')) {
-                    showNotification('info', `Playing: ${title}`);
-                } else if (this.querySelector('.fa-share')) {
-                    showNotification('success', `Share link copied for: ${title}`);
-                } else if (this.querySelector('.fa-trash')) {
-                    if (confirm(`Are you sure you want to delete "${title}"?`)) {
-                        card.style.opacity = '0.5';
-                        setTimeout(() => {
-                            card.remove();
-                            showNotification('success', `"${title}" has been deleted`);
-                        }, 500);
-                    }
-                } else if (this.querySelector('.fa-check')) {
-                    const badge = card.querySelector('.status-badge');
-                    badge.className = 'status-badge status-active';
-                    badge.innerHTML = '<i class="fas fa-circle"></i> Approved';
-                    showNotification('success', `Identity request for "${title}" approved`);
-                } else if (this.querySelector('.fa-times')) {
-                    const badge = card.querySelector('.status-badge');
-                    badge.className = 'status-badge status-expired';
-                    badge.innerHTML = '<i class="fas fa-times-circle"></i> Denied';
-                    showNotification('info', `Identity request for "${title}" denied`);
-                }
-            });
-        });
-
         // Initialize the app
-        document.addEventListener('DOMContentLoaded', () => {
-            showNotification('info', 'Welcome to Echo Voice Messenger! Click the guide button for instructions.');
-        });
+        document.addEventListener('DOMContentLoaded', initApp);
     </script>
 </body>
 </html>
