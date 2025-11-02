@@ -67,7 +67,7 @@ app.post("/api/upload", upload.single("voice"), async (req, res) => {
     };
 
     await db.collection("voices").insertOne(voice);
-    res.json({ ok: true, link: https://echo-chat-ybep.onrender.com/?v=${id} });
+    res.json({ ok: true, link: `https://echo-chat-ybep.onrender.com/?v=${id}` });
   } catch (err) {
     console.error(err);
     res.json({ ok: false });
@@ -125,7 +125,7 @@ app.post("/api/approve-reveal/:id", async (req, res) => {
   );
 
   // Send update specifically for this voice ID — receiver will see instantly
-  io.emit(reveal_approved_${voice.id}, {
+  io.emit(`reveal_approved_${voice.id}`, {
     id: voice.id,
     senderName: voice.senderName || "Anonymous",
   });
@@ -157,4 +157,6 @@ io.on("connection", (socket) => {
 });
 
 // === Start ===
-server.listen(PORT, () => console.log(🚀 Server live on ${BASE_URL}));
+server.listen(PORT, () => console.log(`🚀 Server live on ${BASE_URL}`));
+
+
