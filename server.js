@@ -1,5 +1,4 @@
-
-......// === Echo App Server (Render Compatible, FINAL) ===
+// === Echo App Server (Render Compatible, FINAL) ===
 require("dotenv").config();
 const express = require("express");
 const { MongoClient } = require("mongodb");
@@ -69,7 +68,10 @@ app.post("/api/upload", upload.single("voice"), async (req, res) => {
     };
 
     await db.collection("voices").insertOne(voice);
-    res.json({ ok: true, link: `${BASE_URL}/v/${id}` }); // 👈 Use /v/ route now
+
+    // ✅ FIXED: Correct working share link (/?v=ID)
+    res.json({ ok: true, link: `${BASE_URL}/?v=${id}` });
+
   } catch (err) {
     console.error(err);
     res.json({ ok: false });
@@ -140,14 +142,12 @@ app.get("/api/dashboard/:senderId", async (req, res) => {
   res.json(data);
 });
 
-// === Serve main index for /v/:id ===
-// 👇 this is what fixes Render’s “Not Found” for shared links
-app.get("/v/:id", (req, res) => {
+// === Serve main index (for both root and /v/:id) ===
+app.get("/", (req, res) => {
   res.sendFile(path.join(__dirname, "index.html"));
 });
 
-// === Fallback route ===
-app.get("/", (req, res) => {
+app.get("/v/:id", (req, res) => {
   res.sendFile(path.join(__dirname, "index.html"));
 });
 
@@ -161,4 +161,4 @@ io.on("connection", (socket) => {
 });
 
 // === Start ===
-server.listen(PORT, () => console.log(`🚀 Server live on ${BASE_URL}`));""
+server.listen(PORT, () => console.log(`🚀 Server live on ${BASE_URL}`));
