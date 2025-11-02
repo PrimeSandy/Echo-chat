@@ -77,7 +77,7 @@ app.post("/api/upload", upload.single("voice"), async (req, res) => {
 // === Voice Fetch ===
 app.get("/api/voice/:id", async (req, res) => {
   const v = await db.collection("voices").findOne({ id: req.params.id });
-  if (!v) return res.status(404).json({});
+  if (!v) return res.status(404).json({ ok: false });
   res.json(v);
 });
 
@@ -114,7 +114,7 @@ app.post("/api/request-reveal/:id", async (req, res) => {
   res.json({ ok: true });
 });
 
-// === Approve Reveal (FIXED: includes sender name) ===
+// === Approve Reveal (PERFECT FIX) ===
 app.post("/api/approve-reveal/:id", async (req, res) => {
   const voice = await db.collection("voices").findOne({ id: req.params.id });
   if (!voice) return res.status(404).json({ ok: false });
@@ -124,8 +124,12 @@ app.post("/api/approve-reveal/:id", async (req, res) => {
     { $set: { revealApproved: true } }
   );
 
-  // emit to all so receiver can see name live
-  io.emit("reveal_approved", { id: voice.id, senderName: voice.senderName });
+  // Send update specifically for this voice ID — receiver will see instantly
+  io.emit(`reveal_approved_${voice.id}`, {
+    id: voice.id,
+    senderName: voice.senderName || "Anonymous",
+  });
+
   res.json({ ok: true });
 });
 
