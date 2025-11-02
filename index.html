@@ -110,6 +110,20 @@ body {
   backdrop-filter: blur(20px);
 }
 
+.card-title {
+  font-size: 1.5rem;
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+  background: var(--primary-gradient);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.card-subtitle {
+  color: var(--text-secondary);
+  margin-bottom: 1.5rem;
+}
+
 .form-group {
   margin-bottom: 1.5rem;
 }
@@ -128,6 +142,21 @@ body {
   border-radius: var(--radius-small);
   color: var(--text-primary);
   font-family: inherit;
+}
+
+.select-wrapper {
+  position: relative;
+}
+
+.select-wrapper::after {
+  content: '▼';
+  position: absolute;
+  right: 1rem;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--text-light);
+  pointer-events: none;
+  font-size: 0.7rem;
 }
 
 .recording-section {
@@ -153,6 +182,7 @@ body {
 .mic-button.recording {
   background: var(--secondary-gradient);
   transform: scale(1.1);
+  box-shadow: 0 0 20px rgba(245, 87, 108, 0.4);
 }
 
 .btn {
@@ -176,6 +206,18 @@ body {
 .btn-secondary {
   background: rgba(255,255,255,0.1);
   color: var(--text-primary);
+}
+
+.btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.action-buttons {
+  display: flex;
+  gap: 1rem;
+  justify-content: center;
+  margin-top: 1rem;
 }
 
 /* -------------------------
@@ -257,6 +299,10 @@ body {
 .chat-request {
   text-align: center;
   padding: 2rem;
+  background: rgba(255,255,255,0.03);
+  border-radius: var(--radius-small);
+  margin: 1.5rem 0;
+  border: 1px solid var(--border-dark);
 }
 
 .request-actions {
@@ -282,11 +328,31 @@ body {
 .status-active {
   background: rgba(67, 233, 123, 0.2);
   color: #43e97b;
+  border: 1px solid rgba(67, 233, 123, 0.3);
 }
 
 .status-pending {
   background: rgba(255, 193, 7, 0.2);
   color: #ffc107;
+  border: 1px solid rgba(255, 193, 7, 0.3);
+}
+
+.status-expired {
+  background: rgba(245, 87, 108, 0.2);
+  color: #f5576c;
+  border: 1px solid rgba(245, 87, 108, 0.3);
+}
+
+/* -------------------------
+   IDENTITY REVEAL SECTION
+   ------------------------- */
+.identity-section {
+  background: rgba(255,255,255,0.03);
+  border-radius: var(--radius-small);
+  padding: 1.5rem;
+  margin: 1.5rem 0;
+  border: 1px solid var(--border-dark);
+  text-align: center;
 }
 
 /* -------------------------
@@ -309,6 +375,10 @@ body {
   .message {
     max-width: 85%;
   }
+  
+  .request-actions {
+    flex-direction: column;
+  }
 }
 
 .hidden {
@@ -322,6 +392,19 @@ body {
 @keyframes fadeIn {
   from { opacity: 0; transform: translateY(20px); }
   to { opacity: 1; transform: translateY(0); }
+}
+
+.online-dot {
+  width: 8px;
+  height: 8px;
+  background: #43e97b;
+  border-radius: 50%;
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
 }
 </style>
 </head>
@@ -343,25 +426,59 @@ body {
       <!-- Sender View -->
       <div id="senderView" class="view active">
         <div class="voice-card fade-in">
-          <h2>Send Voice Message</h2>
-          <p>Start with a voice message, then chat live</p>
+          <h2 class="card-title">Send Voice Message</h2>
+          <p class="card-subtitle">Start with a voice message, then chat live</p>
           
           <div class="form-group">
-            <label class="form-label">Your Name</label>
-            <input type="text" class="form-input" id="senderName" placeholder="Enter your name">
-          </div>
-
-          <div class="recording-section">
-            <div class="mic-button" id="micBtn">🎙️</div>
-            <audio id="preview" controls hidden></audio>
-            
-            <div style="display: flex; gap: 1rem; justify-content: center;">
-              <button class="btn btn-secondary" id="stopBtn" disabled>Stop</button>
-              <button class="btn btn-primary" id="uploadBtn" hidden>Upload & Share</button>
+            <label class="form-label">Privacy Setting</label>
+            <div class="select-wrapper">
+              <select class="form-select" id="privacy">
+                <option value="anonymous">Anonymous - No identity revealed</option>
+                <option value="reveal_on_request">Reveal on Request - Approve identity requests</option>
+                <option value="auto_reveal">Auto Reveal - Show identity automatically</option>
+              </select>
             </div>
           </div>
 
+          <div class="form-group">
+            <label class="form-label">Message Expiry</label>
+            <div class="select-wrapper">
+              <select class="form-select" id="expiry">
+                <option value="permanent">Permanent - Never expires</option>
+                <option value="24h">24 Hours - Auto-deletes after 1 day</option>
+                <option value="1h">1 Hour - Quick temporary message</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Your Display Name</label>
+            <input type="text" class="form-input" id="senderName" placeholder="Enter your name or stay anonymous">
+          </div>
+
+          <!-- Recording Section -->
+          <div class="recording-section">
+            <div class="mic-button" id="micBtn">
+              <span class="mic-icon">🎙️</span>
+            </div>
+            <audio id="preview" controls hidden></audio>
+            
+            <div class="action-buttons">
+              <button class="btn btn-secondary" id="stopBtn" disabled>⏹️ Stop</button>
+              <button class="btn btn-primary" id="uploadBtn" hidden>🚀 Upload & Share</button>
+            </div>
+          </div>
+
+          <!-- Result Section -->
           <div id="result"></div>
+
+          <!-- Sender Chat Requests Section -->
+          <div id="senderChatRequests" class="hidden">
+            <h3 class="card-title">Chat Requests</h3>
+            <div id="chatRequestsList">
+              <!-- Chat requests will appear here -->
+            </div>
+          </div>
         </div>
       </div>
 
@@ -369,17 +486,33 @@ body {
       <div id="receiverView" class="view">
         <div class="voice-card fade-in">
           <div id="voiceMessageSection">
-            <h2>Voice Message Received</h2>
-            <audio id="playAudio" controls></audio>
+            <h2 class="card-title">Voice Message Received</h2>
+            <div class="status-indicator status-active">
+              <span>🔊</span>
+              <span id="expiryStatus">This message is permanent</span>
+            </div>
+            
+            <audio id="playAudio" controls style="width: 100%; margin: 1rem 0;"></audio>
             <div id="receiverStatus"></div>
+            
+            <!-- Identity Reveal Section -->
+            <div id="identitySection" class="identity-section">
+              <h4>👤 Sender Identity</h4>
+              <div id="identityContent">
+                <!-- Identity content will be loaded here -->
+              </div>
+              <button class="btn btn-primary" id="requestIdentity" style="margin-top: 1rem;">
+                🔍 Request Sender Identity
+              </button>
+            </div>
             
             <!-- Chat Request Section -->
             <div id="chatRequestSection" class="chat-request">
-              <h3>💬 Start a Conversation?</h3>
-              <p>The sender wants to chat with you live</p>
+              <h3>💬 Start a Live Chat?</h3>
+              <p>Connect with the sender for real-time conversation</p>
               <div class="request-actions">
-                <button class="btn btn-secondary" id="declineChat">Decline</button>
-                <button class="btn btn-primary" id="acceptChat">Accept Chat</button>
+                <button class="btn btn-secondary" id="declineChat">No Thanks</button>
+                <button class="btn btn-primary" id="acceptChat">✅ Accept Chat</button>
               </div>
             </div>
           </div>
@@ -390,7 +523,7 @@ body {
               <div class="chat-header">
                 <div>
                   <strong>Live Chat</strong>
-                  <div id="chatPartnerName"></div>
+                  <div id="chatPartnerName">Chatting with Sender</div>
                 </div>
                 <div class="status-indicator status-active">
                   <div class="online-dot"></div>
@@ -411,14 +544,14 @@ body {
         </div>
       </div>
 
-      <!-- Chat View (After acceptance) -->
+      <!-- Main Chat View -->
       <div id="chatView" class="view">
         <div class="voice-card fade-in">
           <div class="chat-container">
             <div class="chat-header">
               <div>
                 <strong>Live Chat</strong>
-                <div id="chatWithUser"></div>
+                <div id="chatWithUser">Active Conversation</div>
               </div>
               <div class="status-indicator status-active">
                 <div class="online-dot"></div>
@@ -441,19 +574,15 @@ body {
     </main>
   </div>
 
-  <!-- Loader -->
-  <div id="loader" class="loader hidden">
-    <div>Loading...</div>
-  </div>
-
 <script>
 // -------------------------
 // APP STATE MANAGEMENT
 // -------------------------
 const AppState = {
   currentUser: null,
-  currentChat: null,
-  messages: [],
+  currentVoiceMessage: null,
+  activeChat: null,
+  chatRequests: [],
   isRecording: false,
   mediaRecorder: null,
   audioChunks: []
@@ -462,12 +591,6 @@ const AppState = {
 // -------------------------
 // DOM ELEMENTS
 // -------------------------
-const views = {
-  sender: document.getElementById('senderView'),
-  receiver: document.getElementById('receiverView'),
-  chat: document.getElementById('chatView')
-};
-
 const elements = {
   // Sender elements
   micBtn: document.getElementById('micBtn'),
@@ -475,11 +598,19 @@ const elements = {
   preview: document.getElementById('preview'),
   uploadBtn: document.getElementById('uploadBtn'),
   senderName: document.getElementById('senderName'),
+  privacy: document.getElementById('privacy'),
+  expiry: document.getElementById('expiry'),
   result: document.getElementById('result'),
+  senderChatRequests: document.getElementById('senderChatRequests'),
+  chatRequestsList: document.getElementById('chatRequestsList'),
   
   // Receiver elements
   playAudio: document.getElementById('playAudio'),
   receiverStatus: document.getElementById('receiverStatus'),
+  expiryStatus: document.getElementById('expiryStatus'),
+  identitySection: document.getElementById('identitySection'),
+  identityContent: document.getElementById('identityContent'),
+  requestIdentity: document.getElementById('requestIdentity'),
   chatRequestSection: document.getElementById('chatRequestSection'),
   chatInterface: document.getElementById('chatInterface'),
   acceptChat: document.getElementById('acceptChat'),
@@ -493,7 +624,12 @@ const elements = {
   sendMessage: document.getElementById('sendMessage'),
   mainSendMessage: document.getElementById('mainSendMessage'),
   chatPartnerName: document.getElementById('chatPartnerName'),
-  chatWithUser: document.getElementById('chatWithUser')
+  chatWithUser: document.getElementById('chatWithUser'),
+  
+  // Views
+  senderView: document.getElementById('senderView'),
+  receiverView: document.getElementById('receiverView'),
+  chatView: document.getElementById('chatView')
 };
 
 // -------------------------
@@ -501,9 +637,9 @@ const elements = {
 // -------------------------
 function showView(viewName) {
   // Hide all views
-  Object.values(views).forEach(view => view.classList.remove('active'));
+  document.querySelectorAll('.view').forEach(view => view.classList.remove('active'));
   // Show requested view
-  views[viewName].classList.add('active');
+  document.getElementById(viewName + 'View').classList.add('active');
 }
 
 // -------------------------
@@ -555,63 +691,177 @@ elements.uploadBtn.addEventListener('click', uploadVoiceMessage);
 
 async function uploadVoiceMessage() {
   const senderName = elements.senderName.value || 'Anonymous';
+  const privacy = elements.privacy.value;
+  const expiry = elements.expiry.value;
   
   elements.uploadBtn.disabled = true;
-  elements.uploadBtn.textContent = 'Uploading...';
+  elements.uploadBtn.innerHTML = '⏳ Uploading...';
   
   try {
     // Simulate upload process
-    await new Promise(resolve => setTimeout(resolve, 1000));
+    await new Promise(resolve => setTimeout(resolve, 1500));
     
     const voiceData = {
       id: 'voice_' + Math.random().toString(36).slice(2, 11),
       senderName: senderName,
+      privacy: privacy,
+      expiry: expiry,
       timestamp: new Date().toISOString(),
-      hasChatRequest: true // Always include chat request for demo
+      senderId: AppState.currentUser,
+      hasChatRequest: true
     };
     
     // Save to localStorage
     localStorage.setItem('currentVoiceMessage', JSON.stringify(voiceData));
+    saveVoiceMessage(voiceData);
     
     // Generate share link
-    const shareLink = `${window.location.origin}?voice=${voiceData.id}&sender=${encodeURIComponent(senderName)}`;
+    const shareLink = `${window.location.origin}?voice=${voiceData.id}`;
     
-    // Show success message with chat info
+    // Show success message
     elements.result.innerHTML = `
-      <div style="margin-top: 1rem; padding: 1rem; background: rgba(67, 233, 123, 0.1); border-radius: 8px;">
-        <h4>✅ Voice Message Sent!</h4>
+      <div class="fade-in" style="margin-top: 1.5rem; padding: 1.5rem; background: rgba(67, 233, 123, 0.1); border-radius: var(--radius-small); border: 1px solid rgba(67, 233, 123, 0.3);">
+        <div class="status-indicator status-active" style="margin-bottom: 1rem;">
+          <span>✅</span>
+          Voice Message Sent Successfully!
+        </div>
         <p><strong>Share this link:</strong></p>
-        <input value="${shareLink}" style="width: 100%; padding: 0.5rem; margin: 0.5rem 0; border-radius: 4px; border: 1px solid #ccc;" readonly>
-        <p style="margin-top: 0.5rem; font-size: 0.9rem;">
-          <strong>💬 Chat Feature:</strong> When receiver opens this link, they can start a live chat with you!
-        </p>
-        <button class="btn btn-primary" onclick="copyToClipboard('${shareLink}')" style="margin-top: 0.5rem;">
-          Copy Link
-        </button>
+        <input value="${shareLink}" style="width: 100%; padding: 0.75rem; margin: 0.5rem 0; border-radius: var(--radius-small); background: rgba(255,255,255,0.05); border: 1px solid var(--border-dark); color: var(--text-primary);" readonly>
+        <div class="share-actions" style="display: flex; gap: 0.5rem; margin-top: 1rem;">
+          <button class="btn btn-secondary" onclick="copyToClipboard('${shareLink}')">
+            📋 Copy Link
+          </button>
+          <button class="btn btn-primary" onclick="generateQRCode('${shareLink}')">
+            📱 QR Code
+          </button>
+        </div>
+        <div style="margin-top: 1rem; padding: 1rem; background: rgba(255,255,255,0.03); border-radius: var(--radius-small);">
+          <p style="margin: 0; font-size: 0.9rem;">
+            <strong>Settings:</strong><br>
+            Privacy: ${getPrivacyText(privacy)} | Expiry: ${getExpiryText(expiry)}<br>
+            <strong>💬 Chat Feature:</strong> Receiver can start live chat after listening
+          </p>
+        </div>
       </div>
     `;
     
+    // Show chat requests section for sender
+    elements.senderChatRequests.classList.remove('hidden');
+    loadChatRequests();
+    
   } catch (error) {
     elements.result.innerHTML = `
-      <div style="color: #ff6b6b; margin-top: 1rem;">
+      <div class="status-indicator status-expired" style="margin-top: 1rem;">
+        <span>❌</span>
         Upload failed. Please try again.
       </div>
     `;
   } finally {
     elements.uploadBtn.disabled = false;
-    elements.uploadBtn.textContent = 'Upload & Share';
+    elements.uploadBtn.innerHTML = '🚀 Upload & Share';
+  }
+}
+
+// -------------------------
+// CHAT REQUEST SYSTEM
+// -------------------------
+elements.acceptChat.addEventListener('click', acceptChatRequest);
+elements.declineChat.addEventListener('click', declineChatRequest);
+elements.requestIdentity.addEventListener('click', requestSenderIdentity);
+
+function acceptChatRequest() {
+  const urlParams = new URLSearchParams(window.location.search);
+  const voiceId = urlParams.get('voice');
+  const voiceData = getVoiceMessage(voiceId);
+  
+  if (voiceData) {
+    // Create chat request
+    const chatRequest = {
+      id: 'chat_' + Math.random().toString(36).slice(2, 11),
+      voiceId: voiceId,
+      receiverId: AppState.currentUser,
+      senderId: voiceData.senderId,
+      timestamp: new Date().toISOString(),
+      status: 'accepted'
+    };
+    
+    // Save chat request
+    saveChatRequest(chatRequest);
+    
+    // Notify sender (in real app, this would be via WebSocket)
+    showNotification('Chat request accepted! Starting conversation...');
+    
+    // Start chat session
+    startChatSession(voiceData.senderName, 'receiver');
+  }
+}
+
+function declineChatRequest() {
+  elements.chatRequestSection.innerHTML = `
+    <div class="status-indicator status-expired">
+      <span>❌</span>
+      Chat request declined
+    </div>
+  `;
+}
+
+function requestSenderIdentity() {
+  const urlParams = new URLSearchParams(window.location.search);
+  const voiceId = urlParams.get('voice');
+  const voiceData = getVoiceMessage(voiceId);
+  
+  if (voiceData) {
+    if (voiceData.privacy === 'auto_reveal') {
+      // Show identity immediately
+      elements.identityContent.innerHTML = `
+        <div class="status-indicator status-active">
+          <span>👤</span>
+          Sender: <strong>${voiceData.senderName}</strong>
+        </div>
+      `;
+      elements.requestIdentity.classList.add('hidden');
+    } else if (voiceData.privacy === 'reveal_on_request') {
+      // Create identity request
+      const identityRequest = {
+        id: 'identity_' + Math.random().toString(36).slice(2, 11),
+        voiceId: voiceId,
+        receiverId: AppState.currentUser,
+        senderId: voiceData.senderId,
+        timestamp: new Date().toISOString(),
+        status: 'pending'
+      };
+      
+      saveIdentityRequest(identityRequest);
+      
+      elements.identityContent.innerHTML = `
+        <div class="status-indicator status-pending">
+          <span>⏳</span>
+          Identity request sent. Waiting for sender approval...
+        </div>
+      `;
+      elements.requestIdentity.classList.add('hidden');
+      
+      // Notify sender
+      showNotification('Someone requested your identity!');
+    } else {
+      elements.identityContent.innerHTML = `
+        <div class="status-indicator status-expired">
+          <span>🔒</span>
+          Sender prefers to remain anonymous
+        </div>
+      `;
+      elements.requestIdentity.classList.add('hidden');
+    }
   }
 }
 
 // -------------------------
 // CHAT FUNCTIONALITY
 // -------------------------
-elements.acceptChat.addEventListener('click', acceptChatRequest);
-elements.declineChat.addEventListener('click', declineChatRequest);
 elements.sendMessage.addEventListener('click', sendMessage);
 elements.mainSendMessage.addEventListener('click', sendMainMessage);
 
-// Enter key support for message input
+// Enter key support
 elements.messageInput.addEventListener('keypress', (e) => {
   if (e.key === 'Enter') sendMessage();
 });
@@ -620,29 +870,6 @@ elements.mainMessageInput.addEventListener('keypress', (e) => {
   if (e.key === 'Enter') sendMainMessage();
 });
 
-function acceptChatRequest() {
-  // Hide voice message section, show chat interface
-  document.getElementById('voiceMessageSection').classList.add('hidden');
-  elements.chatInterface.classList.remove('hidden');
-  
-  // Set up the chat
-  const urlParams = new URLSearchParams(window.location.search);
-  const senderName = urlParams.get('sender') || 'Anonymous';
-  elements.chatPartnerName.textContent = `Chatting with ${senderName}`;
-  
-  // Add welcome message
-  addMessage('system', `You are now chatting with ${senderName}. Start the conversation!`, 'chatMessages');
-}
-
-function declineChatRequest() {
-  elements.receiverStatus.innerHTML = `
-    <div style="color: #ff6b6b; margin-top: 1rem;">
-      Chat request declined. You can still listen to the voice message.
-    </div>
-  `;
-  elements.chatRequestSection.classList.add('hidden');
-}
-
 function sendMessage() {
   const message = elements.messageInput.value.trim();
   if (!message) return;
@@ -650,18 +877,11 @@ function sendMessage() {
   addMessage('sent', message, 'chatMessages');
   elements.messageInput.value = '';
   
-  // Simulate reply after 1-3 seconds
-  setTimeout(() => {
-    const replies = [
-      "Thanks for the voice message! How are you?",
-      "That was interesting! Tell me more.",
-      "I'd love to continue this conversation!",
-      "Great to connect with you!",
-      "What else would you like to talk about?"
-    ];
-    const randomReply = replies[Math.floor(Math.random() * replies.length)];
+  // Simulate typing and reply
+  simulateTyping('chatMessages', () => {
+    const randomReply = getRandomReply();
     addMessage('received', randomReply, 'chatMessages');
-  }, 1000 + Math.random() * 2000);
+  });
 }
 
 function sendMainMessage() {
@@ -671,24 +891,17 @@ function sendMainMessage() {
   addMessage('sent', message, 'mainChatMessages');
   elements.mainMessageInput.value = '';
   
-  // Simulate reply
-  setTimeout(() => {
-    const replies = [
-      "I'm doing great! How about you?",
-      "That's awesome!",
-      "Tell me more about that!",
-      "I completely agree!",
-      "What are your thoughts on this?"
-    ];
-    const randomReply = replies[Math.floor(Math.random() * replies.length)];
+  // Simulate typing and reply
+  simulateTyping('mainChatMessages', () => {
+    const randomReply = getRandomReply();
     addMessage('received', randomReply, 'mainChatMessages');
-  }, 1000 + Math.random() * 2000);
+  });
 }
 
 function addMessage(type, content, containerId) {
   const container = document.getElementById(containerId);
   const messageDiv = document.createElement('div');
-  messageDiv.className = `message ${type}`;
+  messageDiv.className = `message ${type} fade-in`;
   
   const timestamp = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
   
@@ -696,7 +909,7 @@ function addMessage(type, content, containerId) {
     <div>${content}</div>
     <div class="message-status">
       ${timestamp} 
-      ${type === 'sent' ? '✓✓' : ''}
+      ${type === 'sent' ? '<span class="message-ticks">✓✓</span>' : ''}
     </div>
   `;
   
@@ -704,28 +917,156 @@ function addMessage(type, content, containerId) {
   container.scrollTop = container.scrollHeight;
 }
 
-// -------------------------
-// MESSAGE STATUS (Single/Double Tick)
-// -------------------------
-function updateMessageStatus(messageId, status) {
-  // status: 'sent', 'delivered', 'read'
-  const statusElement = document.querySelector(`[data-message-id="${messageId}"] .message-status`);
-  if (statusElement) {
-    let statusIcon = '✓'; // Single tick for sent
-    if (status === 'delivered') statusIcon = '✓✓'; // Double tick for delivered
-    if (status === 'read') statusIcon = '✓✓🔵'; // Blue ticks for read
+function simulateTyping(containerId, callback) {
+  const container = document.getElementById(containerId);
+  const typingDiv = document.createElement('div');
+  typingDiv.className = 'message received';
+  typingDiv.innerHTML = `
+    <div style="opacity: 0.7;">
+      <span class="typing-dots">
+        <span>.</span><span>.</span><span>.</span>
+      </span>
+    </div>
+  `;
+  
+  container.appendChild(typingDiv);
+  container.scrollTop = container.scrollHeight;
+  
+  setTimeout(() => {
+    container.removeChild(typingDiv);
+    callback();
+  }, 1000 + Math.random() * 1000);
+}
+
+function getRandomReply() {
+  const replies = [
+    "That's interesting! Tell me more.",
+    "I see what you mean!",
+    "Thanks for sharing that with me!",
+    "What do you think about this?",
+    "That's a great point!",
+    "I'd love to hear more about that!",
+    "How was your day otherwise?",
+    "That sounds exciting!",
+    "I completely understand!",
+    "What are your plans for this?"
+  ];
+  return replies[Math.floor(Math.random() * replies.length)];
+}
+
+function startChatSession(partnerName, userType) {
+  if (userType === 'receiver') {
+    // Receiver starts chat in their view
+    elements.voiceMessageSection.classList.add('hidden');
+    elements.chatInterface.classList.remove('hidden');
+    elements.chatPartnerName.textContent = `Chatting with ${partnerName}`;
     
-    statusElement.innerHTML = `${statusIcon} • ${new Date().toLocaleTimeString()}`;
+    // Add welcome message
+    addMessage('system', `You are now chatting with ${partnerName}. Start the conversation!`, 'chatMessages');
+  } else {
+    // Sender starts chat in main chat view
+    showView('chat');
+    elements.chatWithUser.textContent = `Chatting with ${partnerName}`;
+    
+    // Add welcome message
+    addMessage('system', `You are now chatting with ${partnerName}. Start the conversation!`, 'mainChatMessages');
+  }
+}
+
+// -------------------------
+// DATA MANAGEMENT
+// -------------------------
+function saveVoiceMessage(voiceData) {
+  let voices = JSON.parse(localStorage.getItem('echo_voices') || '[]');
+  voices.push(voiceData);
+  localStorage.setItem('echo_voices', JSON.stringify(voices));
+}
+
+function getVoiceMessage(voiceId) {
+  const voices = JSON.parse(localStorage.getItem('echo_voices') || '[]');
+  return voices.find(v => v.id === voiceId);
+}
+
+function saveChatRequest(chatRequest) {
+  let requests = JSON.parse(localStorage.getItem('echo_chat_requests') || '[]');
+  requests.push(chatRequest);
+  localStorage.setItem('echo_chat_requests', JSON.stringify(requests));
+}
+
+function saveIdentityRequest(identityRequest) {
+  let requests = JSON.parse(localStorage.getItem('echo_identity_requests') || '[]');
+  requests.push(identityRequest);
+  localStorage.setItem('echo_identity_requests', JSON.stringify(requests));
+}
+
+function loadChatRequests() {
+  const requests = JSON.parse(localStorage.getItem('echo_chat_requests') || '[]');
+  const userRequests = requests.filter(req => req.senderId === AppState.currentUser && req.status === 'accepted');
+  
+  if (userRequests.length > 0) {
+    elements.chatRequestsList.innerHTML = userRequests.map(req => `
+      <div class="status-indicator status-active" style="margin: 0.5rem 0; padding: 1rem; background: rgba(255,255,255,0.03); border-radius: var(--radius-small);">
+        <span>💬</span>
+        New chat request accepted!
+        <button class="btn btn-primary" onclick="startChatSession('Receiver', 'sender')" style="margin-left: 1rem; padding: 0.5rem 1rem;">
+          Start Chat
+        </button>
+      </div>
+    `).join('');
   }
 }
 
 // -------------------------
 // UTILITY FUNCTIONS
 // -------------------------
+function getPrivacyText(privacy) {
+  const privacyMap = {
+    'anonymous': 'Anonymous',
+    'reveal_on_request': 'Reveal on Request',
+    'auto_reveal': 'Auto Reveal'
+  };
+  return privacyMap[privacy] || privacy;
+}
+
+function getExpiryText(expiry) {
+  const expiryMap = {
+    'permanent': 'Permanent',
+    '1h': '1 Hour',
+    '24h': '24 Hours'
+  };
+  return expiryMap[expiry] || expiry;
+}
+
 function copyToClipboard(text) {
   navigator.clipboard.writeText(text).then(() => {
-    alert('Link copied to clipboard!');
+    showNotification('Link copied to clipboard!');
   });
+}
+
+function generateQRCode(link) {
+  alert(`QR Code for: ${link}\n\nIn a real app, this would generate a QR code.`);
+}
+
+function showNotification(message) {
+  // Create a simple notification
+  const notification = document.createElement('div');
+  notification.style.cssText = `
+    position: fixed;
+    top: 100px;
+    right: 20px;
+    background: var(--accent-gradient);
+    color: white;
+    padding: 1rem 1.5rem;
+    border-radius: var(--radius-small);
+    z-index: 10000;
+    animation: slideIn 0.3s ease-out;
+  `;
+  notification.textContent = message;
+  document.body.appendChild(notification);
+  
+  setTimeout(() => {
+    document.body.removeChild(notification);
+  }, 3000);
 }
 
 // -------------------------
@@ -734,21 +1075,30 @@ function copyToClipboard(text) {
 function handleUrlParameters() {
   const urlParams = new URLSearchParams(window.location.search);
   const voiceId = urlParams.get('voice');
-  const senderName = urlParams.get('sender');
   
   if (voiceId) {
     // This is a receiver viewing a voice message
     showView('receiver');
     
-    // Show sender name in chat request
-    if (senderName) {
-      document.querySelector('#chatRequestSection p').textContent = 
-        `${senderName} wants to start a live chat with you after sending this voice message.`;
+    const voiceData = getVoiceMessage(voiceId);
+    if (voiceData) {
+      // Set up receiver view based on voice data
+      elements.expiryStatus.textContent = `Expires: ${getExpiryText(voiceData.expiry)}`;
+      
+      // Handle identity section based on privacy setting
+      if (voiceData.privacy === 'auto_reveal') {
+        elements.identityContent.innerHTML = `
+          <div class="status-indicator status-active">
+            <span>👤</span>
+            Sender: <strong>${voiceData.senderName}</strong>
+          </div>
+        `;
+        elements.requestIdentity.classList.add('hidden');
+      }
+      
+      // Show chat request section
+      elements.chatRequestSection.classList.remove('hidden');
     }
-    
-    // Simulate voice message playback
-    elements.playAudio.src = "https://www.soundjay.com/button/beep-07.wav"; // Demo audio
-    
   } else {
     // This is a sender creating a new message
     showView('sender');
@@ -772,17 +1122,15 @@ document.addEventListener('DOMContentLoaded', () => {
   document.getElementById('themeBtn').addEventListener('click', () => {
     document.body.style.filter = document.body.style.filter === 'invert(1)' ? 'none' : 'invert(1)';
   });
+  
+  // Load initial data
+  loadChatRequests();
 });
 
-// -------------------------
-// DEMO DATA FOR TESTING
-// -------------------------
-// Add some demo messages when page loads for testing
+// Add some demo messages for testing
 setTimeout(() => {
   if (document.getElementById('mainChatMessages').children.length === 0) {
-    addMessage('received', "Hey there! Thanks for the voice message. I'd love to chat more!", 'mainChatMessages');
-    addMessage('sent', "Hi! Glad you liked the voice message. How's your day going?", 'mainChatMessages');
-    addMessage('received', "It's going great! The voice message was really clear. What made you decide to send it?", 'mainChatMessages');
+    addMessage('received', "Hey there! Thanks for connecting. How can I help you today?", 'mainChatMessages');
   }
 }, 1000);
 </script>
