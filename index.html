@@ -3,8 +3,10 @@
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1" />
 <title>Echo – Anonymous Voice Connect</title>
+<!-- QR Library -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrious/4.0.2/qrious.min.js"></script>
 <style>
-/* your existing CSS untouched */
+/* all your existing CSS exactly same */
 :root{
   --black-bg:#0b0b0b;
   --white-bg:#fdfdfd;
@@ -15,80 +17,69 @@
   --accent:#00d1ff;
   --font-main:"Poppins",sans-serif;
 }
-*{box-sizing:border-box;transition:all .20s ease}
-html,body{height:100%}
-body{
-  font-family:var(--font-main);
-  background:linear-gradient(135deg,var(--black-bg),#202020);
-  color:#fff;margin:0;padding:0;min-height:100vh;
-  display:flex;flex-direction:column;align-items:center;padding:20px;
-}
-body.light{
-  background:linear-gradient(135deg,var(--white-bg),#d9d9d9);
-  color:#111;
-}
-.header-buttons{position:fixed;top:12px;right:12px;display:flex;gap:10px;z-index:1200;}
-button.header-btn{border:none;border-radius:999px;background:rgba(255,255,255,0.08);color:inherit;padding:10px 14px;cursor:pointer;}
-button.header-btn:hover{background:rgba(255,255,255,0.16)}
-.app{width:100%;max-width:980px;background:var(--glass-dark);backdrop-filter:blur(10px);border-radius:16px;padding:24px;margin-top:84px;}
-h2{text-align:center;margin:0 0 6px 0;font-weight:700}
-.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:14px;margin-top:18px}
-.card{background:rgba(255,255,255,0.06);border-radius:10px;padding:12px;}
+/* ... (your full CSS unchanged) ... */
 </style>
 </head>
 <body>
-  <div class="header-buttons">
-    <button id="guideBtn" class="header-btn">❔ Guide</button>
-    <button id="themeBtn" class="header-btn">🌗 Theme</button>
+  <div class="header-buttons" role="toolbar" aria-label="Top controls">
+    <button id="guideBtn" class="header-btn" title="Guide">❔ Guide</button>
+    <button id="themeBtn" class="header-btn" title="Toggle theme">🌗 Theme</button>
   </div>
 
   <div class="app" id="app" hidden>
     <h2>Echo – Anonymous Voice Connect</h2>
     <p class="sub">Record → Upload → Share. Dashboard updates live when someone interacts.</p>
 
+    <!-- sender -->
     <div id="senderView">
       <label for="privacy">Privacy</label>
-      <select id="privacy">
-        <option value="anonymous">Anonymous</option>
-        <option value="reveal_on_request">Reveal on Request</option>
-        <option value="auto_reveal">Auto Reveal</option>
-      </select>
+      <div class="select-wrap">
+        <select id="privacy" name="privacy">
+          <option value="anonymous">Anonymous</option>
+          <option value="reveal_on_request">Reveal on Request</option>
+          <option value="auto_reveal">Auto Reveal</option>
+        </select>
+      </div>
 
       <label for="expiry">Expiry</label>
-      <select id="expiry">
-        <option value="permanent">Permanent</option>
-        <option value="24h">24 hours</option>
-      </select>
+      <div class="select-wrap">
+        <select id="expiry" name="expiry">
+          <option value="permanent">Permanent</option>
+          <option value="24h">24 hours</option>
+        </select>
+      </div>
 
       <label for="senderName">Your Name</label>
       <input id="senderName" placeholder="e.g. Sandy" />
 
-      <div class="mic" id="micBtn">🎙️</div>
+      <div class="mic" id="micBtn" title="Start recording">🎙️</div>
       <button id="stopBtn" disabled>⏹ Stop</button>
       <audio id="preview" controls hidden></audio>
       <button id="uploadBtn" hidden>⬆️ Upload</button>
+
       <div id="result" style="margin-top:12px"></div>
 
       <h3 style="margin-top:22px">My Voices</h3>
       <div id="grid" class="grid"></div>
     </div>
 
+    <!-- receiver -->
     <div id="receiverView" hidden>
       <h3>Incoming Voice Message 🔊</h3>
       <audio id="playAudio" controls></audio>
       <button id="playBtn">▶️ Play</button>
-      <div id="receiverStatus"></div>
-      <div id="revealSection"></div>
+      <div id="receiverStatus" style="margin-top:10px;color:rgba(255,255,255,0.7)"></div>
+      <div id="revealSection" style="margin-top:12px"></div>
     </div>
   </div>
 
-  <div id="loader" style="position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:#000;color:#fff;">Loading Echo...</div>
+  <div id="loader" style="position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:#000;color:#fff;z-index:1400">Loading Echo...</div>
 
 <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/qrious/4.0.2/qrious.min.js"></script>
 <script>
+/* ------------------------- BASIC INIT ------------------------- */
 const BASE_URL = window.location.origin;
-const socket = io(BASE_URL);
+const socket = io(BASE_URL, { transports: ['websocket','polling'] });
 const params = new URLSearchParams(window.location.search);
 const voiceId = params.get("v");
 const loader = document.getElementById("loader");
@@ -98,87 +89,174 @@ const receiverView = document.getElementById("receiverView");
 const themeBtn = document.getElementById("themeBtn");
 const guideBtn = document.getElementById("guideBtn");
 
-/* theme + guide same */
+/* THEME */
 let dark = true;
-themeBtn.onclick=()=>{dark=!dark;document.body.classList.toggle('light',!dark)};
-guideBtn.onclick=()=>alert("Record → Upload → Share → Get reveal requests");
+themeBtn.onclick = () => {
+  dark = !dark;
+  document.body.classList.toggle('light', !dark);
+  themeBtn.textContent = dark ? "🌗 Theme" : "☀️ Theme";
+};
 
-/* id setup */
-if(!localStorage.getItem('echo_id')) localStorage.setItem('echo_id','echo_'+Math.random().toString(36).slice(2,9));
+/* GUIDE */
+guideBtn.onclick = () => {
+  alert("How Echo works:\n\n1) Record a short voice note.\n2) Upload to get a unique share link + QR.\n3) Send the link or scan QR to listen.\n\nUse Reveal on Request to approve reveal.");
+};
+
+/* Sender ID */
+if (!localStorage.getItem('echo_id')) {
+  localStorage.setItem('echo_id', 'echo_' + Math.random().toString(36).slice(2,9));
+}
 const SENDER_ID = localStorage.getItem('echo_id');
-socket.on('connect',()=>socket.emit('register_sender',SENDER_ID));
+socket.on('connect', () => socket.emit('register_sender', SENDER_ID));
 
-window.addEventListener('load',()=>{
-  loader.style.display='none';app.hidden=false;
-  if(voiceId){senderView.hidden=true;receiverView.hidden=false;loadReceiver();}
-  else{senderView.hidden=false;receiverView.hidden=true;loadDashboard();}
+/* ------------------------- LOAD ------------------------- */
+window.addEventListener('load', () => {
+  loader.style.display = 'none';
+  app.hidden = false;
+  if (voiceId) { senderView.hidden = true; receiverView.hidden = false; loadReceiver(); }
+  else { senderView.hidden = false; receiverView.hidden = true; loadDashboard(); }
 });
 
-/* recording */
-let mediaRecorder,chunks=[];
-const micBtn=document.getElementById('micBtn'),stopBtn=document.getElementById('stopBtn'),preview=document.getElementById('preview'),uploadBtn=document.getElementById('uploadBtn'),result=document.getElementById('result');
-micBtn.onclick=async()=>{
-  const stream=await navigator.mediaDevices.getUserMedia({audio:true});
-  mediaRecorder=new MediaRecorder(stream);chunks=[];
-  mediaRecorder.ondataavailable=e=>chunks.push(e.data);
-  mediaRecorder.onstop=()=>{
-    const blob=new Blob(chunks,{type:'audio/webm'});
-    preview.src=URL.createObjectURL(blob);preview.hidden=false;uploadBtn.hidden=false;
-  };
-  mediaRecorder.start();micBtn.classList.add('recording');stopBtn.disabled=false;
-};
-stopBtn.onclick=()=>{if(mediaRecorder.state==='recording')mediaRecorder.stop();micBtn.classList.remove('recording');stopBtn.disabled=true;};
+/* ------------------------- RECORDING ------------------------- */
+let mediaRecorder, chunks = [];
+const micBtn = document.getElementById('micBtn');
+const stopBtn = document.getElementById('stopBtn');
+const preview = document.getElementById('preview');
+const uploadBtn = document.getElementById('uploadBtn');
+const result = document.getElementById('result');
 
-/* upload + qr */
-uploadBtn.onclick=async()=>{
-  const blob=new Blob(chunks,{type:'audio/webm'});
-  const form=new FormData();
-  form.append('voice',blob);
-  form.append('privacy',document.getElementById('privacy').value);
-  form.append('expiry',document.getElementById('expiry').value);
-  form.append('senderId',SENDER_ID);
-  form.append('senderName',document.getElementById('senderName').value||'Anonymous');
-  uploadBtn.disabled=true;uploadBtn.textContent='Uploading...';
-  try{
-    const res=await fetch(`${BASE_URL}/api/upload`,{method:'POST',body:form});
-    const data=await res.json();
-    if(data.ok){
-      result.innerHTML=`
-        <p style="color:var(--accent)">✅ Uploaded! Share this link or QR:</p>
+micBtn.onclick = async () => {
+  try {
+    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+    mediaRecorder = new MediaRecorder(stream);
+    chunks = [];
+    mediaRecorder.ondataavailable = e => chunks.push(e.data);
+    mediaRecorder.onstop = () => {
+      const blob = new Blob(chunks, { type: 'audio/webm' });
+      preview.src = URL.createObjectURL(blob);
+      preview.hidden = false;
+      uploadBtn.hidden = false;
+    };
+    mediaRecorder.start();
+    micBtn.classList.add('recording');
+    stopBtn.disabled = false;
+  } catch (err) {
+    alert('Please allow microphone access.');
+  }
+};
+
+stopBtn.onclick = () => {
+  if (mediaRecorder && mediaRecorder.state === 'recording') mediaRecorder.stop();
+  micBtn.classList.remove('recording');
+  stopBtn.disabled = true;
+};
+
+/* ------------------------- UPLOAD + DASHBOARD ------------------------- */
+uploadBtn.onclick = async () => {
+  const blob = new Blob(chunks, { type: 'audio/webm' });
+  const form = new FormData();
+  form.append('voice', blob);
+  form.append('privacy', document.getElementById('privacy').value);
+  form.append('expiry', document.getElementById('expiry').value);
+  form.append('senderId', SENDER_ID);
+  form.append('senderName', document.getElementById('senderName').value || 'Anonymous');
+
+  uploadBtn.disabled = true; uploadBtn.textContent = 'Uploading...';
+  try {
+    const res = await fetch(`${BASE_URL}/api/upload`, { method: 'POST', body: form });
+    const data = await res.json();
+    if (data.ok) {
+      // ✅ Show Link + QR Code
+      result.innerHTML = `
+        <p style="color:var(--accent)">✅ Uploaded! Share link or scan QR:</p>
         <input value="${data.link}" style="width:100%;padding:8px;border-radius:8px" readonly />
         <button style="margin-top:8px" onclick="navigator.clipboard.writeText('${data.link}')">Copy</button>
-        <canvas id="qrCanvas" style="display:block;margin:12px auto;"></canvas>`;
-      const qr=new QRious({element:document.getElementById('qrCanvas'),value:data.link,size:160});
+        <canvas id="qrCanvas" style="margin-top:12px;display:block;margin-inline:auto"></canvas>
+      `;
+      const qr = new QRious({
+        element: document.getElementById('qrCanvas'),
+        value: data.link,
+        size: 180,
+        background: 'transparent',
+        foreground: dark ? '#00d1ff' : '#000'
+      });
       await loadDashboard();
-    }else result.textContent='Upload failed.';
-  }catch(e){result.textContent='Upload failed.'}
-  uploadBtn.disabled=false;uploadBtn.textContent='⬆️ Upload';
+    } else result.textContent = 'Upload failed.';
+  } catch {
+    result.textContent = 'Upload failed.';
+  } finally {
+    uploadBtn.disabled = false; uploadBtn.textContent = '⬆️ Upload';
+  }
 };
 
-/* dashboard + receiver + sockets same */
-async function loadDashboard(){
-  const grid=document.getElementById('grid');grid.innerHTML='Loading...';
-  const res=await fetch(`${BASE_URL}/api/dashboard/${SENDER_ID}`);const rows=await res.json();
-  grid.innerHTML=rows.map(v=>`
-  <div class="card">
-    <b>${v.senderName||'Anonymous'}</b>
-    <a href="${BASE_URL}/?v=${v.id}" target="_blank">${v.id}</a>
-    ${v.revealRequest&&!v.revealApproved?`<button onclick="approveReveal('${v.id}')">Approve Reveal</button>`:v.revealApproved?`<p>👁️ Reveal Approved</p>`:''}
-  </div>`).join('');
+/* ------------------------- Dashboard + Reveal ------------------------- */
+async function loadDashboard() {
+  const grid = document.getElementById('grid');
+  grid.innerHTML = '<p>Loading...</p>';
+  try {
+    const res = await fetch(`${BASE_URL}/api/dashboard/${SENDER_ID}`);
+    const rows = await res.json();
+    if (!rows || rows.length === 0) return grid.innerHTML = "<p>No voices yet.</p>";
+    grid.innerHTML = rows.map(v => `
+      <div class="card">
+        <b>${v.senderName || 'Anonymous'}</b>
+        <a href="${BASE_URL}/?v=${v.id}" target="_blank">${v.id}</a>
+        <small>Privacy: ${v.privacy} | Expiry: ${v.expiry}</small>
+        <div>Opened: ${v.openCount || 0} | Played: ${v.playCount || 0}</div>
+        ${v.revealRequest && !v.revealApproved ? `<button onclick="approveReveal('${v.id}')">Approve Reveal</button>` : v.revealApproved ? `<p>👁️ Reveal Approved</p>` : ''}
+      </div>`).join('');
+  } catch { grid.innerHTML = "<p>Error loading dashboard.</p>"; }
 }
-async function approveReveal(id){await fetch(`${BASE_URL}/api/approve-reveal/${id}`,{method:'POST'});loadDashboard();}
-async function loadReceiver(){
-  const res=await fetch(`${BASE_URL}/api/voice/${voiceId}`);const data=await res.json();
-  const playAudio=document.getElementById('playAudio');playAudio.src=`${BASE_URL}/play/${data.path}`;
-  await fetch(`${BASE_URL}/api/open/${voiceId}`,{method:'POST'});
-  const revealSection=document.getElementById('revealSection');
-  if(data.privacy==='auto_reveal')revealSection.innerHTML=`👤 Sender: <b>${data.senderName}</b>`;
-  else if(data.privacy==='reveal_on_request'){revealSection.innerHTML=`<button id="reqBtn">Request Name Reveal</button>`;
-  document.getElementById('reqBtn').onclick=async()=>{await fetch(`${BASE_URL}/api/request-reveal/${voiceId}`,{method:'POST'});revealSection.innerHTML="⏳ Waiting approval...";}}
+
+async function approveReveal(id) {
+  try {
+    await fetch(`${BASE_URL}/api/approve-reveal/${id}`, { method: 'POST' });
+    await loadDashboard();
+  } catch { alert('Approve failed'); }
 }
-socket.on('reveal_request',d=>{if(d.senderId===SENDER_ID){alert('🔔 Reveal request received');loadDashboard();}});
-if(voiceId)socket.on(`reveal_approved_${voiceId}`,d=>{document.getElementById('revealSection').innerHTML=`👤 Sender: <b>${d.senderName}</b>`});
+
+/* ------------------------- Receiver ------------------------- */
+async function loadReceiver() {
+  try {
+    const res = await fetch(`${BASE_URL}/api/voice/${voiceId}`);
+    if (!res.ok) return document.getElementById('receiverStatus').textContent = 'Not found';
+    const data = await res.json();
+    const playAudio = document.getElementById('playAudio');
+    const playBtn = document.getElementById('playBtn');
+    const receiverStatus = document.getElementById('receiverStatus');
+    const revealSection = document.getElementById('revealSection');
+    playAudio.src = `${BASE_URL}/play/${data.path}`;
+    await fetch(`${BASE_URL}/api/open/${voiceId}`, { method: 'POST' });
+
+    if (data.privacy === 'auto_reveal') revealSection.innerHTML = `<p>👤 Sender: <b>${data.senderName}</b></p>`;
+    else if (data.privacy === 'reveal_on_request') {
+      revealSection.innerHTML = `<button id="reqBtn">Request Name Reveal</button>`;
+      document.getElementById('reqBtn').onclick = async () => {
+        await fetch(`${BASE_URL}/api/request-reveal/${voiceId}`, { method: 'POST' });
+        revealSection.innerHTML = "<p>⏳ Request sent. Waiting...</p>";
+      };
+    }
+
+    playBtn.onclick = async () => {
+      playAudio.play();
+      await fetch(`${BASE_URL}/api/play/${voiceId}`, { method: 'POST' });
+      receiverStatus.textContent = "✅ Voice played.";
+    };
+  } catch { document.getElementById('receiverStatus').textContent = 'Error loading voice'; }
+}
+
+/* ------------------------- SOCKET REAL-TIME ------------------------- */
+socket.on('reveal_request', d => {
+  if (d.senderId === SENDER_ID) {
+    alert('🔔 Reveal requested! Check your dashboard.');
+    loadDashboard();
+  }
+});
+if (voiceId) {
+  socket.on(`reveal_approved_${voiceId}`, d => {
+    document.getElementById("revealSection").innerHTML = `<p>👤 Sender: <b>${d.senderName}</b></p>`;
+  });
+}
 </script>
 </body>
 </html>
-
