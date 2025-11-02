@@ -1,12 +1,13 @@
+<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1" />
 <title>Echo – Anonymous Voice Connect</title>
-<!-- QR Library -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/qrious/4.0.2/qrious.min.js"></script>
 <style>
-/* all your existing CSS exactly same */
+/* -------------------------
+   THEME COLORS + VARIABLES
+   ------------------------- */
 :root{
   --black-bg:#0b0b0b;
   --white-bg:#fdfdfd;
@@ -17,7 +18,168 @@
   --accent:#00d1ff;
   --font-main:"Poppins",sans-serif;
 }
-/* ... (your full CSS unchanged) ... */
+
+/* -------------------------
+   BASE + GLOBAL
+   ------------------------- */
+*{box-sizing:border-box;transition:all .20s ease}
+html,body{height:100%}
+body{
+  font-family:var(--font-main);
+  background:linear-gradient(135deg,var(--black-bg),#202020);
+  color:#fff;margin:0;padding:0;min-height:100vh;
+  display:flex;flex-direction:column;align-items:center;padding:20px;
+  -webkit-font-smoothing:antialiased;
+  -moz-osx-font-smoothing:grayscale;
+}
+
+/* light theme */
+body.light{
+  background:linear-gradient(135deg,var(--white-bg),#d9d9d9);
+  color:#111;
+}
+
+/* -------------------------
+   HEADER BUTTONS (THEME + GUIDE)
+   ------------------------- */
+.header-buttons{
+  position:fixed;
+  top:12px;
+  right:12px;
+  display:flex;
+  gap:10px;
+  z-index:1200;
+}
+button.header-btn{
+  border:none;border-radius:999px;background:rgba(255,255,255,0.08);
+  color:inherit;padding:10px 14px;cursor:pointer;backdrop-filter:blur(6px);
+  box-shadow:0 6px 18px rgba(0,0,0,0.25);
+  display:flex;align-items:center;gap:8px;font-weight:600;
+}
+button.header-btn:hover{background:rgba(255,255,255,0.16)}
+body.light button.header-btn{background:rgba(0,0,0,0.06)}
+
+/* keep header buttons compact on mobile */
+@media(max-width:520px){
+  .header-buttons{right:8px;top:8px;gap:8px}
+  button.header-btn{padding:8px 10px;font-size:14px}
+}
+
+/* -------------------------
+   APP CONTAINER
+   ------------------------- */
+.app{
+  width:100%;max-width:980px;background:var(--glass-dark);
+  backdrop-filter:blur(10px);border-radius:16px;padding:24px;margin-top:84px;
+  box-shadow:0 10px 40px rgba(0,0,0,0.45);border:1px solid var(--border-light);
+  transition:all .2s ease;
+}
+body.light .app{background:var(--glass-light);border:1px solid var(--border-dark)}
+/* ensure header doesn't overlap content on tiny screens */
+@media(max-width:520px){ .app{margin-top:84px;padding:18px} }
+
+h2{text-align:center;margin:0 0 6px 0;font-weight:700}
+p.sub{text-align:center;color:rgba(255,255,255,0.65);margin:0 0 18px 0}
+body.light p.sub{color:rgba(0,0,0,0.6)}
+
+/* -------------------------
+   FORM + ELEMENTS
+   ------------------------- */
+label{font-weight:600;margin-top:10px;display:block;font-size:0.95rem}
+input,select{
+  width:100%;padding:11px;border-radius:10px;border:none;
+  background:rgba(255,255,255,0.08);color:inherit;margin-bottom:10px;
+  -webkit-text-fill-color:inherit;
+}
+body.light input, body.light select{ background: rgba(0,0,0,0.06) }
+select:focus,input:focus{ outline:2px solid var(--accent); box-shadow:0 6px 20px rgba(0,0,0,0.08) }
+
+/* style select wrapper & caret so it's more consistent */
+.select-wrap{position:relative}
+.select-wrap::after{
+  content:"▾";position:absolute;right:12px;top:50%;transform:translateY(-50%);
+  color:rgba(255,255,255,0.7);pointer-events:none;font-size:12px;
+}
+body.light .select-wrap::after{ color: rgba(0,0,0,0.6) }
+
+/* Mic button */
+.mic{ width:110px;height:110px;border-radius:999px;margin:18px auto;display:flex;
+  align-items:center;justify-content:center;font-size:34px;cursor:pointer;
+  background:rgba(255,255,255,0.08);transition:all .25s ease;
+}
+.mic:hover{ background:rgba(255,255,255,0.12) }
+.mic.recording{ background:linear-gradient(135deg,#ff4b8a,#ff3b6b); box-shadow:0 0 24px rgba(255,59,138,0.35); transform:scale(1.05) }
+
+/* buttons */
+button{cursor:pointer;border:0;border-radius:10px;padding:10px 14px;margin:6px 0;background:rgba(255,255,255,0.12);color:inherit;font-weight:600}
+button:hover{background:rgba(255,255,255,0.18)}
+button:disabled{opacity:0.5;cursor:not-allowed}
+
+/* audio */
+audio{ width:100%; margin-top:8px; border-radius:10px; background:transparent }
+
+/* cards grid */
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:14px;margin-top:18px}
+.card{
+  background:rgba(255,255,255,0.06);border-radius:10px;padding:12px;backdrop-filter:blur(6px);
+  border:1px solid rgba(255,255,255,0.08);display:flex;flex-direction:column;gap:6px;
+}
+.card a { color:var(--accent); word-break:break-all; text-decoration:none }
+.card small { color:rgba(255,255,255,0.65) }
+
+/* QR Code Modal */
+.qr-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0,0,0,0.8);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2000;
+  backdrop-filter: blur(5px);
+}
+.qr-content {
+  background: var(--glass-dark);
+  padding: 24px;
+  border-radius: 16px;
+  text-align: center;
+  max-width: 300px;
+  width: 90%;
+  border: 1px solid var(--border-light);
+}
+.qr-content img {
+  width: 200px;
+  height: 200px;
+  margin: 15px 0;
+  border-radius: 8px;
+}
+.close-qr {
+  background: var(--accent);
+  color: #000;
+  font-weight: bold;
+  margin-top: 10px;
+}
+
+/* selection colors */
+::selection{ background:rgba(0,0,0,0.6); color:#fff }
+body.light ::selection{ background:rgba(200,200,200,0.8); color:#111 }
+
+/* option styling (works in many browsers, not all details controllable) */
+select{ -webkit-appearance:none; appearance:none; position:relative; z-index:1 }
+option{ background:#2b2b2b; color:#fff }
+body.light option{ background:#fff; color:#111 }
+option:hover, option:checked{ background:#3b3b3b !important; color:#fff !important }
+
+/* small screens */
+@media(max-width:600px){
+  .mic{ width:90px; height:90px; font-size:28px }
+  .header-buttons{ right:8px; top:8px; gap:8px; flex-direction:column }
+  .card{ padding:10px }
+  .qr-content img { width: 150px; height: 150px }
+}
 </style>
 </head>
 <body>
@@ -75,9 +237,13 @@
 
   <div id="loader" style="position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:#000;color:#fff;z-index:1400">Loading Echo...</div>
 
+<!-- QR Code Library -->
+<script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
 <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
 <script>
-/* ------------------------- BASIC INIT ------------------------- */
+/* -------------------------
+   BASIC INIT
+   ------------------------- */
 const BASE_URL = window.location.origin;
 const socket = io(BASE_URL, { transports: ['websocket','polling'] });
 const params = new URLSearchParams(window.location.search);
@@ -99,25 +265,42 @@ themeBtn.onclick = () => {
 
 /* GUIDE */
 guideBtn.onclick = () => {
-  alert("How Echo works:\n\n1) Record a short voice note.\n2) Upload to get a unique share link + QR.\n3) Send the link or scan QR to listen.\n\nUse Reveal on Request to approve reveal.");
+  // Small friendly modal replacement
+  alert("How Echo works:\n\n1) Record a short voice note.\n2) Upload to get a unique share link.\n3) Send the link to someone. They can listen and, if allowed, request your name to be revealed.\n\nUse Reveal on Request to get notified and approve the reveal.");
 };
 
-/* Sender ID */
+/* Sender id registration (persisted locally) */
 if (!localStorage.getItem('echo_id')) {
   localStorage.setItem('echo_id', 'echo_' + Math.random().toString(36).slice(2,9));
 }
 const SENDER_ID = localStorage.getItem('echo_id');
-socket.on('connect', () => socket.emit('register_sender', SENDER_ID));
 
-/* ------------------------- LOAD ------------------------- */
+/* When socket connects register sender to a private room so server can notify only them */
+socket.on('connect', () => {
+  // send register to server so server can do room emits (server must implement register_sender)
+  socket.emit('register_sender', SENDER_ID);
+});
+
+/* -------------------------
+   ON LOAD - show UI
+   ------------------------- */
 window.addEventListener('load', () => {
   loader.style.display = 'none';
   app.hidden = false;
-  if (voiceId) { senderView.hidden = true; receiverView.hidden = false; loadReceiver(); }
-  else { senderView.hidden = false; receiverView.hidden = true; loadDashboard(); }
+  if (voiceId) {
+    senderView.hidden = true;
+    receiverView.hidden = false;
+    loadReceiver();
+  } else {
+    senderView.hidden = false;
+    receiverView.hidden = true;
+    loadDashboard();
+  }
 });
 
-/* ------------------------- RECORDING ------------------------- */
+/* -------------------------
+   RECORDING
+   ------------------------- */
 let mediaRecorder, chunks = [];
 const micBtn = document.getElementById('micBtn');
 const stopBtn = document.getElementById('stopBtn');
@@ -141,7 +324,7 @@ micBtn.onclick = async () => {
     micBtn.classList.add('recording');
     stopBtn.disabled = false;
   } catch (err) {
-    alert('Please allow microphone access.');
+    alert('Please allow microphone access to record.');
   }
 };
 
@@ -151,7 +334,9 @@ stopBtn.onclick = () => {
   stopBtn.disabled = true;
 };
 
-/* ------------------------- UPLOAD + DASHBOARD ------------------------- */
+/* -------------------------
+   UPLOAD + DASHBOARD + QR CODE
+   ------------------------- */
 uploadBtn.onclick = async () => {
   const blob = new Blob(chunks, { type: 'audio/webm' });
   const form = new FormData();
@@ -166,75 +351,121 @@ uploadBtn.onclick = async () => {
     const res = await fetch(`${BASE_URL}/api/upload`, { method: 'POST', body: form });
     const data = await res.json();
     if (data.ok) {
-      // ✅ Show Link + QR Code
       result.innerHTML = `
-        <p style="color:var(--accent)">✅ Uploaded! Share link or scan QR:</p>
+        <p style="color:var(--accent)">✅ Uploaded! Share this link:</p>
         <input value="${data.link}" style="width:100%;padding:8px;border-radius:8px" readonly />
-        <button style="margin-top:8px" onclick="navigator.clipboard.writeText('${data.link}')">Copy</button>
-        <canvas id="qrCanvas" style="margin-top:12px;display:block;margin-inline:auto"></canvas>
+        <div style="margin-top:10px;display:flex;gap:8px;">
+          <button onclick="navigator.clipboard.writeText('${data.link}')">📋 Copy Link</button>
+          <button onclick="generateQRCode('${data.link}')">📱 QR Code</button>
+        </div>
       `;
-      const qr = new QRious({
-        element: document.getElementById('qrCanvas'),
-        value: data.link,
-        size: 180,
-        background: 'transparent',
-        foreground: dark ? '#00d1ff' : '#000'
-      });
       await loadDashboard();
-    } else result.textContent = 'Upload failed.';
-  } catch {
+    } else {
+      result.textContent = 'Upload failed.';
+    }
+  } catch (e) {
     result.textContent = 'Upload failed.';
   } finally {
     uploadBtn.disabled = false; uploadBtn.textContent = '⬆️ Upload';
   }
 };
 
-/* ------------------------- Dashboard + Reveal ------------------------- */
+/* QR Code Generation Function */
+function generateQRCode(link) {
+  // Create modal for QR code
+  const modal = document.createElement('div');
+  modal.className = 'qr-modal';
+  modal.innerHTML = `
+    <div class="qr-content">
+      <h3>Scan QR Code</h3>
+      <div id="qrcodeCanvas"></div>
+      <button class="close-qr" onclick="this.closest('.qr-modal').remove()">Close</button>
+    </div>
+  `;
+  
+  document.body.appendChild(modal);
+  
+  // Generate QR Code
+  QRCode.toCanvas(document.getElementById('qrcodeCanvas'), link, {
+    width: 200,
+    margin: 1,
+    color: {
+      dark: '#000000',
+      light: '#FFFFFF'
+    }
+  }, function (error) {
+    if (error) {
+      console.error(error);
+      alert('QR Code generation failed');
+      modal.remove();
+    }
+  });
+}
+
 async function loadDashboard() {
   const grid = document.getElementById('grid');
   grid.innerHTML = '<p>Loading...</p>';
   try {
     const res = await fetch(`${BASE_URL}/api/dashboard/${SENDER_ID}`);
     const rows = await res.json();
-    if (!rows || rows.length === 0) return grid.innerHTML = "<p>No voices yet.</p>";
+    if (!rows || rows.length === 0) {
+      grid.innerHTML = "<p style='color:rgba(255,255,255,0.6)'>No voices yet.</p>";
+      return;
+    }
     grid.innerHTML = rows.map(v => `
       <div class="card">
         <b>${v.senderName || 'Anonymous'}</b>
         <a href="${BASE_URL}/?v=${v.id}" target="_blank">${v.id}</a>
         <small>Privacy: ${v.privacy} | Expiry: ${v.expiry}</small>
         <div>Opened: ${v.openCount || 0} | Played: ${v.playCount || 0}</div>
-        ${v.revealRequest && !v.revealApproved ? `<button onclick="approveReveal('${v.id}')">Approve Reveal</button>` : v.revealApproved ? `<p>👁️ Reveal Approved</p>` : ''}
-      </div>`).join('');
-  } catch { grid.innerHTML = "<p>Error loading dashboard.</p>"; }
+        <div style="margin-top:8px;display:flex;gap:4px;flex-wrap:wrap;">
+          <button style="font-size:12px;padding:6px 8px;" onclick="generateQRCode('${BASE_URL}/?v=${v.id}')">QR Code</button>
+          ${v.revealRequest && !v.revealApproved ? `<button style="font-size:12px;padding:6px 8px;" onclick="approveReveal('${v.id}')">Approve Reveal</button>` : v.revealApproved ? `<p style="font-size:12px;margin:0;">👁️ Reveal Approved</p>` : ''}
+        </div>
+      </div>
+    `).join('');
+  } catch (err) {
+    grid.innerHTML = "<p style='color:crimson'>Error loading dashboard.</p>";
+  }
 }
 
 async function approveReveal(id) {
   try {
     await fetch(`${BASE_URL}/api/approve-reveal/${id}`, { method: 'POST' });
+    // notify server will emit reveal_approved
     await loadDashboard();
-  } catch { alert('Approve failed'); }
+  } catch (e) {
+    alert('Approve failed');
+  }
 }
 
-/* ------------------------- Receiver ------------------------- */
+/* -------------------------
+   RECEIVER
+   ------------------------- */
 async function loadReceiver() {
   try {
     const res = await fetch(`${BASE_URL}/api/voice/${voiceId}`);
-    if (!res.ok) return document.getElementById('receiverStatus').textContent = 'Not found';
+    if (!res.ok) { document.getElementById('receiverStatus').textContent = 'Not found'; return; }
     const data = await res.json();
     const playAudio = document.getElementById('playAudio');
     const playBtn = document.getElementById('playBtn');
     const receiverStatus = document.getElementById('receiverStatus');
     const revealSection = document.getElementById('revealSection');
+
+    if (!data.path) { receiverStatus.textContent = 'Voice not found'; return; }
     playAudio.src = `${BASE_URL}/play/${data.path}`;
     await fetch(`${BASE_URL}/api/open/${voiceId}`, { method: 'POST' });
 
-    if (data.privacy === 'auto_reveal') revealSection.innerHTML = `<p>👤 Sender: <b>${data.senderName}</b></p>`;
-    else if (data.privacy === 'reveal_on_request') {
+    if (data.privacy === 'auto_reveal') {
+      revealSection.innerHTML = `<p>👤 Sender: <b>${data.senderName}</b></p>`;
+    } else if (data.privacy === 'reveal_on_request') {
       revealSection.innerHTML = `<button id="reqBtn">Request Name Reveal</button>`;
       document.getElementById('reqBtn').onclick = async () => {
         await fetch(`${BASE_URL}/api/request-reveal/${voiceId}`, { method: 'POST' });
         revealSection.innerHTML = "<p>⏳ Request sent. Waiting...</p>";
       };
+    } else {
+      revealSection.innerHTML = '';
     }
 
     playBtn.onclick = async () => {
@@ -242,19 +473,27 @@ async function loadReceiver() {
       await fetch(`${BASE_URL}/api/play/${voiceId}`, { method: 'POST' });
       receiverStatus.textContent = "✅ Voice played.";
     };
-  } catch { document.getElementById('receiverStatus').textContent = 'Error loading voice'; }
+  } catch (e) {
+    document.getElementById('receiverStatus').textContent = 'Error loading voice';
+  }
 }
 
-/* ------------------------- SOCKET REAL-TIME ------------------------- */
-socket.on('reveal_request', d => {
-  if (d.senderId === SENDER_ID) {
-    alert('🔔 Reveal requested! Check your dashboard.');
+/* -------------------------
+   SOCKET REAL-TIME
+   ------------------------- */
+socket.on('reveal_request', data => {
+  if (data && data.senderId && data.senderId === SENDER_ID) {
+    alert('🔔 Someone requested a reveal for your voice. Open the dashboard to approve.');
     loadDashboard();
   }
 });
+
+/* dynamically listen for reveal approval specific to this voice */
 if (voiceId) {
-  socket.on(`reveal_approved_${voiceId}`, d => {
-    document.getElementById("revealSection").innerHTML = `<p>👤 Sender: <b>${d.senderName}</b></p>`;
+  socket.on(`reveal_approved_${voiceId}`, (data) => {
+    console.log("Reveal approved received:", data);
+    const revealSection = document.getElementById("revealSection");
+    revealSection.innerHTML = `<p>👤 Sender: <b>${data.senderName || "Anonymous"}</b></p>`;
   });
 }
 </script>
