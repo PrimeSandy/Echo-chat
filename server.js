@@ -67,7 +67,10 @@ app.post("/api/upload", upload.single("voice"), async (req, res) => {
     };
 
     await db.collection("voices").insertOne(voice);
+
+    // ✅ Correct URL with backticks (fixed)
     res.json({ ok: true, link: `https://echo-chat-ybep.onrender.com/?v=${id}` });
+
   } catch (err) {
     console.error(err);
     res.json({ ok: false });
@@ -158,5 +161,3 @@ io.on("connection", (socket) => {
 
 // === Start ===
 server.listen(PORT, () => console.log(`🚀 Server live on ${BASE_URL}`));
-
-
