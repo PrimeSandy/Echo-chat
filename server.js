@@ -19,40 +19,48 @@ app.use(cors());
 app.use(express.json());
 app.use("/public", express.static(path.join(__dirname, "public")));
 
-const upload = multer({ dest: "public/voices/" });
+// ✅ make sure this folder exists in your repo before deploy
+const uploadDir = path.join(__dirname, "public/voices");
+if (!fs.existsSync(uploadDir)) fs.mkdirSync(uploadDir, { recursive: true });
+
+const upload = multer({ dest: uploadDir });
 
 const BASE_URL = process.env.BASE_URL || "https://sandy-echo.onrender.com";
-const DB_URL = process.env.MONGO_URL || "mongodb+srv://Sandydb456:Sandydb456@cluster0.o4lr4zd.mongodb.net/EchoApp?retryWrites=true&w=majority";
+const DB_URL =
+  process.env.MONGO_URL ||
+  "mongodb+srv://Sandydb456:Sandydb456@cluster0.o4lr4zd.mongodb.net/?retryWrites=true&w=majority";
 const DB_NAME = "echoApp";
 let db, voices;
 
 // ✅ Connect MongoDB
 (async () => {
-  const client = new MongoClient(DB_URL);
-  await client.connect();
-  db = client.db(DB_NAME);
-  voices = db.collection("voices");
-  console.log("✅ MongoDB connected");
+  try {
+    const client = new MongoClient(DB_URL);
+    await client.connect();
+    db = client.db(DB_NAME);
+    voices = db.collection("voices");
+    console.log("✅ MongoDB connected");
+  } catch (err) {
+    console.error("❌ MongoDB connect failed:", err);
+  }
 })();
 
-// ✅ Socket.io
+// ✅ Socket.io connection
 io.on("connection", (socket) => {
   console.log("🔗 Socket connected:", socket.id);
 
-  // Register sender room
   socket.on("register_sender", (senderId) => {
     socket.join(senderId);
     console.log(`✅ Sender registered room: ${senderId}`);
   });
 });
 
-// ========== API ROUTES ==========
-
 // ✅ Upload voice
 app.post("/api/upload", upload.single("voice"), async (req, res) => {
   try {
     const { privacy, expiry, senderId, senderName } = req.body;
     const id = Math.random().toString(36).substring(2, 10);
+
     const voice = {
       id,
       path: req.file.filename,
@@ -66,11 +74,12 @@ app.post("/api/upload", upload.single("voice"), async (req, res) => {
       revealApproved: false,
       createdAt: new Date(),
     };
+
     await voices.insertOne(voice);
     res.json({ ok: true, link: `${BASE_URL}/?v=${id}` });
   } catch (e) {
-    console.error(e);
-    res.status(500).json({ ok: false });
+    console.error("❌ Upload error:", e);
+    res.status(500).json({ ok: false, error: "Upload failed" });
   }
 });
 
@@ -106,22 +115,17 @@ app.post("/api/request-reveal/:id", async (req, res) => {
 
   await voices.updateOne({ id: req.params.id }, { $set: { revealRequest: true } });
 
-  // Notify sender realtime
   io.to(voice.senderId).emit("reveal_request", { id: voice.id, senderId: voice.senderId });
   res.json({ ok: true });
 });
 
-// ✅ Approve reveal (fixed version)
+// ✅ Approve reveal (includes senderName)
 app.post("/api/approve-reveal/:id", async (req, res) => {
   const voice = await voices.findOne({ id: req.params.id });
   if (!voice) return res.status(404).json({ error: "Not found" });
 
-  await voices.updateOne(
-    { id: req.params.id },
-    { $set: { revealApproved: true } }
-  );
+  await voices.updateOne({ id: req.params.id }, { $set: { revealApproved: true } });
 
-  // Notify receiver + include senderName (FIXED)
   io.emit(`reveal_approved_${voice.id}`, {
     id: voice.id,
     senderName: voice.senderName || "Anonymous",
@@ -145,5 +149,3 @@ app.get("*", (req, res) => {
 // ✅ Start server
 const PORT = process.env.PORT || 10000;
 server.listen(PORT, () => console.log(`🚀 Echo server running on ${PORT}`));
-
-
