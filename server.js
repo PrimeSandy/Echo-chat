@@ -1,4 +1,4 @@
-// === Echo App Server (Render Compatible, FINAL) ===
+// === Echo App Server (Render Compatible, FINAL FIXED) ===
 require("dotenv").config();
 const express = require("express");
 const { MongoClient } = require("mongodb");
@@ -9,7 +9,6 @@ const fs = require("fs");
 const path = require("path");
 const shortid = require("shortid");
 
-// === Initialize ===
 const app = express();
 const server = http.createServer(app);
 const io = require("socket.io")(server, { cors: { origin: "*" } });
@@ -18,11 +17,11 @@ const PORT = process.env.PORT || 10000;
 const MONGO_URI =
   process.env.MONGO_URI ||
   "mongodb+srv://Sandydb456:Sandydb456@cluster0.o4lr4zd.mongodb.net/?appName=Cluster0";
-const BASE_URL = process.env.BASE_URL || `https://sandy-echo.onrender.com`;
+const BASE_URL = process.env.BASE_URL || "https://sandy-echo.onrender.com";
 
 app.use(cors());
 app.use(express.json());
-app.use(express.static(__dirname)); // Serve everything in same folder
+app.use(express.static(__dirname));
 
 // === Multer ===
 const upload = multer({
@@ -68,31 +67,28 @@ app.post("/api/upload", upload.single("voice"), async (req, res) => {
     };
 
     await db.collection("voices").insertOne(voice);
-
-    // ✅ FIXED: Correct working share link (/?v=ID)
-  
     res.json({ ok: true, link: `https://echo-chat-ybep.onrender.com/?v=${id}` });
-
-
   } catch (err) {
     console.error(err);
     res.json({ ok: false });
   }
 });
 
-// === Voice APIs ===
+// === Voice Fetch ===
 app.get("/api/voice/:id", async (req, res) => {
   const v = await db.collection("voices").findOne({ id: req.params.id });
   if (!v) return res.status(404).json({});
   res.json(v);
 });
 
+// === Audio File ===
 app.get("/play/:file", (req, res) => {
   const filePath = path.join(__dirname, req.params.file);
   if (fs.existsSync(filePath)) res.sendFile(filePath);
   else res.status(404).send("File not found");
 });
 
+// === Track Open/Play ===
 app.post("/api/open/:id", async (req, res) => {
   await db.collection("voices").updateOne({ id: req.params.id }, { $inc: { openCount: 1 } });
   res.json({ ok: true });
@@ -103,15 +99,12 @@ app.post("/api/play/:id", async (req, res) => {
   res.json({ ok: true });
 });
 
-// === Reveal System ===
+// === Reveal Request ===
 app.post("/api/request-reveal/:id", async (req, res) => {
   const voice = await db.collection("voices").findOne({ id: req.params.id });
   if (!voice) return res.status(404).json({ ok: false });
 
-  await db.collection("voices").updateOne(
-    { id: req.params.id },
-    { $set: { revealRequest: true } }
-  );
+  await db.collection("voices").updateOne({ id: req.params.id }, { $set: { revealRequest: true } });
 
   io.to(voice.senderId).emit("reveal_request", {
     id: voice.id,
@@ -121,6 +114,7 @@ app.post("/api/request-reveal/:id", async (req, res) => {
   res.json({ ok: true });
 });
 
+// === Approve Reveal (FIXED: includes sender name) ===
 app.post("/api/approve-reveal/:id", async (req, res) => {
   const voice = await db.collection("voices").findOne({ id: req.params.id });
   if (!voice) return res.status(404).json({ ok: false });
@@ -130,7 +124,8 @@ app.post("/api/approve-reveal/:id", async (req, res) => {
     { $set: { revealApproved: true } }
   );
 
-  io.emit("reveal_approved", { id: voice.id });
+  // emit to all so receiver can see name live
+  io.emit("reveal_approved", { id: voice.id, senderName: voice.senderName });
   res.json({ ok: true });
 });
 
@@ -144,14 +139,9 @@ app.get("/api/dashboard/:senderId", async (req, res) => {
   res.json(data);
 });
 
-// === Serve main index (for both root and /v/:id) ===
-app.get("/", (req, res) => {
-  res.sendFile(path.join(__dirname, "index.html"));
-});
-
-app.get("/v/:id", (req, res) => {
-  res.sendFile(path.join(__dirname, "index.html"));
-});
+// === Serve Pages ===
+app.get("/", (req, res) => res.sendFile(path.join(__dirname, "index.html")));
+app.get("/v/:id", (req, res) => res.sendFile(path.join(__dirname, "index.html")));
 
 // === Socket.io ===
 io.on("connection", (socket) => {
