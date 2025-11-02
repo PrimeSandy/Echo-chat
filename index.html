@@ -1058,12 +1058,29 @@
     </footer>
 
     <script>
-        // Data Management System
+        // Enhanced Data Management System with Shared Storage
         class VoiceMessageManager {
             constructor() {
-                this.messages = JSON.parse(localStorage.getItem('echoMessages')) || [];
-                this.requests = JSON.parse(localStorage.getItem('echoRequests')) || [];
-                this.stats = JSON.parse(localStorage.getItem('echoStats')) || {
+                // Use a shared storage key that both sender and receiver can access
+                this.storageKey = 'echoVoiceMessages';
+                this.requestsKey = 'echoVoiceRequests';
+                this.statsKey = 'echoVoiceStats';
+                
+                this.loadData();
+            }
+
+            loadData() {
+                // Load messages from localStorage
+                const storedMessages = localStorage.getItem(this.storageKey);
+                this.messages = storedMessages ? JSON.parse(storedMessages) : [];
+                
+                // Load requests from localStorage
+                const storedRequests = localStorage.getItem(this.requestsKey);
+                this.requests = storedRequests ? JSON.parse(storedRequests) : [];
+                
+                // Load stats from localStorage
+                const storedStats = localStorage.getItem(this.statsKey);
+                this.stats = storedStats ? JSON.parse(storedStats) : {
                     totalMessages: 0,
                     totalPlays: 0,
                     pendingRequests: 0,
@@ -1072,31 +1089,32 @@
             }
 
             saveMessages() {
-                localStorage.setItem('echoMessages', JSON.stringify(this.messages));
+                localStorage.setItem(this.storageKey, JSON.stringify(this.messages));
                 this.updateStats();
             }
 
             saveRequests() {
-                localStorage.setItem('echoRequests', JSON.stringify(this.requests));
+                localStorage.setItem(this.requestsKey, JSON.stringify(this.requests));
                 this.updateStats();
             }
 
             saveStats() {
-                localStorage.setItem('echoStats', JSON.stringify(this.stats));
+                localStorage.setItem(this.statsKey, JSON.stringify(this.stats));
             }
 
             addMessage(message) {
                 const newMessage = {
-                    id: 'msg_' + Date.now(),
+                    id: 'msg_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9),
                     title: message.title || 'Voice Message',
                     senderName: message.senderName || 'Anonymous',
                     privacy: message.privacy || 'anonymous',
                     expiry: message.expiry || 'permanent',
                     timestamp: new Date().toISOString(),
                     playCount: 0,
-                    audioUrl: message.audioUrl,
-                    audioBlob: message.audioBlob,
-                    status: 'active'
+                    audioBlob: message.audioBlob, // Store the actual audio data
+                    status: 'active',
+                    // Store additional metadata for better organization
+                    created: Date.now()
                 };
                 
                 this.messages.unshift(newMessage);
@@ -1106,6 +1124,10 @@
 
             getMessage(messageId) {
                 return this.messages.find(msg => msg.id === messageId);
+            }
+
+            getAllMessages() {
+                return this.messages;
             }
 
             deleteMessage(messageId) {
@@ -1177,6 +1199,27 @@
 
             getStats() {
                 return this.stats;
+            }
+
+            // Convert base64 audio back to blob URL for playback
+            getAudioUrl(audioBlob) {
+                if (!audioBlob) return null;
+                
+                try {
+                    // Convert base64 to blob
+                    const byteCharacters = atob(audioBlob.split(',')[1]);
+                    const byteNumbers = new Array(byteCharacters.length);
+                    for (let i = 0; i < byteCharacters.length; i++) {
+                        byteNumbers[i] = byteCharacters.charCodeAt(i);
+                    }
+                    const byteArray = new Uint8Array(byteNumbers);
+                    const blob = new Blob([byteArray], { type: 'audio/webm' });
+                    
+                    return URL.createObjectURL(blob);
+                } catch (error) {
+                    console.error('Error converting audio blob:', error);
+                    return null;
+                }
             }
         }
 
@@ -1261,6 +1304,9 @@
             senderView.style.display = 'none';
             receiverView.style.display = 'block';
             
+            // Reload data to ensure we have the latest messages
+            voiceManager.loadData();
+            
             const message = voiceManager.getMessage(voiceId);
             
             if (!message) {
@@ -1279,9 +1325,20 @@
             message.playCount = (message.playCount || 0) + 1;
             voiceManager.saveMessages();
             
-            // Set audio source
-            if (message.audioUrl) {
-                receiverAudio.src = message.audioUrl;
+            // Get audio URL from stored blob
+            const audioUrl = voiceManager.getAudioUrl(message.audioBlob);
+            
+            if (audioUrl) {
+                receiverAudio.src = audioUrl;
+                receiverAudio.onloadeddata = () => {
+                    showNotification('success', 'Voice message loaded successfully!');
+                };
+                receiverAudio.onerror = () => {
+                    showNotification('error', 'Failed to load audio. The file may be corrupted.');
+                };
+            } else {
+                showNotification('error', 'Audio data not found for this message.');
+                return;
             }
             
             // Show message info
@@ -1290,6 +1347,7 @@
                 <p><strong>Sender:</strong> ${message.privacy === 'anonymous' ? 'Anonymous' : message.senderName}</p>
                 <p><strong>Date:</strong> ${new Date(message.timestamp).toLocaleDateString()}</p>
                 <p><strong>Plays:</strong> ${message.playCount}</p>
+                <p><strong>Privacy:</strong> ${message.privacy.replace('_', ' ')}</p>
             `;
             
             // Handle privacy settings
@@ -1310,11 +1368,27 @@
             
             // Store current message ID for identity requests
             currentMessageId = message.id;
+            
+            // Update download button functionality
+            downloadBtn.onclick = () => {
+                if (audioUrl) {
+                    const a = document.createElement('a');
+                    a.href = audioUrl;
+                    a.download = `voice-message-${message.id}.webm`;
+                    document.body.appendChild(a);
+                    a.click();
+                    document.body.removeChild(a);
+                    showNotification('success', 'Download started!');
+                }
+            };
         }
 
         // Show receiver error
         function showReceiverError() {
             errorMessage.classList.remove('hidden');
+            receiverMessageInfo.classList.add('hidden');
+            identityRequestSection.classList.add('hidden');
+            identityRevealed.classList.add('hidden');
         }
 
         // Initialize App
@@ -1380,15 +1454,6 @@
             receiverAudio.play().catch(e => {
                 showNotification('error', 'Could not play audio. Please try again.');
             });
-        });
-
-        downloadBtn.addEventListener('click', () => {
-            if (receiverAudio.src) {
-                const a = document.createElement('a');
-                a.href = receiverAudio.src;
-                a.download = 'voice-message.webm';
-                a.click();
-            }
         });
 
         requestIdentityBtn.addEventListener('click', () => {
@@ -1516,16 +1581,12 @@
             reader.onload = function() {
                 const audioBlob = reader.result;
                 
-                // Create a unique URL for the audio
-                const audioUrl = URL.createObjectURL(currentAudioBlob);
-                
                 // Add message to data manager
                 const newMessage = voiceManager.addMessage({
                     title: `Voice Message ${voiceManager.getMessages().length + 1}`,
                     senderName: senderName,
                     privacy: privacy,
                     expiry: expiry,
-                    audioUrl: audioUrl,
                     audioBlob: audioBlob
                 });
                 
@@ -1535,6 +1596,13 @@
                 showNotification('success', 
                     `Voice message uploaded successfully!\n\nShare this link:\n${shareUrl}`
                 );
+                
+                // Copy to clipboard if possible
+                if (navigator.clipboard) {
+                    navigator.clipboard.writeText(shareUrl).then(() => {
+                        showNotification('info', 'Share link copied to clipboard!');
+                    });
+                }
                 
                 uploadBtn.disabled = false;
                 uploadBtn.innerHTML = '<i class="fas fa-cloud-upload-alt"></i> Upload Voice';
@@ -1568,7 +1636,9 @@
             
             emptyMessages.style.display = 'none';
             
-            voiceMessagesGrid.innerHTML = messages.map(message => `
+            voiceMessagesGrid.innerHTML = messages.map(message => {
+                const audioUrl = voiceManager.getAudioUrl(message.audioBlob);
+                return `
                 <div class="voice-card card" data-message-id="${message.id}">
                     <div class="voice-card-header">
                         <div class="voice-card-title">${message.title}</div>
@@ -1596,7 +1666,7 @@
                         </div>
                     </div>
                     <div class="voice-card-actions">
-                        <button class="btn btn-primary btn-sm play-btn">
+                        <button class="btn btn-primary btn-sm play-btn" ${!audioUrl ? 'disabled' : ''}>
                             <i class="fas fa-play"></i>
                             Play
                         </button>
@@ -1610,7 +1680,8 @@
                         </button>
                     </div>
                 </div>
-            `).join('');
+                `;
+            }).join('');
             
             // Add event listeners to message cards
             document.querySelectorAll('.play-btn').forEach(btn => {
@@ -1704,14 +1775,19 @@
         // Message Actions
         function playMessage(messageId) {
             const message = voiceManager.messages.find(msg => msg.id === messageId);
-            if (message && message.audioUrl) {
-                const audio = new Audio(message.audioUrl);
-                audio.play().catch(e => {
-                    showNotification('error', 'Could not play audio. Please try again.');
-                });
-                message.playCount = (message.playCount || 0) + 1;
-                voiceManager.saveMessages();
-                updateStatsDisplay();
+            if (message) {
+                const audioUrl = voiceManager.getAudioUrl(message.audioBlob);
+                if (audioUrl) {
+                    const audio = new Audio(audioUrl);
+                    audio.play().catch(e => {
+                        showNotification('error', 'Could not play audio. Please try again.');
+                    });
+                    message.playCount = (message.playCount || 0) + 1;
+                    voiceManager.saveMessages();
+                    updateStatsDisplay();
+                } else {
+                    showNotification('error', 'Audio data not available for this message.');
+                }
             }
         }
 
