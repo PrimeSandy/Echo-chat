@@ -682,6 +682,30 @@
             color: var(--light-text-secondary);
         }
 
+        /* Receiver View */
+        .receiver-view {
+            text-align: center;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .receiver-icon {
+            font-size: 4rem;
+            margin-bottom: var(--space-md);
+            color: var(--primary);
+        }
+
+        .sender-info {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: var(--radius-md);
+            padding: var(--space-md);
+            margin: var(--space-md) 0;
+        }
+
+        body.light-mode .sender-info {
+            background: rgba(0, 0, 0, 0.03);
+        }
+
         /* Responsive Design */
         @media (max-width: 768px) {
             h1 {
@@ -816,8 +840,8 @@
                 </div>
             </header>
 
-            <!-- Main Content -->
-            <main>
+            <!-- Sender View (Default) -->
+            <div id="senderView">
                 <!-- Stats Section -->
                 <section class="stats-container">
                     <div class="card stat-card">
@@ -959,7 +983,69 @@
                         </div>
                     </div>
                 </div>
-            </main>
+            </div>
+
+            <!-- Receiver View -->
+            <div id="receiverView" class="hidden">
+                <div class="receiver-view">
+                    <div class="card">
+                        <div class="receiver-icon">
+                            <i class="fas fa-message"></i>
+                        </div>
+                        <h2>Voice Message for You</h2>
+                        <p>You've received a voice message. Click play to listen.</p>
+                        
+                        <div id="receiverMessageInfo" class="sender-info hidden">
+                            <h4>Message Information</h4>
+                            <div id="messageDetails"></div>
+                        </div>
+                        
+                        <div class="audio-player mt-4">
+                            <audio id="receiverAudio" controls></audio>
+                        </div>
+                        
+                        <div class="flex-center gap-2 mt-4">
+                            <button id="playBtn" class="btn btn-primary">
+                                <i class="fas fa-play"></i>
+                                Play Message
+                            </button>
+                            <button id="downloadBtn" class="btn btn-secondary">
+                                <i class="fas fa-download"></i>
+                                Download
+                            </button>
+                        </div>
+                        
+                        <div id="identityRequestSection" class="mt-4 hidden">
+                            <div class="card">
+                                <h4>Identity Request</h4>
+                                <p>This sender has chosen to remain anonymous. Would you like to request their identity?</p>
+                                <button id="requestIdentityBtn" class="btn btn-warning">
+                                    <i class="fas fa-user-secret"></i>
+                                    Request Identity
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <div id="identityRevealed" class="mt-4 hidden">
+                            <div class="card">
+                                <h4>Sender Identity</h4>
+                                <div id="senderIdentity"></div>
+                            </div>
+                        </div>
+                        
+                        <div id="errorMessage" class="mt-4 hidden">
+                            <div class="card" style="border-left-color: var(--danger);">
+                                <h4 style="color: var(--danger);">Message Not Found</h4>
+                                <p>The voice message you're looking for doesn't exist or has expired.</p>
+                                <button id="backToHome" class="btn btn-primary mt-2">
+                                    <i class="fas fa-home"></i>
+                                    Back to Home
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -1009,12 +1095,17 @@
                     timestamp: new Date().toISOString(),
                     playCount: 0,
                     audioUrl: message.audioUrl,
+                    audioBlob: message.audioBlob,
                     status: 'active'
                 };
                 
                 this.messages.unshift(newMessage);
                 this.saveMessages();
                 return newMessage;
+            }
+
+            getMessage(messageId) {
+                return this.messages.find(msg => msg.id === messageId);
             }
 
             deleteMessage(messageId) {
@@ -1051,7 +1142,12 @@
 
                 if (approved) {
                     request.status = 'approved';
-                    // In a real app, you'd notify the requester here
+                    // Update the message to show sender identity
+                    const message = this.messages.find(msg => msg.id === request.messageId);
+                    if (message) {
+                        message.revealApproved = true;
+                        this.saveMessages();
+                    }
                 } else {
                     request.status = 'denied';
                 }
@@ -1112,6 +1208,21 @@
         const pendingRequestsEl = document.getElementById('pendingRequests');
         const successRateEl = document.getElementById('successRate');
 
+        // Receiver Elements
+        const senderView = document.getElementById('senderView');
+        const receiverView = document.getElementById('receiverView');
+        const receiverAudio = document.getElementById('receiverAudio');
+        const playBtn = document.getElementById('playBtn');
+        const downloadBtn = document.getElementById('downloadBtn');
+        const requestIdentityBtn = document.getElementById('requestIdentityBtn');
+        const identityRequestSection = document.getElementById('identityRequestSection');
+        const identityRevealed = document.getElementById('identityRevealed');
+        const senderIdentity = document.getElementById('senderIdentity');
+        const errorMessage = document.getElementById('errorMessage');
+        const backToHome = document.getElementById('backToHome');
+        const receiverMessageInfo = document.getElementById('receiverMessageInfo');
+        const messageDetails = document.getElementById('messageDetails');
+
         // Initialize Data Manager
         const voiceManager = new VoiceMessageManager();
 
@@ -1122,6 +1233,89 @@
         let mediaRecorder;
         let audioChunks = [];
         let currentAudioBlob = null;
+        let currentMessageId = null;
+
+        // Check URL parameters on load
+        function checkUrlParams() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const voiceId = urlParams.get('voice');
+            
+            if (voiceId) {
+                // Show receiver view
+                showReceiverView(voiceId);
+            } else {
+                // Show sender view
+                showSenderView();
+            }
+        }
+
+        // Show Sender View
+        function showSenderView() {
+            senderView.style.display = 'block';
+            receiverView.style.display = 'none';
+            initApp();
+        }
+
+        // Show Receiver View
+        function showReceiverView(voiceId) {
+            senderView.style.display = 'none';
+            receiverView.style.display = 'block';
+            
+            const message = voiceManager.getMessage(voiceId);
+            
+            if (!message) {
+                // Message not found
+                showReceiverError();
+                return;
+            }
+            
+            // Load message for receiver
+            loadReceiverMessage(message);
+        }
+
+        // Load message for receiver
+        function loadReceiverMessage(message) {
+            // Update play count
+            message.playCount = (message.playCount || 0) + 1;
+            voiceManager.saveMessages();
+            
+            // Set audio source
+            if (message.audioUrl) {
+                receiverAudio.src = message.audioUrl;
+            }
+            
+            // Show message info
+            receiverMessageInfo.classList.remove('hidden');
+            messageDetails.innerHTML = `
+                <p><strong>Sender:</strong> ${message.privacy === 'anonymous' ? 'Anonymous' : message.senderName}</p>
+                <p><strong>Date:</strong> ${new Date(message.timestamp).toLocaleDateString()}</p>
+                <p><strong>Plays:</strong> ${message.playCount}</p>
+            `;
+            
+            // Handle privacy settings
+            if (message.privacy === 'reveal_on_request') {
+                if (message.revealApproved) {
+                    // Identity already approved
+                    identityRevealed.classList.remove('hidden');
+                    senderIdentity.innerHTML = `<p><strong>Sender:</strong> ${message.senderName}</p>`;
+                } else {
+                    // Show identity request option
+                    identityRequestSection.classList.remove('hidden');
+                }
+            } else if (message.privacy === 'auto_reveal') {
+                // Show identity automatically
+                identityRevealed.classList.remove('hidden');
+                senderIdentity.innerHTML = `<p><strong>Sender:</strong> ${message.senderName}</p>`;
+            }
+            
+            // Store current message ID for identity requests
+            currentMessageId = message.id;
+        }
+
+        // Show receiver error
+        function showReceiverError() {
+            errorMessage.classList.remove('hidden');
+        }
 
         // Initialize App
         function initApp() {
@@ -1180,6 +1374,41 @@
         stopBtn.addEventListener('click', stopRecording);
         reRecordBtn.addEventListener('click', resetRecording);
         clearAllBtn.addEventListener('click', clearAllMessages);
+
+        // Receiver functionality
+        playBtn.addEventListener('click', () => {
+            receiverAudio.play().catch(e => {
+                showNotification('error', 'Could not play audio. Please try again.');
+            });
+        });
+
+        downloadBtn.addEventListener('click', () => {
+            if (receiverAudio.src) {
+                const a = document.createElement('a');
+                a.href = receiverAudio.src;
+                a.download = 'voice-message.webm';
+                a.click();
+            }
+        });
+
+        requestIdentityBtn.addEventListener('click', () => {
+            if (currentMessageId) {
+                voiceManager.addRequest(currentMessageId, {
+                    timestamp: new Date().toISOString(),
+                    userAgent: navigator.userAgent
+                });
+                showNotification('success', 'Identity request sent to the sender.');
+                identityRequestSection.classList.add('hidden');
+            }
+        });
+
+        backToHome.addEventListener('click', () => {
+            // Remove voice parameter from URL and reload
+            const url = new URL(window.location);
+            url.searchParams.delete('voice');
+            window.history.replaceState({}, '', url);
+            showSenderView();
+        });
 
         function startRecording() {
             if (isRecording) return;
@@ -1282,9 +1511,12 @@
             uploadBtn.disabled = true;
             uploadBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Uploading...';
             
-            // Simulate upload process
-            setTimeout(() => {
-                // Create a unique URL for the audio (in a real app, this would be a server URL)
+            // Convert blob to base64 for storage
+            const reader = new FileReader();
+            reader.onload = function() {
+                const audioBlob = reader.result;
+                
+                // Create a unique URL for the audio
                 const audioUrl = URL.createObjectURL(currentAudioBlob);
                 
                 // Add message to data manager
@@ -1293,12 +1525,15 @@
                     senderName: senderName,
                     privacy: privacy,
                     expiry: expiry,
-                    audioUrl: audioUrl
+                    audioUrl: audioUrl,
+                    audioBlob: audioBlob
                 });
                 
+                // Generate shareable link
+                const shareUrl = `${window.location.origin}${window.location.pathname}?voice=${newMessage.id}`;
+                
                 showNotification('success', 
-                    `Voice message "${newMessage.title}" uploaded successfully!\n\n` +
-                    `Share this link: ${window.location.origin}?voice=${newMessage.id}`
+                    `Voice message uploaded successfully!\n\nShare this link:\n${shareUrl}`
                 );
                 
                 uploadBtn.disabled = false;
@@ -1316,7 +1551,8 @@
                 
                 // Switch to messages tab to see the new message
                 document.querySelector('.tab[data-tab="messages"]').click();
-            }, 2000);
+            };
+            reader.readAsDataURL(currentAudioBlob);
         });
 
         // Render Messages
@@ -1469,20 +1705,37 @@
         function playMessage(messageId) {
             const message = voiceManager.messages.find(msg => msg.id === messageId);
             if (message && message.audioUrl) {
-                // In a real app, you would play the audio
+                const audio = new Audio(message.audioUrl);
+                audio.play().catch(e => {
+                    showNotification('error', 'Could not play audio. Please try again.');
+                });
                 message.playCount = (message.playCount || 0) + 1;
                 voiceManager.saveMessages();
                 updateStatsDisplay();
-                showNotification('success', `Playing: ${message.title}`);
             }
         }
 
         function shareMessage(messageId) {
             const message = voiceManager.messages.find(msg => msg.id === messageId);
             if (message) {
-                const shareUrl = `${window.location.origin}?voice=${message.id}`;
-                // In a real app, you would use the Web Share API or copy to clipboard
-                showNotification('success', `Share this link: ${shareUrl}`);
+                const shareUrl = `${window.location.origin}${window.location.pathname}?voice=${message.id}`;
+                
+                // Try to use Web Share API if available
+                if (navigator.share) {
+                    navigator.share({
+                        title: 'Voice Message',
+                        text: 'Check out this voice message!',
+                        url: shareUrl
+                    });
+                } else {
+                    // Fallback to copying to clipboard
+                    navigator.clipboard.writeText(shareUrl).then(() => {
+                        showNotification('success', 'Share link copied to clipboard!');
+                    }).catch(() => {
+                        // Final fallback - show the URL
+                        showNotification('info', `Share this link: ${shareUrl}`);
+                    });
+                }
             }
         }
 
@@ -1570,7 +1823,7 @@
         });
 
         // Initialize the app
-        document.addEventListener('DOMContentLoaded', initApp);
+        document.addEventListener('DOMContentLoaded', checkUrlParams);
     </script>
 </body>
 </html>
