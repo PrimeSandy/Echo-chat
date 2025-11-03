@@ -3,1903 +3,867 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Echo - Professional Voice Messenger</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <title>Echo Voice - Secure Voice Messaging</title>
     <style>
-        :root {
-            /* Color Palette */
-            --primary: #4361ee;
-            --primary-dark: #3a56d4;
-            --secondary: #7209b7;
-            --accent: #f72585;
-            --success: #4cc9f0;
-            --warning: #f8961e;
-            --danger: #f94144;
-            
-            /* Neutral Colors */
-            --dark-bg: #121826;
-            --dark-card: #1e293b;
-            --dark-border: #334155;
-            --dark-text: #f8fafc;
-            --dark-text-secondary: #cbd5e1;
-            
-            --light-bg: #f8fafc;
-            --light-card: #ffffff;
-            --light-border: #e2e8f0;
-            --light-text: #1e293b;
-            --light-text-secondary: #64748b;
-            
-            /* Typography */
-            --font-main: 'Inter', sans-serif;
-            
-            /* Spacing */
-            --space-xs: 0.5rem;
-            --space-sm: 1rem;
-            --space-md: 1.5rem;
-            --space-lg: 2rem;
-            --space-xl: 3rem;
-            
-            /* Border Radius */
-            --radius-sm: 8px;
-            --radius-md: 12px;
-            --radius-lg: 16px;
-            --radius-xl: 24px;
-            
-            /* Shadows */
-            --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.1);
-            --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.15);
-            --shadow-lg: 0 10px 25px rgba(0, 0, 0, 0.2);
-            --shadow-xl: 0 20px 40px rgba(0, 0, 0, 0.25);
-            
-            /* Transitions */
-            --transition-fast: 0.2s ease;
-            --transition-normal: 0.3s ease;
-            --transition-slow: 0.5s ease;
-        }
-
-        /* Base Styles */
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
-            transition: color var(--transition-fast), background-color var(--transition-fast), border-color var(--transition-fast);
-        }
-
-        html, body {
-            height: 100%;
-            font-family: var(--font-main);
-            font-size: 16px;
-            line-height: 1.6;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
         }
 
         body {
-            background: linear-gradient(135deg, var(--dark-bg) 0%, #1a2238 100%);
-            color: var(--dark-text);
-            display: flex;
-            flex-direction: column;
+            background: linear-gradient(135deg, #1a2a6c, #b21f1f, #fdbb2d);
             min-height: 100vh;
-            overflow-x: hidden;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
         }
 
-        body.light-mode {
-            background: linear-gradient(135deg, var(--light-bg) 0%, #e2e8f0 100%);
-            color: var(--light-text);
-        }
-
-        /* Typography */
-        h1, h2, h3, h4, h5, h6 {
-            font-weight: 700;
-            line-height: 1.3;
-            margin-bottom: var(--space-sm);
-        }
-
-        h1 {
-            font-size: 2.5rem;
-            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-        }
-
-        h2 {
-            font-size: 2rem;
-        }
-
-        h3 {
-            font-size: 1.5rem;
-        }
-
-        p {
-            margin-bottom: var(--space-sm);
-            color: var(--dark-text-secondary);
-        }
-
-        body.light-mode p {
-            color: var(--light-text-secondary);
-        }
-
-        a {
-            color: var(--primary);
-            text-decoration: none;
-            transition: color var(--transition-fast);
-        }
-
-        a:hover {
-            color: var(--primary-dark);
-        }
-
-        /* Layout */
         .container {
             width: 100%;
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 0 var(--space-md);
+            max-width: 800px;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.3);
+            overflow: hidden;
         }
 
-        .app {
+        header {
+            background: linear-gradient(90deg, #1a2a6c, #2c3e50);
+            color: white;
+            padding: 25px 30px;
+            text-align: center;
+        }
+
+        header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            font-weight: 700;
+        }
+
+        header p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+
+        .app-container {
+            display: flex;
+            min-height: 500px;
+        }
+
+        .sidebar {
+            width: 250px;
+            background: #2c3e50;
+            color: white;
+            padding: 20px;
+        }
+
+        .nav-item {
+            padding: 15px;
+            margin-bottom: 10px;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+        }
+
+        .nav-item i {
+            margin-right: 10px;
+            font-size: 1.2rem;
+        }
+
+        .nav-item.active {
+            background: #1a2a6c;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        .nav-item:hover:not(.active) {
+            background: #34495e;
+        }
+
+        .main-content {
             flex: 1;
+            padding: 30px;
             display: flex;
             flex-direction: column;
-            padding: var(--space-lg) 0;
         }
 
-        /* Header */
-        .header {
+        .page {
+            display: none;
+            flex: 1;
+        }
+
+        .page.active {
             display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: var(--space-md) 0;
-            margin-bottom: var(--space-lg);
+            flex-direction: column;
         }
 
-        .logo {
+        .page-title {
+            font-size: 1.8rem;
+            color: #2c3e50;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #eee;
+        }
+
+        .recorder-container {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            margin-bottom: 25px;
+        }
+
+        .timer {
+            font-size: 2.5rem;
+            text-align: center;
+            margin: 20px 0;
+            color: #2c3e50;
+            font-weight: bold;
+        }
+
+        .controls {
             display: flex;
-            align-items: center;
-            gap: var(--space-sm);
+            justify-content: center;
+            gap: 20px;
+            margin-top: 20px;
         }
 
-        .logo-icon {
-            font-size: 2rem;
-            color: var(--primary);
-        }
-
-        .header-actions {
-            display: flex;
-            gap: var(--space-sm);
-        }
-
-        /* Buttons */
         .btn {
-            display: inline-flex;
+            padding: 12px 25px;
+            border: none;
+            border-radius: 50px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
             align-items: center;
             justify-content: center;
-            gap: var(--space-xs);
-            padding: 0.75rem 1.5rem;
-            border: none;
-            border-radius: var(--radius-md);
-            font-family: var(--font-main);
-            font-weight: 600;
-            font-size: 0.95rem;
-            cursor: pointer;
-            transition: all var(--transition-normal);
-            text-decoration: none;
-            white-space: nowrap;
         }
 
-        .btn:disabled {
-            opacity: 0.6;
-            cursor: not-allowed;
-            transform: none !important;
+        .btn i {
+            margin-right: 8px;
         }
 
-        .btn-primary {
-            background: var(--primary);
+        .btn-record {
+            background: #e74c3c;
             color: white;
-            box-shadow: var(--shadow-sm);
+            box-shadow: 0 5px 15px rgba(231, 76, 60, 0.4);
         }
 
-        .btn-primary:hover:not(:disabled) {
-            background: var(--primary-dark);
-            transform: translateY(-2px);
-            box-shadow: var(--shadow-md);
+        .btn-record:hover {
+            background: #c0392b;
+            transform: translateY(-3px);
         }
 
-        .btn-secondary {
-            background: rgba(255, 255, 255, 0.1);
-            color: var(--dark-text);
-            border: 1px solid var(--dark-border);
-        }
-
-        body.light-mode .btn-secondary {
-            background: rgba(0, 0, 0, 0.05);
-            color: var(--light-text);
-            border: 1px solid var(--light-border);
-        }
-
-        .btn-secondary:hover:not(:disabled) {
-            background: rgba(255, 255, 255, 0.15);
-            transform: translateY(-2px);
-        }
-
-        body.light-mode .btn-secondary:hover:not(:disabled) {
-            background: rgba(0, 0, 0, 0.08);
-        }
-
-        .btn-danger {
-            background: var(--danger);
+        .btn-stop {
+            background: #34495e;
             color: white;
         }
 
-        .btn-danger:hover:not(:disabled) {
-            background: #e03131;
-            transform: translateY(-2px);
+        .btn-stop:hover {
+            background: #2c3e50;
+            transform: translateY(-3px);
         }
 
-        .btn-success {
-            background: var(--success);
-            color: #000;
+        .btn-play {
+            background: #2ecc71;
+            color: white;
+            box-shadow: 0 5px 15px rgba(46, 204, 113, 0.4);
         }
 
-        .btn-success:hover:not(:disabled) {
-            background: #3aa8d0;
-            transform: translateY(-2px);
+        .btn-play:hover {
+            background: #27ae60;
+            transform: translateY(-3px);
         }
 
-        .btn-warning {
-            background: var(--warning);
-            color: #000;
+        .btn-send {
+            background: #3498db;
+            color: white;
+            box-shadow: 0 5px 15px rgba(52, 152, 219, 0.4);
         }
 
-        .btn-warning:hover:not(:disabled) {
-            background: #e0861b;
-            transform: translateY(-2px);
+        .btn-send:hover {
+            background: #2980b9;
+            transform: translateY(-3px);
         }
 
-        .btn-sm {
-            padding: 0.5rem 1rem;
+        .visualizer {
+            height: 100px;
+            background: #f8f9fa;
+            border-radius: 10px;
+            margin: 20px 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+        }
+
+        .wave {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+        }
+
+        .bar {
+            width: 4px;
+            height: 20px;
+            background: #3498db;
+            margin: 0 2px;
+            border-radius: 2px;
+            animation: wave 1.2s infinite ease-in-out;
+        }
+
+        @keyframes wave {
+            0%, 100% { transform: scaleY(0.5); }
+            50% { transform: scaleY(2.5); }
+        }
+
+        .messages-container {
+            flex: 1;
+            background: #f8f9fa;
+            border-radius: 15px;
+            padding: 20px;
+            overflow-y: auto;
+            max-height: 350px;
+        }
+
+        .message {
+            background: white;
+            border-radius: 15px;
+            padding: 15px;
+            margin-bottom: 15px;
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.08);
+            border-left: 4px solid #3498db;
+        }
+
+        .message-header {
+            display: flex;
+            justify-content: between;
+            margin-bottom: 10px;
+        }
+
+        .message-sender {
+            font-weight: bold;
+            color: #2c3e50;
+        }
+
+        .message-time {
+            color: #7f8c8d;
             font-size: 0.85rem;
         }
 
-        .btn-icon {
-            padding: 0.75rem;
-            width: 3rem;
-            height: 3rem;
-        }
-
-        /* Cards */
-        .card {
-            background: var(--dark-card);
-            border-radius: var(--radius-lg);
-            padding: var(--space-lg);
-            box-shadow: var(--shadow-md);
-            border: 1px solid var(--dark-border);
-            transition: transform var(--transition-normal), box-shadow var(--transition-normal);
-        }
-
-        body.light-mode .card {
-            background: var(--light-card);
-            border: 1px solid var(--light-border);
-        }
-
-        .card:hover {
-            transform: translateY(-5px);
-            box-shadow: var(--shadow-lg);
-        }
-
-        .card-header {
+        .message-audio {
             display: flex;
-            justify-content: space-between;
             align-items: center;
-            margin-bottom: var(--space-md);
+            margin-top: 10px;
         }
 
-        .card-title {
-            font-size: 1.25rem;
-            font-weight: 600;
-            color: var(--dark-text);
+        .audio-player {
+            flex: 1;
+            height: 30px;
+            background: #f1f2f6;
+            border-radius: 15px;
+            margin-right: 10px;
+            overflow: hidden;
         }
 
-        body.light-mode .card-title {
-            color: var(--light-text);
+        .progress-bar {
+            height: 100%;
+            background: #3498db;
+            width: 0%;
+            transition: width 0.1s linear;
         }
 
-        /* Forms */
-        .form-group {
-            margin-bottom: var(--space-md);
-        }
-
-        label {
-            display: block;
-            margin-bottom: var(--space-xs);
-            font-weight: 500;
-            color: var(--dark-text);
-        }
-
-        body.light-mode label {
-            color: var(--light-text);
-        }
-
-        .form-control {
-            width: 100%;
-            padding: 0.875rem 1rem;
-            border: 1px solid var(--dark-border);
-            border-radius: var(--radius-md);
-            background: rgba(255, 255, 255, 0.05);
-            color: var(--dark-text);
-            font-family: var(--font-main);
-            font-size: 1rem;
-            transition: all var(--transition-fast);
-        }
-
-        body.light-mode .form-control {
-            background: white;
-            border: 1px solid var(--light-border);
-            color: var(--light-text);
-        }
-
-        .form-control:focus {
-            outline: none;
-            border-color: var(--primary);
-            box-shadow: 0 0 0 3px rgba(67, 97, 238, 0.2);
-        }
-
-        select.form-control {
-            appearance: none;
-            background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
-            background-repeat: no-repeat;
-            background-position: right 1rem center;
-            background-size: 1rem;
-            padding-right: 3rem;
-        }
-
-        /* Recording Section */
-        .recording-section {
-            text-align: center;
-            padding: var(--space-lg) 0;
-        }
-
-        .mic-container {
-            position: relative;
-            display: inline-block;
-            margin-bottom: var(--space-md);
-        }
-
-        .mic-btn {
-            width: 120px;
-            height: 120px;
+        .play-btn {
+            background: #3498db;
+            color: white;
+            border: none;
+            width: 30px;
+            height: 30px;
             border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
-            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
-            color: white;
-            font-size: 2.5rem;
             cursor: pointer;
-            border: none;
-            box-shadow: var(--shadow-lg);
-            transition: all var(--transition-normal);
-            position: relative;
-            overflow: hidden;
         }
 
-        .mic-btn:hover:not(:disabled) {
-            transform: scale(1.05);
-            box-shadow: var(--shadow-xl);
+        .contacts-list {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
         }
 
-        .mic-btn.recording {
-            background: linear-gradient(135deg, var(--danger) 0%, #c1121f 100%);
+        .contact {
+            display: flex;
+            align-items: center;
+            padding: 15px;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.08);
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .contact:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .contact-avatar {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: #3498db;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            font-size: 1.2rem;
+            margin-right: 15px;
+        }
+
+        .contact-info h3 {
+            color: #2c3e50;
+            margin-bottom: 5px;
+        }
+
+        .contact-info p {
+            color: #7f8c8d;
+            font-size: 0.9rem;
+        }
+
+        .status-online {
+            width: 10px;
+            height: 10px;
+            background: #2ecc71;
+            border-radius: 50%;
+            margin-left: auto;
+        }
+
+        .status-offline {
+            width: 10px;
+            height: 10px;
+            background: #95a5a6;
+            border-radius: 50%;
+            margin-left: auto;
+        }
+
+        footer {
+            text-align: center;
+            padding: 20px;
+            background: #f8f9fa;
+            color: #7f8c8d;
+            font-size: 0.9rem;
+        }
+
+        .recording-indicator {
+            display: none;
+            text-align: center;
+            color: #e74c3c;
+            font-weight: bold;
+            margin: 10px 0;
+        }
+
+        .pulse {
             animation: pulse 1.5s infinite;
         }
 
         @keyframes pulse {
-            0% {
-                box-shadow: 0 0 0 0 rgba(244, 67, 54, 0.7);
-            }
-            70% {
-                box-shadow: 0 0 0 15px rgba(244, 67, 54, 0);
-            }
-            100% {
-                box-shadow: 0 0 0 0 rgba(244, 67, 54, 0);
-            }
-        }
-
-        .recording-indicator {
-            position: absolute;
-            top: -10px;
-            right: -10px;
-            width: 30px;
-            height: 30px;
-            background: var(--danger);
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: white;
-            font-size: 0.8rem;
-            animation: blink 1s infinite;
-        }
-
-        @keyframes blink {
-            0%, 100% { opacity: 1; }
+            0% { opacity: 1; }
             50% { opacity: 0.5; }
+            100% { opacity: 1; }
         }
 
-        .recording-timer {
-            font-size: 1.25rem;
-            font-weight: 600;
-            margin-top: var(--space-sm);
-            color: var(--dark-text);
-        }
-
-        body.light-mode .recording-timer {
-            color: var(--light-text);
-        }
-
-        /* Audio Player */
-        .audio-player {
-            width: 100%;
-            margin: var(--space-md) 0;
-            border-radius: var(--radius-md);
-            background: rgba(255, 255, 255, 0.05);
-            padding: var(--space-md);
-        }
-
-        body.light-mode .audio-player {
-            background: rgba(0, 0, 0, 0.03);
-        }
-
-        .audio-player audio {
-            width: 100%;
-            border-radius: var(--radius-sm);
-        }
-
-        /* Grid Layout */
-        .grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-            gap: var(--space-md);
-            margin-top: var(--space-md);
-        }
-
-        /* Voice Message Card */
-        .voice-card {
-            display: flex;
-            flex-direction: column;
-            height: 100%;
-        }
-
-        .voice-card-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: flex-start;
-            margin-bottom: var(--space-sm);
-        }
-
-        .voice-card-title {
-            font-weight: 600;
-            font-size: 1.1rem;
-            color: var(--dark-text);
-        }
-
-        body.light-mode .voice-card-title {
-            color: var(--light-text);
-        }
-
-        .voice-card-meta {
-            display: flex;
-            flex-direction: column;
-            gap: 0.25rem;
-            margin-bottom: var(--space-sm);
-        }
-
-        .voice-card-meta-item {
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-            font-size: 0.85rem;
-            color: var(--dark-text-secondary);
-        }
-
-        body.light-mode .voice-card-meta-item {
-            color: var(--light-text-secondary);
-        }
-
-        .voice-card-actions {
-            display: flex;
-            gap: var(--space-xs);
-            margin-top: auto;
-        }
-
-        .status-badge {
-            display: inline-flex;
-            align-items: center;
-            gap: 0.25rem;
-            padding: 0.25rem 0.75rem;
-            border-radius: 50px;
-            font-size: 0.75rem;
-            font-weight: 600;
-        }
-
-        .status-active {
-            background: rgba(76, 201, 240, 0.2);
-            color: var(--success);
-        }
-
-        .status-expired {
-            background: rgba(249, 65, 68, 0.2);
-            color: var(--danger);
-        }
-
-        .status-pending {
-            background: rgba(248, 150, 30, 0.2);
-            color: var(--warning);
-        }
-
-        /* Tabs */
-        .tabs {
-            display: flex;
-            border-bottom: 1px solid var(--dark-border);
-            margin-bottom: var(--space-lg);
-        }
-
-        body.light-mode .tabs {
-            border-bottom: 1px solid var(--light-border);
-        }
-
-        .tab {
-            padding: var(--space-sm) var(--space-md);
-            cursor: pointer;
-            font-weight: 500;
-            border-bottom: 2px solid transparent;
-            transition: all var(--transition-fast);
-            color: var(--dark-text-secondary);
-        }
-
-        body.light-mode .tab {
-            color: var(--light-text-secondary);
-        }
-
-        .tab.active {
-            color: var(--primary);
-            border-bottom-color: var(--primary);
-        }
-
-        .tab-content {
-            display: none;
-        }
-
-        .tab-content.active {
-            display: block;
-        }
-
-        /* Stats */
-        .stats-container {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: var(--space-md);
-            margin-bottom: var(--space-lg);
-        }
-
-        .stat-card {
-            text-align: center;
-            padding: var(--space-md);
-        }
-
-        .stat-value {
-            font-size: 2.5rem;
-            font-weight: 700;
-            margin-bottom: var(--space-xs);
-            color: var(--primary);
-        }
-
-        .stat-label {
-            font-size: 0.9rem;
-            color: var(--dark-text-secondary);
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            font-weight: 600;
-        }
-
-        body.light-mode .stat-label {
-            color: var(--light-text-secondary);
-        }
-
-        /* Empty State */
-        .empty-state {
-            text-align: center;
-            padding: var(--space-xl);
-            color: var(--dark-text-secondary);
-        }
-
-        body.light-mode .empty-state {
-            color: var(--light-text-secondary);
-        }
-
-        .empty-state-icon {
-            font-size: 4rem;
-            margin-bottom: var(--space-md);
-            opacity: 0.5;
-        }
-
-        /* Notification */
-        .notification {
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            background: var(--dark-card);
-            color: var(--dark-text);
-            padding: var(--space-md);
-            border-radius: var(--radius-md);
-            box-shadow: var(--shadow-lg);
-            border-left: 4px solid var(--primary);
-            z-index: 1000;
-            display: flex;
-            align-items: center;
-            gap: var(--space-sm);
-            max-width: 400px;
-            transform: translateX(120%);
-            transition: transform var(--transition-normal);
-        }
-
-        body.light-mode .notification {
-            background: var(--light-card);
-            color: var(--light-text);
-        }
-
-        .notification.show {
-            transform: translateX(0);
-        }
-
-        .notification-icon {
-            font-size: 1.5rem;
-        }
-
-        .notification-success {
-            border-left-color: var(--success);
-        }
-
-        .notification-error {
-            border-left-color: var(--danger);
-        }
-
-        .notification-warning {
-            border-left-color: var(--warning);
-        }
-
-        /* Footer */
-        .footer {
-            text-align: center;
-            padding: var(--space-lg) 0;
-            margin-top: var(--space-xl);
-            border-top: 1px solid var(--dark-border);
-            color: var(--dark-text-secondary);
-        }
-
-        body.light-mode .footer {
-            border-top: 1px solid var(--light-border);
-            color: var(--light-text-secondary);
-        }
-
-        /* Receiver View */
-        .receiver-view {
-            text-align: center;
-            max-width: 600px;
-            margin: 0 auto;
-        }
-
-        .receiver-icon {
-            font-size: 4rem;
-            margin-bottom: var(--space-md);
-            color: var(--primary);
-        }
-
-        .sender-info {
-            background: rgba(255, 255, 255, 0.05);
-            border-radius: var(--radius-md);
-            padding: var(--space-md);
-            margin: var(--space-md) 0;
-        }
-
-        body.light-mode .sender-info {
-            background: rgba(0, 0, 0, 0.03);
-        }
-
-        /* Responsive Design */
         @media (max-width: 768px) {
-            h1 {
-                font-size: 2rem;
-            }
-            
-            h2 {
-                font-size: 1.75rem;
-            }
-            
-            .header {
+            .app-container {
                 flex-direction: column;
-                gap: var(--space-md);
-                text-align: center;
             }
             
-            .grid {
-                grid-template-columns: 1fr;
-            }
-            
-            .mic-btn {
-                width: 100px;
-                height: 100px;
-                font-size: 2rem;
-            }
-            
-            .stats-container {
-                grid-template-columns: repeat(2, 1fr);
-            }
-            
-            .voice-card-actions {
-                flex-wrap: wrap;
+            .sidebar {
+                width: 100%;
             }
         }
-
-        @media (max-width: 480px) {
-            .container {
-                padding: 0 var(--space-sm);
-            }
-            
-            .card {
-                padding: var(--space-md);
-            }
-            
-            .stats-container {
-                grid-template-columns: 1fr;
-            }
-            
-            .tabs {
-                flex-wrap: wrap;
-            }
-            
-            .tab {
-                flex: 1;
-                min-width: 120px;
-                text-align: center;
-            }
-        }
-
-        /* Utility Classes */
-        .hidden {
-            display: none !important;
-        }
-
-        .text-center {
-            text-align: center;
-        }
-
-        .mt-1 { margin-top: var(--space-xs); }
-        .mt-2 { margin-top: var(--space-sm); }
-        .mt-3 { margin-top: var(--space-md); }
-        .mt-4 { margin-top: var(--space-lg); }
-        .mt-5 { margin-top: var(--space-xl); }
-
-        .mb-1 { margin-bottom: var(--space-xs); }
-        .mb-2 { margin-bottom: var(--space-sm); }
-        .mb-3 { margin-bottom: var(--space-md); }
-        .mb-4 { margin-bottom: var(--space-lg); }
-        .mb-5 { margin-bottom: var(--space-xl); }
-
-        .flex {
-            display: flex;
-        }
-
-        .flex-center {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .flex-between {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-        }
-
-        .flex-column {
-            flex-direction: column;
-        }
-
-        .gap-1 { gap: var(--space-xs); }
-        .gap-2 { gap: var(--space-sm); }
-        .gap-3 { gap: var(--space-md); }
-        .gap-4 { gap: var(--space-lg); }
-        .gap-5 { gap: var(--space-xl); }
     </style>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
 <body>
-    <!-- Notification System -->
-    <div id="notification" class="notification">
-        <div class="notification-icon"></div>
-        <div class="notification-content"></div>
-    </div>
-
     <div class="container">
-        <div class="app">
-            <!-- Header -->
-            <header class="header">
-                <div class="logo">
-                    <i class="fas fa-wave-square logo-icon"></i>
-                    <h1>Echo Voice</h1>
+        <header>
+            <h1><i class="fas fa-wave-square"></i> Echo Voice</h1>
+            <p>Secure, private voice messaging for professionals</p>
+        </header>
+        
+        <div class="app-container">
+            <div class="sidebar">
+                <div class="nav-item active" data-page="record">
+                    <i class="fas fa-microphone"></i> Record Message
                 </div>
-                <div class="header-actions">
-                    <button id="themeToggle" class="btn btn-secondary">
-                        <i class="fas fa-moon"></i>
-                        <span>Dark Mode</span>
-                    </button>
-                    <button id="guideBtn" class="btn btn-secondary">
-                        <i class="fas fa-question-circle"></i>
-                        <span>Guide</span>
-                    </button>
+                <div class="nav-item" data-page="inbox">
+                    <i class="fas fa-inbox"></i> Inbox
+                    <span class="message-count">3</span>
                 </div>
-            </header>
-
-            <!-- Sender View (Default) -->
-            <div id="senderView">
-                <!-- Stats Section -->
-                <section class="stats-container">
-                    <div class="card stat-card">
-                        <div class="stat-value" id="totalMessages">0</div>
-                        <div class="stat-label">Voice Messages</div>
-                    </div>
-                    <div class="card stat-card">
-                        <div class="stat-value" id="totalPlays">0</div>
-                        <div class="stat-label">Total Plays</div>
-                    </div>
-                    <div class="card stat-card">
-                        <div class="stat-value" id="pendingRequests">0</div>
-                        <div class="stat-label">Pending Requests</div>
-                    </div>
-                    <div class="card stat-card">
-                        <div class="stat-value" id="successRate">0%</div>
-                        <div class="stat-label">Success Rate</div>
-                    </div>
-                </section>
-
-                <!-- Tabs -->
-                <div class="tabs">
-                    <div class="tab active" data-tab="record">Record New</div>
-                    <div class="tab" data-tab="messages">My Messages</div>
-                    <div class="tab" data-tab="requests">Pending Requests</div>
+                <div class="nav-item" data-page="sent">
+                    <i class="fas fa-paper-plane"></i> Sent
                 </div>
-
-                <!-- Record Tab -->
-                <div id="record-tab" class="tab-content active">
-                    <div class="card">
-                        <div class="card-header">
-                            <h2 class="card-title">Record Voice Message</h2>
-                        </div>
-                        
-                        <div class="form-group">
-                            <label for="senderName">Your Name</label>
-                            <input type="text" id="senderName" class="form-control" placeholder="Enter your name or stay anonymous">
-                        </div>
-                        
-                        <div class="form-group">
-                            <label for="privacy">Privacy Setting</label>
-                            <select id="privacy" class="form-control">
-                                <option value="anonymous">Anonymous - Hide identity</option>
-                                <option value="reveal_on_request">Reveal on Request - Approve identity requests</option>
-                                <option value="auto_reveal">Auto Reveal - Show identity automatically</option>
-                            </select>
-                        </div>
-                        
-                        <div class="form-group">
-                            <label for="expiry">Message Expiry</label>
-                            <select id="expiry" class="form-control">
-                                <option value="permanent">Permanent - Never expires</option>
-                                <option value="24h">24 hours - Auto-deletes after 1 day</option>
-                                <option value="1h">1 hour - Quick temporary message</option>
-                            </select>
-                        </div>
-                        
-                        <div class="recording-section">
-                            <div class="mic-container">
-                                <button id="micBtn" class="mic-btn">
-                                    <i class="fas fa-microphone"></i>
-                                </button>
-                                <div id="recordingIndicator" class="recording-indicator hidden">
-                                    <i class="fas fa-circle"></i>
-                                </div>
-                            </div>
-                            
-                            <div id="recordingTimer" class="recording-timer hidden">00:00</div>
-                            
-                            <div class="flex-center gap-2 mt-3">
-                                <button id="stopBtn" class="btn btn-danger" disabled>
-                                    <i class="fas fa-stop"></i>
-                                    Stop Recording
-                                </button>
-                                <button id="uploadBtn" class="btn btn-success hidden">
-                                    <i class="fas fa-cloud-upload-alt"></i>
-                                    Upload Voice
-                                </button>
-                            </div>
-                        </div>
-                        
-                        <div id="audioPreviewSection" class="hidden mt-4">
-                            <h3>Preview Recording</h3>
-                            <div class="audio-player">
-                                <audio id="preview" controls></audio>
-                            </div>
-                            <div class="flex-center gap-2 mt-2">
-                                <button id="reRecordBtn" class="btn btn-warning">
-                                    <i class="fas fa-redo"></i>
-                                    Re-record
-                                </button>
-                            </div>
-                        </div>
-                    </div>
+                <div class="nav-item" data-page="contacts">
+                    <i class="fas fa-users"></i> Contacts
                 </div>
-
-                <!-- Messages Tab -->
-                <div id="messages-tab" class="tab-content">
-                    <div class="card">
-                        <div class="card-header">
-                            <h2 class="card-title">My Voice Messages</h2>
-                            <div class="flex gap-2">
-                                <button class="btn btn-secondary btn-sm" id="clearAllBtn">
-                                    <i class="fas fa-trash"></i>
-                                    Clear All
-                                </button>
-                            </div>
-                        </div>
-                        
-                        <div class="grid" id="voiceMessagesGrid">
-                            <!-- Voice message cards will be dynamically inserted here -->
-                            <div class="empty-state" id="emptyMessages">
-                                <div class="empty-state-icon">
-                                    <i class="fas fa-microphone-slash"></i>
-                                </div>
-                                <h3>No Voice Messages Yet</h3>
-                                <p>Record your first voice message to get started!</p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Requests Tab -->
-                <div id="requests-tab" class="tab-content">
-                    <div class="card">
-                        <div class="card-header">
-                            <h2 class="card-title">Pending Identity Requests</h2>
-                        </div>
-                        
-                        <div class="grid" id="requestsGrid">
-                            <!-- Request cards will be dynamically inserted here -->
-                            <div class="empty-state" id="emptyRequests">
-                                <div class="empty-state-icon">
-                                    <i class="fas fa-user-clock"></i>
-                                </div>
-                                <h3>No Pending Requests</h3>
-                                <p>When someone requests to know your identity, it will appear here.</p>
-                            </div>
-                        </div>
-                    </div>
+                <div class="nav-item" data-page="profile">
+                    <i class="fas fa-user-circle"></i> Profile
                 </div>
             </div>
-
-            <!-- Receiver View -->
-            <div id="receiverView" class="hidden">
-                <div class="receiver-view">
-                    <div class="card">
-                        <div class="receiver-icon">
-                            <i class="fas fa-message"></i>
-                        </div>
-                        <h2>Voice Message for You</h2>
-                        <p>You've received a voice message. Click play to listen.</p>
-                        
-                        <div id="receiverMessageInfo" class="sender-info hidden">
-                            <h4>Message Information</h4>
-                            <div id="messageDetails"></div>
-                        </div>
-                        
-                        <div class="audio-player mt-4">
-                            <audio id="receiverAudio" controls></audio>
-                        </div>
-                        
-                        <div class="flex-center gap-2 mt-4">
-                            <button id="playBtn" class="btn btn-primary">
-                                <i class="fas fa-play"></i>
-                                Play Message
-                            </button>
-                            <button id="downloadBtn" class="btn btn-secondary">
-                                <i class="fas fa-download"></i>
-                                Download
-                            </button>
-                        </div>
-                        
-                        <div id="identityRequestSection" class="mt-4 hidden">
-                            <div class="card">
-                                <h4>Identity Request</h4>
-                                <p>This sender has chosen to remain anonymous. Would you like to request their identity?</p>
-                                <button id="requestIdentityBtn" class="btn btn-warning">
-                                    <i class="fas fa-user-secret"></i>
-                                    Request Identity
-                                </button>
+            
+            <div class="main-content">
+                <!-- Record Page -->
+                <div class="page active" id="record">
+                    <h2 class="page-title">Record New Message</h2>
+                    
+                    <div class="recorder-container">
+                        <div class="visualizer">
+                            <div class="wave">
+                                <div class="bar"></div>
+                                <div class="bar"></div>
+                                <div class="bar"></div>
+                                <div class="bar"></div>
+                                <div class="bar"></div>
+                                <div class="bar"></div>
+                                <div class="bar"></div>
+                                <div class="bar"></div>
+                                <div class="bar"></div>
+                                <div class="bar"></div>
                             </div>
                         </div>
                         
-                        <div id="identityRevealed" class="mt-4 hidden">
-                            <div class="card">
-                                <h4>Sender Identity</h4>
-                                <div id="senderIdentity"></div>
+                        <div class="timer" id="timer">00:00</div>
+                        
+                        <div class="recording-indicator" id="recordingIndicator">
+                            <i class="fas fa-circle pulse"></i> Recording...
+                        </div>
+                        
+                        <div class="controls">
+                            <button class="btn btn-record" id="recordBtn">
+                                <i class="fas fa-microphone"></i> Start Recording
+                            </button>
+                            <button class="btn btn-stop" id="stopBtn" disabled>
+                                <i class="fas fa-stop"></i> Stop
+                            </button>
+                            <button class="btn btn-play" id="playBtn" disabled>
+                                <i class="fas fa-play"></i> Play
+                            </button>
+                            <button class="btn btn-send" id="sendBtn" disabled>
+                                <i class="fas fa-paper-plane"></i> Send
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div class="contacts-list">
+                        <h3>Select Recipient</h3>
+                        <div class="contact" data-contact="1">
+                            <div class="contact-avatar">JD</div>
+                            <div class="contact-info">
+                                <h3>John Doe</h3>
+                                <p>Project Manager</p>
+                            </div>
+                            <div class="status-online"></div>
+                        </div>
+                        <div class="contact" data-contact="2">
+                            <div class="contact-avatar">SJ</div>
+                            <div class="contact-info">
+                                <h3>Sarah Johnson</h3>
+                                <p>Design Team Lead</p>
+                            </div>
+                            <div class="status-online"></div>
+                        </div>
+                        <div class="contact" data-contact="3">
+                            <div class="contact-avatar">MR</div>
+                            <div class="contact-info">
+                                <h3>Mike Roberts</h3>
+                                <p>Development Head</p>
+                            </div>
+                            <div class="status-offline"></div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Inbox Page -->
+                <div class="page" id="inbox">
+                    <h2 class="page-title">Inbox</h2>
+                    
+                    <div class="messages-container">
+                        <div class="message">
+                            <div class="message-header">
+                                <div class="message-sender">John Doe</div>
+                                <div class="message-time">10:24 AM</div>
+                            </div>
+                            <p>Project update request</p>
+                            <div class="message-audio">
+                                <div class="audio-player">
+                                    <div class="progress-bar" style="width: 30%"></div>
+                                </div>
+                                <button class="play-btn">
+                                    <i class="fas fa-play"></i>
+                                </button>
+                                <span style="margin-left: 10px; color: #7f8c8d; font-size: 0.9rem;">0:12 / 0:40</span>
                             </div>
                         </div>
                         
-                        <div id="errorMessage" class="mt-4 hidden">
-                            <div class="card" style="border-left-color: var(--danger);">
-                                <h4 style="color: var(--danger);">Message Not Found</h4>
-                                <p>The voice message you're looking for doesn't exist or has expired.</p>
-                                <button id="backToHome" class="btn btn-primary mt-2">
-                                    <i class="fas fa-home"></i>
-                                    Back to Home
+                        <div class="message">
+                            <div class="message-header">
+                                <div class="message-sender">Sarah Johnson</div>
+                                <div class="message-time">Yesterday</div>
+                            </div>
+                            <p>Design concepts ready for review</p>
+                            <div class="message-audio">
+                                <div class="audio-player">
+                                    <div class="progress-bar" style="width: 65%"></div>
+                                </div>
+                                <button class="play-btn">
+                                    <i class="fas fa-play"></i>
                                 </button>
+                                <span style="margin-left: 10px; color: #7f8c8d; font-size: 0.9rem;">0:26 / 0:40</span>
+                            </div>
+                        </div>
+                        
+                        <div class="message">
+                            <div class="message-header">
+                                <div class="message-sender">Mike Roberts</div>
+                                <div class="message-time">May 15</div>
+                            </div>
+                            <p>Code deployment status</p>
+                            <div class="message-audio">
+                                <div class="audio-player">
+                                    <div class="progress-bar" style="width: 0%"></div>
+                                </div>
+                                <button class="play-btn">
+                                    <i class="fas fa-play"></i>
+                                </button>
+                                <span style="margin-left: 10px; color: #7f8c8d; font-size: 0.9rem;">0:00 / 1:05</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Sent Page -->
+                <div class="page" id="sent">
+                    <h2 class="page-title">Sent Messages</h2>
+                    
+                    <div class="messages-container">
+                        <div class="message">
+                            <div class="message-header">
+                                <div class="message-sender">To: John Doe</div>
+                                <div class="message-time">Today, 9:15 AM</div>
+                            </div>
+                            <p>Weekly status report</p>
+                            <div class="message-audio">
+                                <div class="audio-player">
+                                    <div class="progress-bar" style="width: 0%"></div>
+                                </div>
+                                <button class="play-btn">
+                                    <i class="fas fa-play"></i>
+                                </button>
+                                <span style="margin-left: 10px; color: #7f8c8d; font-size: 0.9rem;">0:00 / 0:55</span>
+                            </div>
+                        </div>
+                        
+                        <div class="message">
+                            <div class="message-header">
+                                <div class="message-sender">To: Sarah Johnson</div>
+                                <div class="message-time">Yesterday, 4:30 PM</div>
+                            </div>
+                            <p>Feedback on design concepts</p>
+                            <div class="message-audio">
+                                <div class="audio-player">
+                                    <div class="progress-bar" style="width: 100%"></div>
+                                </div>
+                                <button class="play-btn">
+                                    <i class="fas fa-play"></i>
+                                </button>
+                                <span style="margin-left: 10px; color: #7f8c8d; font-size: 0.9rem;">1:20 / 1:20</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Contacts Page -->
+                <div class="page" id="contacts">
+                    <h2 class="page-title">Contacts</h2>
+                    
+                    <div class="contacts-list">
+                        <div class="contact">
+                            <div class="contact-avatar">JD</div>
+                            <div class="contact-info">
+                                <h3>John Doe</h3>
+                                <p>Project Manager • Last active: 5 min ago</p>
+                            </div>
+                            <div class="status-online"></div>
+                        </div>
+                        <div class="contact">
+                            <div class="contact-avatar">SJ</div>
+                            <div class="contact-info">
+                                <h3>Sarah Johnson</h3>
+                                <p>Design Team Lead • Last active: 1 hour ago</p>
+                            </div>
+                            <div class="status-online"></div>
+                        </div>
+                        <div class="contact">
+                            <div class="contact-avatar">MR</div>
+                            <div class="contact-info">
+                                <h3>Mike Roberts</h3>
+                                <p>Development Head • Last active: 2 days ago</p>
+                            </div>
+                            <div class="status-offline"></div>
+                        </div>
+                        <div class="contact">
+                            <div class="contact-avatar">EJ</div>
+                            <div class="contact-info">
+                                <h3>Emily Jackson</h3>
+                                <p>QA Engineer • Last active: 30 min ago</p>
+                            </div>
+                            <div class="status-online"></div>
+                        </div>
+                        <div class="contact">
+                            <div class="contact-avatar">DW</div>
+                            <div class="contact-info">
+                                <h3>David Wilson</h3>
+                                <p>Product Owner • Last active: 3 hours ago</p>
+                            </div>
+                            <div class="status-online"></div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Profile Page -->
+                <div class="page" id="profile">
+                    <h2 class="page-title">My Profile</h2>
+                    
+                    <div class="recorder-container">
+                        <div style="text-align: center; margin-bottom: 20px;">
+                            <div style="width: 100px; height: 100px; border-radius: 50%; background: #3498db; display: inline-flex; align-items: center; justify-content: center; color: white; font-size: 2rem; font-weight: bold;">AK</div>
+                        </div>
+                        
+                        <div style="text-align: center; margin-bottom: 30px;">
+                            <h3 style="color: #2c3e50; margin-bottom: 5px;">Alex Kumar</h3>
+                            <p style="color: #7f8c8d;">Senior Developer</p>
+                        </div>
+                        
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                            <div style="background: #f8f9fa; padding: 15px; border-radius: 10px; text-align: center;">
+                                <h4 style="color: #2c3e50; margin-bottom: 5px;">Messages Sent</h4>
+                                <p style="color: #3498db; font-size: 1.5rem; font-weight: bold;">42</p>
+                            </div>
+                            <div style="background: #f8f9fa; padding: 15px; border-radius: 10px; text-align: center;">
+                                <h4 style="color: #2c3e50; margin-bottom: 5px;">Messages Received</h4>
+                                <p style="color: #3498db; font-size: 1.5rem; font-weight: bold;">38</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="recorder-container">
+                        <h3 style="color: #2c3e50; margin-bottom: 15px;">Account Settings</h3>
+                        
+                        <div style="display: flex; flex-direction: column; gap: 15px;">
+                            <div style="display: flex; justify-content: between; padding: 10px 0; border-bottom: 1px solid #eee;">
+                                <span>Notification Sound</span>
+                                <label class="switch">
+                                    <input type="checkbox" checked>
+                                    <span class="slider round"></span>
+                                </label>
+                            </div>
+                            
+                            <div style="display: flex; justify-content: between; padding: 10px 0; border-bottom: 1px solid #eee;">
+                                <span>Auto-play Messages</span>
+                                <label class="switch">
+                                    <input type="checkbox">
+                                    <span class="slider round"></span>
+                                </label>
+                            </div>
+                            
+                            <div style="display: flex; justify-content: between; padding: 10px 0; border-bottom: 1px solid #eee;">
+                                <span>Dark Mode</span>
+                                <label class="switch">
+                                    <input type="checkbox">
+                                    <span class="slider round"></span>
+                                </label>
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
+        
+        <footer>
+            <p>© 2023 Echo Voice Messenger. All rights reserved.</p>
+        </footer>
     </div>
-
-    <!-- Footer -->
-    <footer class="footer">
-        <div class="container">
-            <p>&copy; 2023 Echo Voice Messenger. All rights reserved.</p>
-            <p class="mt-1">Secure, private voice messaging for professionals.</p>
-        </div>
-    </footer>
 
     <script>
-        // Enhanced Data Management System with Shared Storage
-        class VoiceMessageManager {
-            constructor() {
-                // Use a shared storage key that both sender and receiver can access
-                this.storageKey = 'echoVoiceMessages';
-                this.requestsKey = 'echoVoiceRequests';
-                this.statsKey = 'echoVoiceStats';
+        // Page Navigation
+        document.querySelectorAll('.nav-item').forEach(item => {
+            item.addEventListener('click', function() {
+                // Remove active class from all nav items
+                document.querySelectorAll('.nav-item').forEach(nav => {
+                    nav.classList.remove('active');
+                });
                 
-                this.loadData();
-            }
-
-            loadData() {
-                // Load messages from localStorage
-                const storedMessages = localStorage.getItem(this.storageKey);
-                this.messages = storedMessages ? JSON.parse(storedMessages) : [];
+                // Add active class to clicked nav item
+                this.classList.add('active');
                 
-                // Load requests from localStorage
-                const storedRequests = localStorage.getItem(this.requestsKey);
-                this.requests = storedRequests ? JSON.parse(storedRequests) : [];
+                // Hide all pages
+                document.querySelectorAll('.page').forEach(page => {
+                    page.classList.remove('active');
+                });
                 
-                // Load stats from localStorage
-                const storedStats = localStorage.getItem(this.statsKey);
-                this.stats = storedStats ? JSON.parse(storedStats) : {
-                    totalMessages: 0,
-                    totalPlays: 0,
-                    pendingRequests: 0,
-                    successRate: 0
-                };
-            }
+                // Show selected page
+                const pageId = this.getAttribute('data-page');
+                document.getElementById(pageId).classList.add('active');
+            });
+        });
 
-            saveMessages() {
-                localStorage.setItem(this.storageKey, JSON.stringify(this.messages));
-                this.updateStats();
-            }
-
-            saveRequests() {
-                localStorage.setItem(this.requestsKey, JSON.stringify(this.requests));
-                this.updateStats();
-            }
-
-            saveStats() {
-                localStorage.setItem(this.statsKey, JSON.stringify(this.stats));
-            }
-
-            addMessage(message) {
-                const newMessage = {
-                    id: 'msg_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9),
-                    title: message.title || 'Voice Message',
-                    senderName: message.senderName || 'Anonymous',
-                    privacy: message.privacy || 'anonymous',
-                    expiry: message.expiry || 'permanent',
-                    timestamp: new Date().toISOString(),
-                    playCount: 0,
-                    audioBlob: message.audioBlob, // Store the actual audio data
-                    status: 'active',
-                    // Store additional metadata for better organization
-                    created: Date.now()
-                };
-                
-                this.messages.unshift(newMessage);
-                this.saveMessages();
-                return newMessage;
-            }
-
-            getMessage(messageId) {
-                return this.messages.find(msg => msg.id === messageId);
-            }
-
-            getAllMessages() {
-                return this.messages;
-            }
-
-            deleteMessage(messageId) {
-                this.messages = this.messages.filter(msg => msg.id !== messageId);
-                this.saveMessages();
-            }
-
-            clearAllMessages() {
-                this.messages = [];
-                this.saveMessages();
-            }
-
-            addRequest(messageId, requesterInfo) {
-                const message = this.messages.find(msg => msg.id === messageId);
-                if (!message) return null;
-
-                const newRequest = {
-                    id: 'req_' + Date.now(),
-                    messageId: messageId,
-                    messageTitle: message.title,
-                    requesterInfo: requesterInfo,
-                    timestamp: new Date().toISOString(),
-                    status: 'pending'
-                };
-
-                this.requests.unshift(newRequest);
-                this.saveRequests();
-                return newRequest;
-            }
-
-            resolveRequest(requestId, approved = false) {
-                const request = this.requests.find(req => req.id === requestId);
-                if (!request) return;
-
-                if (approved) {
-                    request.status = 'approved';
-                    // Update the message to show sender identity
-                    const message = this.messages.find(msg => msg.id === request.messageId);
-                    if (message) {
-                        message.revealApproved = true;
-                        this.saveMessages();
-                    }
-                } else {
-                    request.status = 'denied';
-                }
-
-                this.saveRequests();
-            }
-
-            updateStats() {
-                this.stats.totalMessages = this.messages.length;
-                this.stats.pendingRequests = this.requests.filter(req => req.status === 'pending').length;
-                this.stats.totalPlays = this.messages.reduce((total, msg) => total + (msg.playCount || 0), 0);
-                
-                const activeMessages = this.messages.filter(msg => msg.status === 'active').length;
-                this.stats.successRate = this.messages.length > 0 ? 
-                    Math.round((activeMessages / this.messages.length) * 100) : 0;
-                
-                this.saveStats();
-            }
-
-            getMessages() {
-                return this.messages;
-            }
-
-            getRequests() {
-                return this.requests.filter(req => req.status === 'pending');
-            }
-
-            getStats() {
-                return this.stats;
-            }
-
-            // Convert base64 audio back to blob URL for playback
-            getAudioUrl(audioBlob) {
-                if (!audioBlob) return null;
-                
-                try {
-                    // Convert base64 to blob
-                    const byteCharacters = atob(audioBlob.split(',')[1]);
-                    const byteNumbers = new Array(byteCharacters.length);
-                    for (let i = 0; i < byteCharacters.length; i++) {
-                        byteNumbers[i] = byteCharacters.charCodeAt(i);
-                    }
-                    const byteArray = new Uint8Array(byteNumbers);
-                    const blob = new Blob([byteArray], { type: 'audio/webm' });
-                    
-                    return URL.createObjectURL(blob);
-                } catch (error) {
-                    console.error('Error converting audio blob:', error);
-                    return null;
-                }
-            }
-        }
-
-        // DOM Elements
-        const themeToggle = document.getElementById('themeToggle');
-        const guideBtn = document.getElementById('guideBtn');
-        const tabs = document.querySelectorAll('.tab');
-        const tabContents = document.querySelectorAll('.tab-content');
-        const micBtn = document.getElementById('micBtn');
+        // Voice Recording Functionality
+        const recordBtn = document.getElementById('recordBtn');
         const stopBtn = document.getElementById('stopBtn');
-        const uploadBtn = document.getElementById('uploadBtn');
-        const reRecordBtn = document.getElementById('reRecordBtn');
-        const recordingIndicator = document.getElementById('recordingIndicator');
-        const recordingTimer = document.getElementById('recordingTimer');
-        const audioPreviewSection = document.getElementById('audioPreviewSection');
-        const preview = document.getElementById('preview');
-        const notification = document.getElementById('notification');
-        const notificationIcon = notification.querySelector('.notification-icon');
-        const notificationContent = notification.querySelector('.notification-content');
-        const voiceMessagesGrid = document.getElementById('voiceMessagesGrid');
-        const requestsGrid = document.getElementById('requestsGrid');
-        const emptyMessages = document.getElementById('emptyMessages');
-        const emptyRequests = document.getElementById('emptyRequests');
-        const clearAllBtn = document.getElementById('clearAllBtn');
-
-        // Stats Elements
-        const totalMessagesEl = document.getElementById('totalMessages');
-        const totalPlaysEl = document.getElementById('totalPlays');
-        const pendingRequestsEl = document.getElementById('pendingRequests');
-        const successRateEl = document.getElementById('successRate');
-
-        // Receiver Elements
-        const senderView = document.getElementById('senderView');
-        const receiverView = document.getElementById('receiverView');
-        const receiverAudio = document.getElementById('receiverAudio');
         const playBtn = document.getElementById('playBtn');
-        const downloadBtn = document.getElementById('downloadBtn');
-        const requestIdentityBtn = document.getElementById('requestIdentityBtn');
-        const identityRequestSection = document.getElementById('identityRequestSection');
-        const identityRevealed = document.getElementById('identityRevealed');
-        const senderIdentity = document.getElementById('senderIdentity');
-        const errorMessage = document.getElementById('errorMessage');
-        const backToHome = document.getElementById('backToHome');
-        const receiverMessageInfo = document.getElementById('receiverMessageInfo');
-        const messageDetails = document.getElementById('messageDetails');
-
-        // Initialize Data Manager
-        const voiceManager = new VoiceMessageManager();
-
-        // App State
-        let isRecording = false;
-        let recordingStartTime;
-        let timerInterval;
+        const sendBtn = document.getElementById('sendBtn');
+        const timer = document.getElementById('timer');
+        const recordingIndicator = document.getElementById('recordingIndicator');
+        
         let mediaRecorder;
         let audioChunks = [];
-        let currentAudioBlob = null;
-        let currentMessageId = null;
-
-        // Check URL parameters on load
-        function checkUrlParams() {
-            const urlParams = new URLSearchParams(window.location.search);
-            const voiceId = urlParams.get('voice');
-            
-            if (voiceId) {
-                // Show receiver view
-                showReceiverView(voiceId);
-            } else {
-                // Show sender view
-                showSenderView();
-            }
+        let isRecording = false;
+        let timerInterval;
+        let seconds = 0;
+        
+        // Format time as MM:SS
+        function formatTime(secs) {
+            const minutes = Math.floor(secs / 60);
+            const seconds = secs % 60;
+            return `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
         }
-
-        // Show Sender View
-        function showSenderView() {
-            senderView.style.display = 'block';
-            receiverView.style.display = 'none';
-            initApp();
-        }
-
-        // Show Receiver View
-        function showReceiverView(voiceId) {
-            senderView.style.display = 'none';
-            receiverView.style.display = 'block';
-            
-            // Reload data to ensure we have the latest messages
-            voiceManager.loadData();
-            
-            const message = voiceManager.getMessage(voiceId);
-            
-            if (!message) {
-                // Message not found
-                showReceiverError();
-                return;
-            }
-            
-            // Load message for receiver
-            loadReceiverMessage(message);
-        }
-
-        // Load message for receiver
-        function loadReceiverMessage(message) {
-            // Update play count
-            message.playCount = (message.playCount || 0) + 1;
-            voiceManager.saveMessages();
-            
-            // Get audio URL from stored blob
-            const audioUrl = voiceManager.getAudioUrl(message.audioBlob);
-            
-            if (audioUrl) {
-                receiverAudio.src = audioUrl;
-                receiverAudio.onloadeddata = () => {
-                    showNotification('success', 'Voice message loaded successfully!');
-                };
-                receiverAudio.onerror = () => {
-                    showNotification('error', 'Failed to load audio. The file may be corrupted.');
-                };
-            } else {
-                showNotification('error', 'Audio data not found for this message.');
-                return;
-            }
-            
-            // Show message info
-            receiverMessageInfo.classList.remove('hidden');
-            messageDetails.innerHTML = `
-                <p><strong>Sender:</strong> ${message.privacy === 'anonymous' ? 'Anonymous' : message.senderName}</p>
-                <p><strong>Date:</strong> ${new Date(message.timestamp).toLocaleDateString()}</p>
-                <p><strong>Plays:</strong> ${message.playCount}</p>
-                <p><strong>Privacy:</strong> ${message.privacy.replace('_', ' ')}</p>
-            `;
-            
-            // Handle privacy settings
-            if (message.privacy === 'reveal_on_request') {
-                if (message.revealApproved) {
-                    // Identity already approved
-                    identityRevealed.classList.remove('hidden');
-                    senderIdentity.innerHTML = `<p><strong>Sender:</strong> ${message.senderName}</p>`;
-                } else {
-                    // Show identity request option
-                    identityRequestSection.classList.remove('hidden');
-                }
-            } else if (message.privacy === 'auto_reveal') {
-                // Show identity automatically
-                identityRevealed.classList.remove('hidden');
-                senderIdentity.innerHTML = `<p><strong>Sender:</strong> ${message.senderName}</p>`;
-            }
-            
-            // Store current message ID for identity requests
-            currentMessageId = message.id;
-            
-            // Update download button functionality
-            downloadBtn.onclick = () => {
-                if (audioUrl) {
-                    const a = document.createElement('a');
-                    a.href = audioUrl;
-                    a.download = `voice-message-${message.id}.webm`;
-                    document.body.appendChild(a);
-                    a.click();
-                    document.body.removeChild(a);
-                    showNotification('success', 'Download started!');
-                }
-            };
-        }
-
-        // Show receiver error
-        function showReceiverError() {
-            errorMessage.classList.remove('hidden');
-            receiverMessageInfo.classList.add('hidden');
-            identityRequestSection.classList.add('hidden');
-            identityRevealed.classList.add('hidden');
-        }
-
-        // Initialize App
-        function initApp() {
-            updateStatsDisplay();
-            renderMessages();
-            renderRequests();
-            
-            // Show welcome notification
-            setTimeout(() => {
-                showNotification('info', 'Welcome to Echo Voice Messenger! Record and share voice messages securely.');
-            }, 1000);
-        }
-
-        // Theme Toggle
-        themeToggle.addEventListener('click', () => {
-            document.body.classList.toggle('light-mode');
-            const isLightMode = document.body.classList.contains('light-mode');
-            themeToggle.innerHTML = isLightMode ? 
-                '<i class="fas fa-sun"></i><span>Light Mode</span>' : 
-                '<i class="fas fa-moon"></i><span>Dark Mode</span>';
-        });
-
-        // Guide Button
-        guideBtn.addEventListener('click', () => {
-            showNotification('info', 
-                'Echo Voice Messenger Guide:\n\n' +
-                '1. Record a voice message with the microphone button\n' +
-                '2. Set privacy and expiry options\n' +
-                '3. Upload and share the generated link\n' +
-                '4. Manage your messages and requests in the tabs\n' +
-                '5. All data is stored locally in your browser'
-            );
-        });
-
-        // Tab Switching
-        tabs.forEach(tab => {
-            tab.addEventListener('click', () => {
-                const tabId = tab.getAttribute('data-tab');
-                
-                // Update active tab
-                tabs.forEach(t => t.classList.remove('active'));
-                tab.classList.add('active');
-                
-                // Show corresponding content
-                tabContents.forEach(content => {
-                    content.classList.remove('active');
-                    if (content.id === `${tabId}-tab`) {
-                        content.classList.add('active');
-                    }
-                });
-            });
-        });
-
-        // Recording Functionality
-        micBtn.addEventListener('click', startRecording);
-        stopBtn.addEventListener('click', stopRecording);
-        reRecordBtn.addEventListener('click', resetRecording);
-        clearAllBtn.addEventListener('click', clearAllMessages);
-
-        // Receiver functionality
-        playBtn.addEventListener('click', () => {
-            receiverAudio.play().catch(e => {
-                showNotification('error', 'Could not play audio. Please try again.');
-            });
-        });
-
-        requestIdentityBtn.addEventListener('click', () => {
-            if (currentMessageId) {
-                voiceManager.addRequest(currentMessageId, {
-                    timestamp: new Date().toISOString(),
-                    userAgent: navigator.userAgent
-                });
-                showNotification('success', 'Identity request sent to the sender.');
-                identityRequestSection.classList.add('hidden');
-            }
-        });
-
-        backToHome.addEventListener('click', () => {
-            // Remove voice parameter from URL and reload
-            const url = new URL(window.location);
-            url.searchParams.delete('voice');
-            window.history.replaceState({}, '', url);
-            showSenderView();
-        });
-
-        function startRecording() {
-            if (isRecording) return;
-            
-            // Check if browser supports media recording
-            if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-                showNotification('error', 'Your browser does not support audio recording. Please try Chrome, Firefox, or Edge.');
-                return;
-            }
-            
-            navigator.mediaDevices.getUserMedia({ audio: true })
-                .then(stream => {
-                    isRecording = true;
-                    mediaRecorder = new MediaRecorder(stream);
-                    audioChunks = [];
-                    
-                    mediaRecorder.ondataavailable = event => {
-                        audioChunks.push(event.data);
-                    };
-                    
-                    mediaRecorder.onstop = () => {
-                        currentAudioBlob = new Blob(audioChunks, { type: 'audio/webm' });
-                        const audioUrl = URL.createObjectURL(currentAudioBlob);
-                        preview.src = audioUrl;
-                        
-                        // Stop all tracks in the stream
-                        stream.getTracks().forEach(track => track.stop());
-                        
-                        // Show preview section
-                        audioPreviewSection.classList.remove('hidden');
-                        uploadBtn.classList.remove('hidden');
-                    };
-                    
-                    mediaRecorder.start();
-                    recordingStartTime = Date.now();
-                    
-                    // Update UI
-                    micBtn.classList.add('recording');
-                    recordingIndicator.classList.remove('hidden');
-                    stopBtn.disabled = false;
-                    
-                    // Start timer
-                    startTimer();
-                    
-                    showNotification('success', 'Recording started. Speak now!');
-                })
-                .catch(err => {
-                    console.error('Error accessing microphone:', err);
-                    showNotification('error', 'Could not access microphone. Please check permissions and try again.');
-                });
-        }
-
-        function stopRecording() {
-            if (!isRecording) return;
-            
-            mediaRecorder.stop();
-            isRecording = false;
-            
-            // Update UI
-            micBtn.classList.remove('recording');
-            recordingIndicator.classList.add('hidden');
-            stopBtn.disabled = true;
-            
-            // Stop timer
-            clearInterval(timerInterval);
-            
-            showNotification('success', 'Recording stopped. Preview your message below.');
-        }
-
-        function resetRecording() {
-            audioPreviewSection.classList.add('hidden');
-            uploadBtn.classList.add('hidden');
-            preview.src = '';
-            recordingTimer.textContent = '00:00';
-            currentAudioBlob = null;
-        }
-
+        
+        // Start timer
         function startTimer() {
-            recordingTimer.classList.remove('hidden');
+            seconds = 0;
             timerInterval = setInterval(() => {
-                const elapsedTime = Date.now() - recordingStartTime;
-                const seconds = Math.floor(elapsedTime / 1000);
-                const minutes = Math.floor(seconds / 60);
-                const displaySeconds = seconds % 60;
-                recordingTimer.textContent = `${minutes.toString().padStart(2, '0')}:${displaySeconds.toString().padStart(2, '0')}`;
+                seconds++;
+                timer.textContent = formatTime(seconds);
             }, 1000);
         }
-
-        // Upload Button
-        uploadBtn.addEventListener('click', () => {
-            const senderName = document.getElementById('senderName').value || 'Anonymous';
-            const privacy = document.getElementById('privacy').value;
-            const expiry = document.getElementById('expiry').value;
-            
-            if (!currentAudioBlob) {
-                showNotification('error', 'No recording found. Please record a message first.');
-                return;
+        
+        // Stop timer
+        function stopTimer() {
+            clearInterval(timerInterval);
+        }
+        
+        // Simulate recording functionality
+        recordBtn.addEventListener('click', function() {
+            if (!isRecording) {
+                // Start recording
+                isRecording = true;
+                recordBtn.disabled = true;
+                stopBtn.disabled = false;
+                playBtn.disabled = true;
+                sendBtn.disabled = true;
+                
+                recordingIndicator.style.display = 'block';
+                startTimer();
+                
+                // In a real app, we would initialize MediaRecorder here
+                // For this demo, we'll just simulate the behavior
+                
+                // Simulate recording process
+                setTimeout(() => {
+                    if (isRecording) {
+                        // Enable play and send buttons after "recording"
+                        playBtn.disabled = false;
+                        sendBtn.disabled = false;
+                    }
+                }, 3000);
             }
-            
-            uploadBtn.disabled = true;
-            uploadBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Uploading...';
-            
-            // Convert blob to base64 for storage
-            const reader = new FileReader();
-            reader.onload = function() {
-                const audioBlob = reader.result;
-                
-                // Add message to data manager
-                const newMessage = voiceManager.addMessage({
-                    title: `Voice Message ${voiceManager.getMessages().length + 1}`,
-                    senderName: senderName,
-                    privacy: privacy,
-                    expiry: expiry,
-                    audioBlob: audioBlob
-                });
-                
-                // Generate shareable link
-                const shareUrl = `${window.location.origin}${window.location.pathname}?voice=${newMessage.id}`;
-                
-                showNotification('success', 
-                    `Voice message uploaded successfully!\n\nShare this link:\n${shareUrl}`
-                );
-                
-                // Copy to clipboard if possible
-                if (navigator.clipboard) {
-                    navigator.clipboard.writeText(shareUrl).then(() => {
-                        showNotification('info', 'Share link copied to clipboard!');
-                    });
-                }
-                
-                uploadBtn.disabled = false;
-                uploadBtn.innerHTML = '<i class="fas fa-cloud-upload-alt"></i> Upload Voice';
-                
-                // Reset the recording UI
-                resetRecording();
-                
-                // Clear form
-                document.getElementById('senderName').value = '';
-                
-                // Update displays
-                updateStatsDisplay();
-                renderMessages();
-                
-                // Switch to messages tab to see the new message
-                document.querySelector('.tab[data-tab="messages"]').click();
-            };
-            reader.readAsDataURL(currentAudioBlob);
         });
-
-        // Render Messages
-        function renderMessages() {
-            const messages = voiceManager.getMessages();
-            
-            if (messages.length === 0) {
-                emptyMessages.style.display = 'block';
-                voiceMessagesGrid.innerHTML = '';
-                voiceMessagesGrid.appendChild(emptyMessages);
-                return;
-            }
-            
-            emptyMessages.style.display = 'none';
-            
-            voiceMessagesGrid.innerHTML = messages.map(message => {
-                const audioUrl = voiceManager.getAudioUrl(message.audioBlob);
-                return `
-                <div class="voice-card card" data-message-id="${message.id}">
-                    <div class="voice-card-header">
-                        <div class="voice-card-title">${message.title}</div>
-                        <div class="status-badge status-active">
-                            <i class="fas fa-circle"></i>
-                            ${message.status === 'active' ? 'Active' : 'Expired'}
-                        </div>
-                    </div>
-                    <div class="voice-card-meta">
-                        <div class="voice-card-meta-item">
-                            <i class="fas fa-user"></i>
-                            <span>${message.senderName}</span>
-                        </div>
-                        <div class="voice-card-meta-item">
-                            <i class="fas fa-calendar"></i>
-                            <span>Created: ${new Date(message.timestamp).toLocaleDateString()}</span>
-                        </div>
-                        <div class="voice-card-meta-item">
-                            <i class="fas fa-play-circle"></i>
-                            <span>Plays: ${message.playCount || 0}</span>
-                        </div>
-                        <div class="voice-card-meta-item">
-                            <i class="fas fa-shield-alt"></i>
-                            <span>Privacy: ${message.privacy}</span>
-                        </div>
-                    </div>
-                    <div class="voice-card-actions">
-                        <button class="btn btn-primary btn-sm play-btn" ${!audioUrl ? 'disabled' : ''}>
-                            <i class="fas fa-play"></i>
-                            Play
-                        </button>
-                        <button class="btn btn-secondary btn-sm share-btn">
-                            <i class="fas fa-share"></i>
-                            Share
-                        </button>
-                        <button class="btn btn-danger btn-sm delete-btn">
-                            <i class="fas fa-trash"></i>
-                            Delete
-                        </button>
-                    </div>
-                </div>
-                `;
-            }).join('');
-            
-            // Add event listeners to message cards
-            document.querySelectorAll('.play-btn').forEach(btn => {
-                btn.addEventListener('click', function() {
-                    const card = this.closest('.voice-card');
-                    const messageId = card.getAttribute('data-message-id');
-                    playMessage(messageId);
-                });
-            });
-            
-            document.querySelectorAll('.share-btn').forEach(btn => {
-                btn.addEventListener('click', function() {
-                    const card = this.closest('.voice-card');
-                    const messageId = card.getAttribute('data-message-id');
-                    shareMessage(messageId);
-                });
-            });
-            
-            document.querySelectorAll('.delete-btn').forEach(btn => {
-                btn.addEventListener('click', function() {
-                    const card = this.closest('.voice-card');
-                    const messageId = card.getAttribute('data-message-id');
-                    deleteMessage(messageId);
-                });
-            });
-        }
-
-        // Render Requests
-        function renderRequests() {
-            const requests = voiceManager.getRequests();
-            
-            if (requests.length === 0) {
-                emptyRequests.style.display = 'block';
-                requestsGrid.innerHTML = '';
-                requestsGrid.appendChild(emptyRequests);
-                return;
-            }
-            
-            emptyRequests.style.display = 'none';
-            
-            requestsGrid.innerHTML = requests.map(request => `
-                <div class="voice-card card" data-request-id="${request.id}">
-                    <div class="voice-card-header">
-                        <div class="voice-card-title">${request.messageTitle}</div>
-                        <div class="status-badge status-pending">
-                            <i class="fas fa-clock"></i>
-                            Pending
-                        </div>
-                    </div>
-                    <div class="voice-card-meta">
-                        <div class="voice-card-meta-item">
-                            <i class="fas fa-calendar"></i>
-                            <span>Requested: ${new Date(request.timestamp).toLocaleDateString()}</span>
-                        </div>
-                        <div class="voice-card-meta-item">
-                            <i class="fas fa-info-circle"></i>
-                            <span>Someone wants to know your identity</span>
-                        </div>
-                    </div>
-                    <div class="voice-card-actions">
-                        <button class="btn btn-success btn-sm approve-btn">
-                            <i class="fas fa-check"></i>
-                            Approve
-                        </button>
-                        <button class="btn btn-danger btn-sm deny-btn">
-                            <i class="fas fa-times"></i>
-                            Deny
-                        </button>
-                    </div>
-                </div>
-            `).join('');
-            
-            // Add event listeners to request cards
-            document.querySelectorAll('.approve-btn').forEach(btn => {
-                btn.addEventListener('click', function() {
-                    const card = this.closest('.voice-card');
-                    const requestId = card.getAttribute('data-request-id');
-                    resolveRequest(requestId, true);
-                });
-            });
-            
-            document.querySelectorAll('.deny-btn').forEach(btn => {
-                btn.addEventListener('click', function() {
-                    const card = this.closest('.voice-card');
-                    const requestId = card.getAttribute('data-request-id');
-                    resolveRequest(requestId, false);
-                });
-            });
-        }
-
-        // Message Actions
-        function playMessage(messageId) {
-            const message = voiceManager.messages.find(msg => msg.id === messageId);
-            if (message) {
-                const audioUrl = voiceManager.getAudioUrl(message.audioBlob);
-                if (audioUrl) {
-                    const audio = new Audio(audioUrl);
-                    audio.play().catch(e => {
-                        showNotification('error', 'Could not play audio. Please try again.');
-                    });
-                    message.playCount = (message.playCount || 0) + 1;
-                    voiceManager.saveMessages();
-                    updateStatsDisplay();
-                } else {
-                    showNotification('error', 'Audio data not available for this message.');
-                }
-            }
-        }
-
-        function shareMessage(messageId) {
-            const message = voiceManager.messages.find(msg => msg.id === messageId);
-            if (message) {
-                const shareUrl = `${window.location.origin}${window.location.pathname}?voice=${message.id}`;
+        
+        stopBtn.addEventListener('click', function() {
+            if (isRecording) {
+                // Stop recording
+                isRecording = false;
+                recordBtn.disabled = false;
+                stopBtn.disabled = true;
                 
-                // Try to use Web Share API if available
-                if (navigator.share) {
-                    navigator.share({
-                        title: 'Voice Message',
-                        text: 'Check out this voice message!',
-                        url: shareUrl
-                    });
-                } else {
-                    // Fallback to copying to clipboard
-                    navigator.clipboard.writeText(shareUrl).then(() => {
-                        showNotification('success', 'Share link copied to clipboard!');
-                    }).catch(() => {
-                        // Final fallback - show the URL
-                        showNotification('info', `Share this link: ${shareUrl}`);
-                    });
-                }
+                recordingIndicator.style.display = 'none';
+                stopTimer();
+                
+                // In a real app, we would stop MediaRecorder here
             }
-        }
-
-        function deleteMessage(messageId) {
-            if (confirm('Are you sure you want to delete this voice message?')) {
-                voiceManager.deleteMessage(messageId);
-                updateStatsDisplay();
-                renderMessages();
-                showNotification('success', 'Voice message deleted successfully');
-            }
-        }
-
-        function clearAllMessages() {
-            if (voiceManager.getMessages().length === 0) {
-                showNotification('info', 'No messages to clear');
-                return;
-            }
-            
-            if (confirm('Are you sure you want to delete ALL voice messages? This action cannot be undone.')) {
-                voiceManager.clearAllMessages();
-                updateStatsDisplay();
-                renderMessages();
-                showNotification('success', 'All voice messages have been cleared');
-            }
-        }
-
-        // Request Actions
-        function resolveRequest(requestId, approved) {
-            voiceManager.resolveRequest(requestId, approved);
-            updateStatsDisplay();
-            renderRequests();
-            showNotification('success', 
-                `Identity request ${approved ? 'approved' : 'denied'} successfully`
-            );
-        }
-
-        // Stats Management
-        function updateStatsDisplay() {
-            const stats = voiceManager.getStats();
-            totalMessagesEl.textContent = stats.totalMessages;
-            totalPlaysEl.textContent = stats.totalPlays;
-            pendingRequestsEl.textContent = stats.pendingRequests;
-            successRateEl.textContent = stats.successRate + '%';
-        }
-
-        // Notification System
-        function showNotification(type, message) {
-            // Set notification type
-            notification.className = 'notification';
-            notification.classList.add(`notification-${type}`);
-            
-            // Set icon based on type
-            let iconClass;
-            switch(type) {
-                case 'success':
-                    iconClass = 'fas fa-check-circle';
-                    break;
-                case 'error':
-                    iconClass = 'fas fa-exclamation-circle';
-                    break;
-                case 'warning':
-                    iconClass = 'fas fa-exclamation-triangle';
-                    break;
-                case 'info':
-                default:
-                    iconClass = 'fas fa-info-circle';
-                    break;
-            }
-            
-            notificationIcon.className = `notification-icon ${iconClass}`;
-            notificationContent.textContent = message;
-            
-            // Show notification
-            notification.classList.add('show');
-            
-            // Auto-hide after 5 seconds
-            setTimeout(() => {
-                notification.classList.remove('show');
-            }, 5000);
-        }
-
-        // Close notification when clicked
-        notification.addEventListener('click', () => {
-            notification.classList.remove('show');
         });
-
-        // Initialize the app
-        document.addEventListener('DOMContentLoaded', checkUrlParams);
+        
+        playBtn.addEventListener('click', function() {
+            // In a real app, we would play the recorded audio here
+            alert('Playing recorded message...');
+        });
+        
+        sendBtn.addEventListener('click', function() {
+            // In a real app, we would send the recorded audio here
+            alert('Message sent successfully!');
+            
+            // Reset UI
+            recordBtn.disabled = false;
+            stopBtn.disabled = true;
+            playBtn.disabled = true;
+            sendBtn.disabled = true;
+            recordingIndicator.style.display = 'none';
+            stopTimer();
+            timer.textContent = '00:00';
+            isRecording = false;
+        });
+        
+        // Contact selection
+        document.querySelectorAll('.contact').forEach(contact => {
+            contact.addEventListener('click', function() {
+                // Remove selection from all contacts
+                document.querySelectorAll('.contact').forEach(c => {
+                    c.style.border = 'none';
+                });
+                
+                // Add selection to clicked contact
+                this.style.border = '2px solid #3498db';
+            });
+        });
+        
+        // Audio player functionality for messages
+        document.querySelectorAll('.play-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                const icon = this.querySelector('i');
+                
+                if (icon.classList.contains('fa-play')) {
+                    icon.classList.remove('fa-play');
+                    icon.classList.add('fa-pause');
+                    // In a real app, we would start playing the audio here
+                } else {
+                    icon.classList.remove('fa-pause');
+                    icon.classList.add('fa-play');
+                    // In a real app, we would pause the audio here
+                }
+            });
+        });
+        
+        // Toggle switches for profile page
+        document.querySelectorAll('.switch input').forEach(checkbox => {
+            checkbox.addEventListener('change', function() {
+                if (this.checked) {
+                    // Setting enabled
+                    console.log('Setting enabled');
+                } else {
+                    // Setting disabled
+                    console.log('Setting disabled');
+                }
+            });
+        });
     </script>
 </body>
 </html>
