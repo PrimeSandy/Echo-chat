@@ -1,869 +1,427 @@
-<!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Echo Voice - Secure Voice Messaging</title>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-        }
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Echo – Anonymous Voice Connect</title>
+<style>
+/* -------------------------
+   THEME COLORS + VARIABLES
+   ------------------------- */
+:root{
+  --black-bg:#0b0b0b;
+  --white-bg:#fdfdfd;
+  --glass-dark:rgba(255,255,255,0.07);
+  --glass-light:rgba(0,0,0,0.07);
+  --border-light:rgba(255,255,255,0.1);
+  --border-dark:rgba(0,0,0,0.1);
+  --accent:#00d1ff;
+  --font-main:"Poppins",sans-serif;
+}
 
-        body {
-            background: linear-gradient(135deg, #1a2a6c, #b21f1f, #fdbb2d);
-            min-height: 100vh;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            padding: 20px;
-        }
+/* -------------------------
+   BASE + GLOBAL
+   ------------------------- */
+*{box-sizing:border-box;transition:all .20s ease}
+html,body{height:100%}
+body{
+  font-family:var(--font-main);
+  background:linear-gradient(135deg,var(--black-bg),#202020);
+  color:#fff;margin:0;padding:0;min-height:100vh;
+  display:flex;flex-direction:column;align-items:center;padding:20px;
+  -webkit-font-smoothing:antialiased;
+  -moz-osx-font-smoothing:grayscale;
+}
 
-        .container {
-            width: 100%;
-            max-width: 800px;
-            background: rgba(255, 255, 255, 0.95);
-            border-radius: 20px;
-            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.3);
-            overflow: hidden;
-        }
+/* light theme */
+body.light{
+  background:linear-gradient(135deg,var(--white-bg),#d9d9d9);
+  color:#111;
+}
 
-        header {
-            background: linear-gradient(90deg, #1a2a6c, #2c3e50);
-            color: white;
-            padding: 25px 30px;
-            text-align: center;
-        }
+/* -------------------------
+   HEADER BUTTONS (THEME + GUIDE)
+   ------------------------- */
+.header-buttons{
+  position:fixed;
+  top:12px;
+  right:12px;
+  display:flex;
+  gap:10px;
+  z-index:1200;
+}
+button.header-btn{
+  border:none;border-radius:999px;background:rgba(255,255,255,0.08);
+  color:inherit;padding:10px 14px;cursor:pointer;backdrop-filter:blur(6px);
+  box-shadow:0 6px 18px rgba(0,0,0,0.25);
+  display:flex;align-items:center;gap:8px;font-weight:600;
+}
+button.header-btn:hover{background:rgba(255,255,255,0.16)}
+body.light button.header-btn{background:rgba(0,0,0,0.06)}
 
-        header h1 {
-            font-size: 2.5rem;
-            margin-bottom: 10px;
-            font-weight: 700;
-        }
+/* keep header buttons compact on mobile */
+@media(max-width:520px){
+  .header-buttons{right:8px;top:8px;gap:8px}
+  button.header-btn{padding:8px 10px;font-size:14px}
+}
 
-        header p {
-            font-size: 1.1rem;
-            opacity: 0.9;
-        }
+/* -------------------------
+   APP CONTAINER
+   ------------------------- */
+.app{
+  width:100%;max-width:980px;background:var(--glass-dark);
+  backdrop-filter:blur(10px);border-radius:16px;padding:24px;margin-top:84px;
+  box-shadow:0 10px 40px rgba(0,0,0,0.45);border:1px solid var(--border-light);
+  transition:all .2s ease;
+}
+body.light .app{background:var(--glass-light);border:1px solid var(--border-dark)}
+/* ensure header doesn't overlap content on tiny screens */
+@media(max-width:520px){ .app{margin-top:84px;padding:18px} }
 
-        .app-container {
-            display: flex;
-            min-height: 500px;
-        }
+h2{text-align:center;margin:0 0 6px 0;font-weight:700}
+p.sub{text-align:center;color:rgba(255,255,255,0.65);margin:0 0 18px 0}
+body.light p.sub{color:rgba(0,0,0,0.6)}
 
-        .sidebar {
-            width: 250px;
-            background: #2c3e50;
-            color: white;
-            padding: 20px;
-        }
+/* -------------------------
+   FORM + ELEMENTS
+   ------------------------- */
+label{font-weight:600;margin-top:10px;display:block;font-size:0.95rem}
+input,select{
+  width:100%;padding:11px;border-radius:10px;border:none;
+  background:rgba(255,255,255,0.08);color:inherit;margin-bottom:10px;
+  -webkit-text-fill-color:inherit;
+}
+body.light input, body.light select{ background: rgba(0,0,0,0.06) }
+select:focus,input:focus{ outline:2px solid var(--accent); box-shadow:0 6px 20px rgba(0,0,0,0.08) }
 
-        .nav-item {
-            padding: 15px;
-            margin-bottom: 10px;
-            border-radius: 10px;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            display: flex;
-            align-items: center;
-        }
+/* style select wrapper & caret so it's more consistent */
+.select-wrap{position:relative}
+.select-wrap::after{
+  content:"▾";position:absolute;right:12px;top:50%;transform:translateY(-50%);
+  color:rgba(255,255,255,0.7);pointer-events:none;font-size:12px;
+}
+body.light .select-wrap::after{ color: rgba(0,0,0,0.6) }
 
-        .nav-item i {
-            margin-right: 10px;
-            font-size: 1.2rem;
-        }
+/* Mic button */
+.mic{ width:110px;height:110px;border-radius:999px;margin:18px auto;display:flex;
+  align-items:center;justify-content:center;font-size:34px;cursor:pointer;
+  background:rgba(255,255,255,0.08);transition:all .25s ease;
+}
+.mic:hover{ background:rgba(255,255,255,0.12) }
+.mic.recording{ background:linear-gradient(135deg,#ff4b8a,#ff3b6b); box-shadow:0 0 24px rgba(255,59,138,0.35); transform:scale(1.05) }
 
-        .nav-item.active {
-            background: #1a2a6c;
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
-        }
+/* buttons */
+button{cursor:pointer;border:0;border-radius:10px;padding:10px 14px;margin:6px 0;background:rgba(255,255,255,0.12);color:inherit;font-weight:600}
+button:hover{background:rgba(255,255,255,0.18)}
+button:disabled{opacity:0.5;cursor:not-allowed}
 
-        .nav-item:hover:not(.active) {
-            background: #34495e;
-        }
+/* audio */
+audio{ width:100%; margin-top:8px; border-radius:10px; background:transparent }
 
-        .main-content {
-            flex: 1;
-            padding: 30px;
-            display: flex;
-            flex-direction: column;
-        }
+/* cards grid */
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:14px;margin-top:18px}
+.card{
+  background:rgba(255,255,255,0.06);border-radius:10px;padding:12px;backdrop-filter:blur(6px);
+  border:1px solid rgba(255,255,255,0.08);display:flex;flex-direction:column;gap:6px;
+}
+.card a { color:var(--accent); word-break:break-all; text-decoration:none }
+.card small { color:rgba(255,255,255,0.65) }
 
-        .page {
-            display: none;
-            flex: 1;
-        }
+/* selection colors */
+::selection{ background:rgba(0,0,0,0.6); color:#fff }
+body.light ::selection{ background:rgba(200,200,200,0.8); color:#111 }
 
-        .page.active {
-            display: flex;
-            flex-direction: column;
-        }
+/* option styling (works in many browsers, not all details controllable) */
+select{ -webkit-appearance:none; appearance:none; position:relative; z-index:1 }
+option{ background:#2b2b2b; color:#fff }
+body.light option{ background:#fff; color:#111 }
+option:hover, option:checked{ background:#3b3b3b !important; color:#fff !important }
 
-        .page-title {
-            font-size: 1.8rem;
-            color: #2c3e50;
-            margin-bottom: 20px;
-            padding-bottom: 10px;
-            border-bottom: 2px solid #eee;
-        }
-
-        .recorder-container {
-            background: white;
-            border-radius: 15px;
-            padding: 25px;
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
-            margin-bottom: 25px;
-        }
-
-        .timer {
-            font-size: 2.5rem;
-            text-align: center;
-            margin: 20px 0;
-            color: #2c3e50;
-            font-weight: bold;
-        }
-
-        .controls {
-            display: flex;
-            justify-content: center;
-            gap: 20px;
-            margin-top: 20px;
-        }
-
-        .btn {
-            padding: 12px 25px;
-            border: none;
-            border-radius: 50px;
-            font-size: 1rem;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .btn i {
-            margin-right: 8px;
-        }
-
-        .btn-record {
-            background: #e74c3c;
-            color: white;
-            box-shadow: 0 5px 15px rgba(231, 76, 60, 0.4);
-        }
-
-        .btn-record:hover {
-            background: #c0392b;
-            transform: translateY(-3px);
-        }
-
-        .btn-stop {
-            background: #34495e;
-            color: white;
-        }
-
-        .btn-stop:hover {
-            background: #2c3e50;
-            transform: translateY(-3px);
-        }
-
-        .btn-play {
-            background: #2ecc71;
-            color: white;
-            box-shadow: 0 5px 15px rgba(46, 204, 113, 0.4);
-        }
-
-        .btn-play:hover {
-            background: #27ae60;
-            transform: translateY(-3px);
-        }
-
-        .btn-send {
-            background: #3498db;
-            color: white;
-            box-shadow: 0 5px 15px rgba(52, 152, 219, 0.4);
-        }
-
-        .btn-send:hover {
-            background: #2980b9;
-            transform: translateY(-3px);
-        }
-
-        .visualizer {
-            height: 100px;
-            background: #f8f9fa;
-            border-radius: 10px;
-            margin: 20px 0;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            overflow: hidden;
-        }
-
-        .wave {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            height: 100%;
-        }
-
-        .bar {
-            width: 4px;
-            height: 20px;
-            background: #3498db;
-            margin: 0 2px;
-            border-radius: 2px;
-            animation: wave 1.2s infinite ease-in-out;
-        }
-
-        @keyframes wave {
-            0%, 100% { transform: scaleY(0.5); }
-            50% { transform: scaleY(2.5); }
-        }
-
-        .messages-container {
-            flex: 1;
-            background: #f8f9fa;
-            border-radius: 15px;
-            padding: 20px;
-            overflow-y: auto;
-            max-height: 350px;
-        }
-
-        .message {
-            background: white;
-            border-radius: 15px;
-            padding: 15px;
-            margin-bottom: 15px;
-            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.08);
-            border-left: 4px solid #3498db;
-        }
-
-        .message-header {
-            display: flex;
-            justify-content: between;
-            margin-bottom: 10px;
-        }
-
-        .message-sender {
-            font-weight: bold;
-            color: #2c3e50;
-        }
-
-        .message-time {
-            color: #7f8c8d;
-            font-size: 0.85rem;
-        }
-
-        .message-audio {
-            display: flex;
-            align-items: center;
-            margin-top: 10px;
-        }
-
-        .audio-player {
-            flex: 1;
-            height: 30px;
-            background: #f1f2f6;
-            border-radius: 15px;
-            margin-right: 10px;
-            overflow: hidden;
-        }
-
-        .progress-bar {
-            height: 100%;
-            background: #3498db;
-            width: 0%;
-            transition: width 0.1s linear;
-        }
-
-        .play-btn {
-            background: #3498db;
-            color: white;
-            border: none;
-            width: 30px;
-            height: 30px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-        }
-
-        .contacts-list {
-            display: flex;
-            flex-direction: column;
-            gap: 15px;
-        }
-
-        .contact {
-            display: flex;
-            align-items: center;
-            padding: 15px;
-            background: white;
-            border-radius: 15px;
-            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.08);
-            cursor: pointer;
-            transition: all 0.3s ease;
-        }
-
-        .contact:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
-        }
-
-        .contact-avatar {
-            width: 50px;
-            height: 50px;
-            border-radius: 50%;
-            background: #3498db;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: white;
-            font-weight: bold;
-            font-size: 1.2rem;
-            margin-right: 15px;
-        }
-
-        .contact-info h3 {
-            color: #2c3e50;
-            margin-bottom: 5px;
-        }
-
-        .contact-info p {
-            color: #7f8c8d;
-            font-size: 0.9rem;
-        }
-
-        .status-online {
-            width: 10px;
-            height: 10px;
-            background: #2ecc71;
-            border-radius: 50%;
-            margin-left: auto;
-        }
-
-        .status-offline {
-            width: 10px;
-            height: 10px;
-            background: #95a5a6;
-            border-radius: 50%;
-            margin-left: auto;
-        }
-
-        footer {
-            text-align: center;
-            padding: 20px;
-            background: #f8f9fa;
-            color: #7f8c8d;
-            font-size: 0.9rem;
-        }
-
-        .recording-indicator {
-            display: none;
-            text-align: center;
-            color: #e74c3c;
-            font-weight: bold;
-            margin: 10px 0;
-        }
-
-        .pulse {
-            animation: pulse 1.5s infinite;
-        }
-
-        @keyframes pulse {
-            0% { opacity: 1; }
-            50% { opacity: 0.5; }
-            100% { opacity: 1; }
-        }
-
-        @media (max-width: 768px) {
-            .app-container {
-                flex-direction: column;
-            }
-            
-            .sidebar {
-                width: 100%;
-            }
-        }
-    </style>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+/* small screens */
+@media(max-width:600px){
+  .mic{ width:90px; height:90px; font-size:28px }
+  .header-buttons{ right:8px; top:8px; gap:8px; flex-direction:column }
+  .card{ padding:10px }
+}
+</style>
 </head>
 <body>
-    <div class="container">
-        <header>
-            <h1><i class="fas fa-wave-square"></i> Echo Voice</h1>
-            <p>Secure, private voice messaging for professionals</p>
-        </header>
-        
-        <div class="app-container">
-            <div class="sidebar">
-                <div class="nav-item active" data-page="record">
-                    <i class="fas fa-microphone"></i> Record Message
-                </div>
-                <div class="nav-item" data-page="inbox">
-                    <i class="fas fa-inbox"></i> Inbox
-                    <span class="message-count">3</span>
-                </div>
-                <div class="nav-item" data-page="sent">
-                    <i class="fas fa-paper-plane"></i> Sent
-                </div>
-                <div class="nav-item" data-page="contacts">
-                    <i class="fas fa-users"></i> Contacts
-                </div>
-                <div class="nav-item" data-page="profile">
-                    <i class="fas fa-user-circle"></i> Profile
-                </div>
-            </div>
-            
-            <div class="main-content">
-                <!-- Record Page -->
-                <div class="page active" id="record">
-                    <h2 class="page-title">Record New Message</h2>
-                    
-                    <div class="recorder-container">
-                        <div class="visualizer">
-                            <div class="wave">
-                                <div class="bar"></div>
-                                <div class="bar"></div>
-                                <div class="bar"></div>
-                                <div class="bar"></div>
-                                <div class="bar"></div>
-                                <div class="bar"></div>
-                                <div class="bar"></div>
-                                <div class="bar"></div>
-                                <div class="bar"></div>
-                                <div class="bar"></div>
-                            </div>
-                        </div>
-                        
-                        <div class="timer" id="timer">00:00</div>
-                        
-                        <div class="recording-indicator" id="recordingIndicator">
-                            <i class="fas fa-circle pulse"></i> Recording...
-                        </div>
-                        
-                        <div class="controls">
-                            <button class="btn btn-record" id="recordBtn">
-                                <i class="fas fa-microphone"></i> Start Recording
-                            </button>
-                            <button class="btn btn-stop" id="stopBtn" disabled>
-                                <i class="fas fa-stop"></i> Stop
-                            </button>
-                            <button class="btn btn-play" id="playBtn" disabled>
-                                <i class="fas fa-play"></i> Play
-                            </button>
-                            <button class="btn btn-send" id="sendBtn" disabled>
-                                <i class="fas fa-paper-plane"></i> Send
-                            </button>
-                        </div>
-                    </div>
-                    
-                    <div class="contacts-list">
-                        <h3>Select Recipient</h3>
-                        <div class="contact" data-contact="1">
-                            <div class="contact-avatar">JD</div>
-                            <div class="contact-info">
-                                <h3>John Doe</h3>
-                                <p>Project Manager</p>
-                            </div>
-                            <div class="status-online"></div>
-                        </div>
-                        <div class="contact" data-contact="2">
-                            <div class="contact-avatar">SJ</div>
-                            <div class="contact-info">
-                                <h3>Sarah Johnson</h3>
-                                <p>Design Team Lead</p>
-                            </div>
-                            <div class="status-online"></div>
-                        </div>
-                        <div class="contact" data-contact="3">
-                            <div class="contact-avatar">MR</div>
-                            <div class="contact-info">
-                                <h3>Mike Roberts</h3>
-                                <p>Development Head</p>
-                            </div>
-                            <div class="status-offline"></div>
-                        </div>
-                    </div>
-                </div>
-                
-                <!-- Inbox Page -->
-                <div class="page" id="inbox">
-                    <h2 class="page-title">Inbox</h2>
-                    
-                    <div class="messages-container">
-                        <div class="message">
-                            <div class="message-header">
-                                <div class="message-sender">John Doe</div>
-                                <div class="message-time">10:24 AM</div>
-                            </div>
-                            <p>Project update request</p>
-                            <div class="message-audio">
-                                <div class="audio-player">
-                                    <div class="progress-bar" style="width: 30%"></div>
-                                </div>
-                                <button class="play-btn">
-                                    <i class="fas fa-play"></i>
-                                </button>
-                                <span style="margin-left: 10px; color: #7f8c8d; font-size: 0.9rem;">0:12 / 0:40</span>
-                            </div>
-                        </div>
-                        
-                        <div class="message">
-                            <div class="message-header">
-                                <div class="message-sender">Sarah Johnson</div>
-                                <div class="message-time">Yesterday</div>
-                            </div>
-                            <p>Design concepts ready for review</p>
-                            <div class="message-audio">
-                                <div class="audio-player">
-                                    <div class="progress-bar" style="width: 65%"></div>
-                                </div>
-                                <button class="play-btn">
-                                    <i class="fas fa-play"></i>
-                                </button>
-                                <span style="margin-left: 10px; color: #7f8c8d; font-size: 0.9rem;">0:26 / 0:40</span>
-                            </div>
-                        </div>
-                        
-                        <div class="message">
-                            <div class="message-header">
-                                <div class="message-sender">Mike Roberts</div>
-                                <div class="message-time">May 15</div>
-                            </div>
-                            <p>Code deployment status</p>
-                            <div class="message-audio">
-                                <div class="audio-player">
-                                    <div class="progress-bar" style="width: 0%"></div>
-                                </div>
-                                <button class="play-btn">
-                                    <i class="fas fa-play"></i>
-                                </button>
-                                <span style="margin-left: 10px; color: #7f8c8d; font-size: 0.9rem;">0:00 / 1:05</span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                
-                <!-- Sent Page -->
-                <div class="page" id="sent">
-                    <h2 class="page-title">Sent Messages</h2>
-                    
-                    <div class="messages-container">
-                        <div class="message">
-                            <div class="message-header">
-                                <div class="message-sender">To: John Doe</div>
-                                <div class="message-time">Today, 9:15 AM</div>
-                            </div>
-                            <p>Weekly status report</p>
-                            <div class="message-audio">
-                                <div class="audio-player">
-                                    <div class="progress-bar" style="width: 0%"></div>
-                                </div>
-                                <button class="play-btn">
-                                    <i class="fas fa-play"></i>
-                                </button>
-                                <span style="margin-left: 10px; color: #7f8c8d; font-size: 0.9rem;">0:00 / 0:55</span>
-                            </div>
-                        </div>
-                        
-                        <div class="message">
-                            <div class="message-header">
-                                <div class="message-sender">To: Sarah Johnson</div>
-                                <div class="message-time">Yesterday, 4:30 PM</div>
-                            </div>
-                            <p>Feedback on design concepts</p>
-                            <div class="message-audio">
-                                <div class="audio-player">
-                                    <div class="progress-bar" style="width: 100%"></div>
-                                </div>
-                                <button class="play-btn">
-                                    <i class="fas fa-play"></i>
-                                </button>
-                                <span style="margin-left: 10px; color: #7f8c8d; font-size: 0.9rem;">1:20 / 1:20</span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                
-                <!-- Contacts Page -->
-                <div class="page" id="contacts">
-                    <h2 class="page-title">Contacts</h2>
-                    
-                    <div class="contacts-list">
-                        <div class="contact">
-                            <div class="contact-avatar">JD</div>
-                            <div class="contact-info">
-                                <h3>John Doe</h3>
-                                <p>Project Manager • Last active: 5 min ago</p>
-                            </div>
-                            <div class="status-online"></div>
-                        </div>
-                        <div class="contact">
-                            <div class="contact-avatar">SJ</div>
-                            <div class="contact-info">
-                                <h3>Sarah Johnson</h3>
-                                <p>Design Team Lead • Last active: 1 hour ago</p>
-                            </div>
-                            <div class="status-online"></div>
-                        </div>
-                        <div class="contact">
-                            <div class="contact-avatar">MR</div>
-                            <div class="contact-info">
-                                <h3>Mike Roberts</h3>
-                                <p>Development Head • Last active: 2 days ago</p>
-                            </div>
-                            <div class="status-offline"></div>
-                        </div>
-                        <div class="contact">
-                            <div class="contact-avatar">EJ</div>
-                            <div class="contact-info">
-                                <h3>Emily Jackson</h3>
-                                <p>QA Engineer • Last active: 30 min ago</p>
-                            </div>
-                            <div class="status-online"></div>
-                        </div>
-                        <div class="contact">
-                            <div class="contact-avatar">DW</div>
-                            <div class="contact-info">
-                                <h3>David Wilson</h3>
-                                <p>Product Owner • Last active: 3 hours ago</p>
-                            </div>
-                            <div class="status-online"></div>
-                        </div>
-                    </div>
-                </div>
-                
-                <!-- Profile Page -->
-                <div class="page" id="profile">
-                    <h2 class="page-title">My Profile</h2>
-                    
-                    <div class="recorder-container">
-                        <div style="text-align: center; margin-bottom: 20px;">
-                            <div style="width: 100px; height: 100px; border-radius: 50%; background: #3498db; display: inline-flex; align-items: center; justify-content: center; color: white; font-size: 2rem; font-weight: bold;">AK</div>
-                        </div>
-                        
-                        <div style="text-align: center; margin-bottom: 30px;">
-                            <h3 style="color: #2c3e50; margin-bottom: 5px;">Alex Kumar</h3>
-                            <p style="color: #7f8c8d;">Senior Developer</p>
-                        </div>
-                        
-                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
-                            <div style="background: #f8f9fa; padding: 15px; border-radius: 10px; text-align: center;">
-                                <h4 style="color: #2c3e50; margin-bottom: 5px;">Messages Sent</h4>
-                                <p style="color: #3498db; font-size: 1.5rem; font-weight: bold;">42</p>
-                            </div>
-                            <div style="background: #f8f9fa; padding: 15px; border-radius: 10px; text-align: center;">
-                                <h4 style="color: #2c3e50; margin-bottom: 5px;">Messages Received</h4>
-                                <p style="color: #3498db; font-size: 1.5rem; font-weight: bold;">38</p>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div class="recorder-container">
-                        <h3 style="color: #2c3e50; margin-bottom: 15px;">Account Settings</h3>
-                        
-                        <div style="display: flex; flex-direction: column; gap: 15px;">
-                            <div style="display: flex; justify-content: between; padding: 10px 0; border-bottom: 1px solid #eee;">
-                                <span>Notification Sound</span>
-                                <label class="switch">
-                                    <input type="checkbox" checked>
-                                    <span class="slider round"></span>
-                                </label>
-                            </div>
-                            
-                            <div style="display: flex; justify-content: between; padding: 10px 0; border-bottom: 1px solid #eee;">
-                                <span>Auto-play Messages</span>
-                                <label class="switch">
-                                    <input type="checkbox">
-                                    <span class="slider round"></span>
-                                </label>
-                            </div>
-                            
-                            <div style="display: flex; justify-content: between; padding: 10px 0; border-bottom: 1px solid #eee;">
-                                <span>Dark Mode</span>
-                                <label class="switch">
-                                    <input type="checkbox">
-                                    <span class="slider round"></span>
-                                </label>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-        
-        <footer>
-            <p>© 2023 Echo Voice Messenger. All rights reserved.</p>
-        </footer>
+  <div class="header-buttons" role="toolbar" aria-label="Top controls">
+    <button id="guideBtn" class="header-btn" title="Guide">❔ Guide</button>
+    <button id="themeBtn" class="header-btn" title="Toggle theme">🌗 Theme</button>
+  </div>
+
+  <div class="app" id="app" hidden>
+    <h2>Echo – Anonymous Voice Connect</h2>
+    <p class="sub">Record → Upload → Share. Dashboard updates live when someone interacts.</p>
+
+    <!-- sender -->
+    <div id="senderView">
+      <label for="privacy">Privacy</label>
+      <div class="select-wrap">
+        <select id="privacy" name="privacy">
+          <option value="anonymous">Anonymous</option>
+          <option value="reveal_on_request">Reveal on Request</option>
+          <option value="auto_reveal">Auto Reveal</option>
+        </select>
+      </div>
+
+      <label for="expiry">Expiry</label>
+      <div class="select-wrap">
+        <select id="expiry" name="expiry">
+          <option value="permanent">Permanent</option>
+          <option value="24h">24 hours</option>
+        </select>
+      </div>
+
+      <label for="senderName">Your Name</label>
+      <input id="senderName" placeholder="e.g. Sandy" />
+
+      <div class="mic" id="micBtn" title="Start recording">🎙️</div>
+      <button id="stopBtn" disabled>⏹ Stop</button>
+      <audio id="preview" controls hidden></audio>
+      <button id="uploadBtn" hidden>⬆️ Upload</button>
+
+      <div id="result" style="margin-top:12px"></div>
+
+      <h3 style="margin-top:22px">My Voices</h3>
+      <div id="grid" class="grid"></div>
     </div>
 
-    <script>
-        // Page Navigation
-        document.querySelectorAll('.nav-item').forEach(item => {
-            item.addEventListener('click', function() {
-                // Remove active class from all nav items
-                document.querySelectorAll('.nav-item').forEach(nav => {
-                    nav.classList.remove('active');
-                });
-                
-                // Add active class to clicked nav item
-                this.classList.add('active');
-                
-                // Hide all pages
-                document.querySelectorAll('.page').forEach(page => {
-                    page.classList.remove('active');
-                });
-                
-                // Show selected page
-                const pageId = this.getAttribute('data-page');
-                document.getElementById(pageId).classList.add('active');
-            });
-        });
+    <!-- receiver -->
+    <div id="receiverView" hidden>
+      <h3>Incoming Voice Message 🔊</h3>
+      <audio id="playAudio" controls></audio>
+      <button id="playBtn">▶️ Play</button>
+      <div id="receiverStatus" style="margin-top:10px;color:rgba(255,255,255,0.7)"></div>
+      <div id="revealSection" style="margin-top:12px"></div>
+    </div>
+  </div>
 
-        // Voice Recording Functionality
-        const recordBtn = document.getElementById('recordBtn');
-        const stopBtn = document.getElementById('stopBtn');
-        const playBtn = document.getElementById('playBtn');
-        const sendBtn = document.getElementById('sendBtn');
-        const timer = document.getElementById('timer');
-        const recordingIndicator = document.getElementById('recordingIndicator');
-        
-        let mediaRecorder;
-        let audioChunks = [];
-        let isRecording = false;
-        let timerInterval;
-        let seconds = 0;
-        
-        // Format time as MM:SS
-        function formatTime(secs) {
-            const minutes = Math.floor(secs / 60);
-            const seconds = secs % 60;
-            return `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
-        }
-        
-        // Start timer
-        function startTimer() {
-            seconds = 0;
-            timerInterval = setInterval(() => {
-                seconds++;
-                timer.textContent = formatTime(seconds);
-            }, 1000);
-        }
-        
-        // Stop timer
-        function stopTimer() {
-            clearInterval(timerInterval);
-        }
-        
-        // Simulate recording functionality
-        recordBtn.addEventListener('click', function() {
-            if (!isRecording) {
-                // Start recording
-                isRecording = true;
-                recordBtn.disabled = true;
-                stopBtn.disabled = false;
-                playBtn.disabled = true;
-                sendBtn.disabled = true;
-                
-                recordingIndicator.style.display = 'block';
-                startTimer();
-                
-                // In a real app, we would initialize MediaRecorder here
-                // For this demo, we'll just simulate the behavior
-                
-                // Simulate recording process
-                setTimeout(() => {
-                    if (isRecording) {
-                        // Enable play and send buttons after "recording"
-                        playBtn.disabled = false;
-                        sendBtn.disabled = false;
-                    }
-                }, 3000);
-            }
-        });
-        
-        stopBtn.addEventListener('click', function() {
-            if (isRecording) {
-                // Stop recording
-                isRecording = false;
-                recordBtn.disabled = false;
-                stopBtn.disabled = true;
-                
-                recordingIndicator.style.display = 'none';
-                stopTimer();
-                
-                // In a real app, we would stop MediaRecorder here
-            }
-        });
-        
-        playBtn.addEventListener('click', function() {
-            // In a real app, we would play the recorded audio here
-            alert('Playing recorded message...');
-        });
-        
-        sendBtn.addEventListener('click', function() {
-            // In a real app, we would send the recorded audio here
-            alert('Message sent successfully!');
-            
-            // Reset UI
-            recordBtn.disabled = false;
-            stopBtn.disabled = true;
-            playBtn.disabled = true;
-            sendBtn.disabled = true;
-            recordingIndicator.style.display = 'none';
-            stopTimer();
-            timer.textContent = '00:00';
-            isRecording = false;
-        });
-        
-        // Contact selection
-        document.querySelectorAll('.contact').forEach(contact => {
-            contact.addEventListener('click', function() {
-                // Remove selection from all contacts
-                document.querySelectorAll('.contact').forEach(c => {
-                    c.style.border = 'none';
-                });
-                
-                // Add selection to clicked contact
-                this.style.border = '2px solid #3498db';
-            });
-        });
-        
-        // Audio player functionality for messages
-        document.querySelectorAll('.play-btn').forEach(btn => {
-            btn.addEventListener('click', function() {
-                const icon = this.querySelector('i');
-                
-                if (icon.classList.contains('fa-play')) {
-                    icon.classList.remove('fa-play');
-                    icon.classList.add('fa-pause');
-                    // In a real app, we would start playing the audio here
-                } else {
-                    icon.classList.remove('fa-pause');
-                    icon.classList.add('fa-play');
-                    // In a real app, we would pause the audio here
-                }
-            });
-        });
-        
-        // Toggle switches for profile page
-        document.querySelectorAll('.switch input').forEach(checkbox => {
-            checkbox.addEventListener('change', function() {
-                if (this.checked) {
-                    // Setting enabled
-                    console.log('Setting enabled');
-                } else {
-                    // Setting disabled
-                    console.log('Setting disabled');
-                }
-            });
-        });
-    </script>
+  <div id="loader" style="position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:#000;color:#fff;z-index:1400">Loading Echo...</div>
+
+<script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
+<script>
+/* -------------------------
+   BASIC INIT
+   ------------------------- */
+const BASE_URL = window.location.origin;
+const socket = io(BASE_URL, { transports: ['websocket','polling'] });
+const params = new URLSearchParams(window.location.search);
+const voiceId = params.get("v");
+const loader = document.getElementById("loader");
+const app = document.getElementById("app");
+const senderView = document.getElementById("senderView");
+const receiverView = document.getElementById("receiverView");
+const themeBtn = document.getElementById("themeBtn");
+const guideBtn = document.getElementById("guideBtn");
+
+/* THEME */
+let dark = true;
+themeBtn.onclick = () => {
+  dark = !dark;
+  document.body.classList.toggle('light', !dark);
+  themeBtn.textContent = dark ? "🌗 Theme" : "☀️ Theme";
+};
+
+/* GUIDE */
+guideBtn.onclick = () => {
+  // Small friendly modal replacement
+  alert("How Echo works:\n\n1) Record a short voice note.\n2) Upload to get a unique share link.\n3) Send the link to someone. They can listen and, if allowed, request your name to be revealed.\n\nUse Reveal on Request to get notified and approve the reveal.");
+};
+
+/* Sender id registration (persisted locally) */
+if (!localStorage.getItem('echo_id')) {
+  localStorage.setItem('echo_id', 'echo_' + Math.random().toString(36).slice(2,9));
+}
+const SENDER_ID = localStorage.getItem('echo_id');
+
+/* When socket connects register sender to a private room so server can notify only them */
+socket.on('connect', () => {
+  // send register to server so server can do room emits (server must implement register_sender)
+  socket.emit('register_sender', SENDER_ID);
+});
+
+/* -------------------------
+   ON LOAD - show UI
+   ------------------------- */
+window.addEventListener('load', () => {
+  loader.style.display = 'none';
+  app.hidden = false;
+  if (voiceId) {
+    senderView.hidden = true;
+    receiverView.hidden = false;
+    loadReceiver();
+  } else {
+    senderView.hidden = false;
+    receiverView.hidden = true;
+    loadDashboard();
+  }
+});
+
+/* -------------------------
+   RECORDING
+   ------------------------- */
+let mediaRecorder, chunks = [];
+const micBtn = document.getElementById('micBtn');
+const stopBtn = document.getElementById('stopBtn');
+const preview = document.getElementById('preview');
+const uploadBtn = document.getElementById('uploadBtn');
+const result = document.getElementById('result');
+
+micBtn.onclick = async () => {
+  try {
+    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+    mediaRecorder = new MediaRecorder(stream);
+    chunks = [];
+    mediaRecorder.ondataavailable = e => chunks.push(e.data);
+    mediaRecorder.onstop = () => {
+      const blob = new Blob(chunks, { type: 'audio/webm' });
+      preview.src = URL.createObjectURL(blob);
+      preview.hidden = false;
+      uploadBtn.hidden = false;
+    };
+    mediaRecorder.start();
+    micBtn.classList.add('recording');
+    stopBtn.disabled = false;
+  } catch (err) {
+    alert('Please allow microphone access to record.');
+  }
+};
+
+stopBtn.onclick = () => {
+  if (mediaRecorder && mediaRecorder.state === 'recording') mediaRecorder.stop();
+  micBtn.classList.remove('recording');
+  stopBtn.disabled = true;
+};
+
+/* -------------------------
+   UPLOAD + DASHBOARD
+   ------------------------- */
+uploadBtn.onclick = async () => {
+  const blob = new Blob(chunks, { type: 'audio/webm' });
+  const form = new FormData();
+  form.append('voice', blob);
+  form.append('privacy', document.getElementById('privacy').value);
+  form.append('expiry', document.getElementById('expiry').value);
+  form.append('senderId', SENDER_ID);
+  form.append('senderName', document.getElementById('senderName').value || 'Anonymous');
+
+  uploadBtn.disabled = true; uploadBtn.textContent = 'Uploading...';
+  try {
+    const res = await fetch(`${BASE_URL}/api/upload`, { method: 'POST', body: form });
+    const data = await res.json();
+    if (data.ok) {
+      result.innerHTML = `<p style="color:var(--accent)">✅ Uploaded! Share this link:</p>
+        <input value="${data.link}" style="width:100%;padding:8px;border-radius:8px" readonly />
+        <button style="margin-top:8px" onclick="navigator.clipboard.writeText('${data.link}')">Copy</button>`;
+      await loadDashboard();
+    } else {
+      result.textContent = 'Upload failed.';
+    }
+  } catch (e) {
+    result.textContent = 'Upload failed.';
+  } finally {
+    uploadBtn.disabled = false; uploadBtn.textContent = '⬆️ Upload';
+  }
+};
+
+async function loadDashboard() {
+  const grid = document.getElementById('grid');
+  grid.innerHTML = '<p>Loading...</p>';
+  try {
+    const res = await fetch(`${BASE_URL}/api/dashboard/${SENDER_ID}`);
+    const rows = await res.json();
+    if (!rows || rows.length === 0) {
+      grid.innerHTML = "<p style='color:rgba(255,255,255,0.6)'>No voices yet.</p>";
+      return;
+    }
+    grid.innerHTML = rows.map(v => `
+      <div class="card">
+        <b>${v.senderName || 'Anonymous'}</b>
+        <a href="${BASE_URL}/?v=${v.id}" target="_blank">${v.id}</a>
+        <small>Privacy: ${v.privacy} | Expiry: ${v.expiry}</small>
+        <div>Opened: ${v.openCount || 0} | Played: ${v.playCount || 0}</div>
+        ${v.revealRequest && !v.revealApproved ? `<button onclick="approveReveal('${v.id}')">Approve Reveal</button>` : v.revealApproved ? `<p>👁️ Reveal Approved</p>` : ''}
+      </div>
+    `).join('');
+  } catch (err) {
+    grid.innerHTML = "<p style='color:crimson'>Error loading dashboard.</p>";
+  }
+}
+
+async function approveReveal(id) {
+  try {
+    await fetch(`${BASE_URL}/api/approve-reveal/${id}`, { method: 'POST' });
+    // notify server will emit reveal_approved
+    await loadDashboard();
+  } catch (e) {
+    alert('Approve failed');
+  }
+}
+
+/* -------------------------
+   RECEIVER
+   ------------------------- */
+async function loadReceiver() {
+  try {
+    const res = await fetch(`${BASE_URL}/api/voice/${voiceId}`);
+    if (!res.ok) { document.getElementById('receiverStatus').textContent = 'Not found'; return; }
+    const data = await res.json();
+    const playAudio = document.getElementById('playAudio');
+    const playBtn = document.getElementById('playBtn');
+    const receiverStatus = document.getElementById('receiverStatus');
+    const revealSection = document.getElementById('revealSection');
+
+    if (!data.path) { receiverStatus.textContent = 'Voice not found'; return; }
+    playAudio.src = `${BASE_URL}/play/${data.path}`;
+    await fetch(`${BASE_URL}/api/open/${voiceId}`, { method: 'POST' });
+
+    if (data.privacy === 'auto_reveal') {
+      revealSection.innerHTML = `<p>👤 Sender: <b>${data.senderName}</b></p>`;
+    } else if (data.privacy === 'reveal_on_request') {
+      revealSection.innerHTML = `<button id="reqBtn">Request Name Reveal</button>`;
+      document.getElementById('reqBtn').onclick = async () => {
+        await fetch(`${BASE_URL}/api/request-reveal/${voiceId}`, { method: 'POST' });
+        revealSection.innerHTML = "<p>⏳ Request sent. Waiting...</p>";
+      };
+    } else {
+      revealSection.innerHTML = '';
+    }
+
+    playBtn.onclick = async () => {
+      playAudio.play();
+      await fetch(`${BASE_URL}/api/play/${voiceId}`, { method: 'POST' });
+      receiverStatus.textContent = "✅ Voice played.";
+    };
+  } catch (e) {
+    document.getElementById('receiverStatus').textContent = 'Error loading voice';
+  }
+}
+
+/* -------------------------
+   SOCKET REAL-TIME
+   ------------------------- */
+/* -------------------------
+   SOCKET REAL-TIME
+   ------------------------- */
+socket.on('reveal_request', data => {
+  if (data && data.senderId && data.senderId === SENDER_ID) {
+    alert('🔔 Someone requested a reveal for your voice. Open the dashboard to approve.');
+    loadDashboard();
+  }
+});
+
+/* dynamically listen for reveal approval specific to this voice */
+if (voiceId) {
+  socket.on(`reveal_approved_${voiceId}`, (data) => {
+    console.log("Reveal approved received:", data);
+    const revealSection = document.getElementById("revealSection");
+    revealSection.innerHTML = `<p>👤 Sender: <b>${data.senderName || "Anonymous"}</b></p>`;
+  });
+}
+
+</script>
 </body>
 </html>
+
+
