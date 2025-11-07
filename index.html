@@ -1,427 +1,719 @@
+<!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>Echo – Anonymous Voice Connect</title>
-<style>
-/* -------------------------
-   THEME COLORS + VARIABLES
-   ------------------------- */
-:root{
-  --black-bg:#0b0b0b;
-  --white-bg:#fdfdfd;
-  --glass-dark:rgba(255,255,255,0.07);
-  --glass-light:rgba(0,0,0,0.07);
-  --border-light:rgba(255,255,255,0.1);
-  --border-dark:rgba(0,0,0,0.1);
-  --accent:#00d1ff;
-  --font-main:"Poppins",sans-serif;
-}
-
-/* -------------------------
-   BASE + GLOBAL
-   ------------------------- */
-*{box-sizing:border-box;transition:all .20s ease}
-html,body{height:100%}
-body{
-  font-family:var(--font-main);
-  background:linear-gradient(135deg,var(--black-bg),#202020);
-  color:#fff;margin:0;padding:0;min-height:100vh;
-  display:flex;flex-direction:column;align-items:center;padding:20px;
-  -webkit-font-smoothing:antialiased;
-  -moz-osx-font-smoothing:grayscale;
-}
-
-/* light theme */
-body.light{
-  background:linear-gradient(135deg,var(--white-bg),#d9d9d9);
-  color:#111;
-}
-
-/* -------------------------
-   HEADER BUTTONS (THEME + GUIDE)
-   ------------------------- */
-.header-buttons{
-  position:fixed;
-  top:12px;
-  right:12px;
-  display:flex;
-  gap:10px;
-  z-index:1200;
-}
-button.header-btn{
-  border:none;border-radius:999px;background:rgba(255,255,255,0.08);
-  color:inherit;padding:10px 14px;cursor:pointer;backdrop-filter:blur(6px);
-  box-shadow:0 6px 18px rgba(0,0,0,0.25);
-  display:flex;align-items:center;gap:8px;font-weight:600;
-}
-button.header-btn:hover{background:rgba(255,255,255,0.16)}
-body.light button.header-btn{background:rgba(0,0,0,0.06)}
-
-/* keep header buttons compact on mobile */
-@media(max-width:520px){
-  .header-buttons{right:8px;top:8px;gap:8px}
-  button.header-btn{padding:8px 10px;font-size:14px}
-}
-
-/* -------------------------
-   APP CONTAINER
-   ------------------------- */
-.app{
-  width:100%;max-width:980px;background:var(--glass-dark);
-  backdrop-filter:blur(10px);border-radius:16px;padding:24px;margin-top:84px;
-  box-shadow:0 10px 40px rgba(0,0,0,0.45);border:1px solid var(--border-light);
-  transition:all .2s ease;
-}
-body.light .app{background:var(--glass-light);border:1px solid var(--border-dark)}
-/* ensure header doesn't overlap content on tiny screens */
-@media(max-width:520px){ .app{margin-top:84px;padding:18px} }
-
-h2{text-align:center;margin:0 0 6px 0;font-weight:700}
-p.sub{text-align:center;color:rgba(255,255,255,0.65);margin:0 0 18px 0}
-body.light p.sub{color:rgba(0,0,0,0.6)}
-
-/* -------------------------
-   FORM + ELEMENTS
-   ------------------------- */
-label{font-weight:600;margin-top:10px;display:block;font-size:0.95rem}
-input,select{
-  width:100%;padding:11px;border-radius:10px;border:none;
-  background:rgba(255,255,255,0.08);color:inherit;margin-bottom:10px;
-  -webkit-text-fill-color:inherit;
-}
-body.light input, body.light select{ background: rgba(0,0,0,0.06) }
-select:focus,input:focus{ outline:2px solid var(--accent); box-shadow:0 6px 20px rgba(0,0,0,0.08) }
-
-/* style select wrapper & caret so it's more consistent */
-.select-wrap{position:relative}
-.select-wrap::after{
-  content:"▾";position:absolute;right:12px;top:50%;transform:translateY(-50%);
-  color:rgba(255,255,255,0.7);pointer-events:none;font-size:12px;
-}
-body.light .select-wrap::after{ color: rgba(0,0,0,0.6) }
-
-/* Mic button */
-.mic{ width:110px;height:110px;border-radius:999px;margin:18px auto;display:flex;
-  align-items:center;justify-content:center;font-size:34px;cursor:pointer;
-  background:rgba(255,255,255,0.08);transition:all .25s ease;
-}
-.mic:hover{ background:rgba(255,255,255,0.12) }
-.mic.recording{ background:linear-gradient(135deg,#ff4b8a,#ff3b6b); box-shadow:0 0 24px rgba(255,59,138,0.35); transform:scale(1.05) }
-
-/* buttons */
-button{cursor:pointer;border:0;border-radius:10px;padding:10px 14px;margin:6px 0;background:rgba(255,255,255,0.12);color:inherit;font-weight:600}
-button:hover{background:rgba(255,255,255,0.18)}
-button:disabled{opacity:0.5;cursor:not-allowed}
-
-/* audio */
-audio{ width:100%; margin-top:8px; border-radius:10px; background:transparent }
-
-/* cards grid */
-.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:14px;margin-top:18px}
-.card{
-  background:rgba(255,255,255,0.06);border-radius:10px;padding:12px;backdrop-filter:blur(6px);
-  border:1px solid rgba(255,255,255,0.08);display:flex;flex-direction:column;gap:6px;
-}
-.card a { color:var(--accent); word-break:break-all; text-decoration:none }
-.card small { color:rgba(255,255,255,0.65) }
-
-/* selection colors */
-::selection{ background:rgba(0,0,0,0.6); color:#fff }
-body.light ::selection{ background:rgba(200,200,200,0.8); color:#111 }
-
-/* option styling (works in many browsers, not all details controllable) */
-select{ -webkit-appearance:none; appearance:none; position:relative; z-index:1 }
-option{ background:#2b2b2b; color:#fff }
-body.light option{ background:#fff; color:#111 }
-option:hover, option:checked{ background:#3b3b3b !important; color:#fff !important }
-
-/* small screens */
-@media(max-width:600px){
-  .mic{ width:90px; height:90px; font-size:28px }
-  .header-buttons{ right:8px; top:8px; gap:8px; flex-direction:column }
-  .card{ padding:10px }
-}
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Project Booking System</title>
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+    <!-- Firebase UI CSS -->
+    <link type="text/css" rel="stylesheet" href="https://www.gstatic.com/firebasejs/ui/6.0.1/firebase-ui-auth.css" />
+    <style>
+        :root {
+            --primary-color: #3498db;
+            --secondary-color: #2c3e50;
+            --accent-color: #e74c3c;
+            --light-color: #ecf0f1;
+            --dark-color: #34495e;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f8f9fa;
+            color: #333;
+        }
+        
+        .navbar-brand {
+            font-weight: bold;
+            color: var(--primary-color) !important;
+        }
+        
+        .hero-section {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            color: white;
+            padding: 80px 0;
+            margin-bottom: 40px;
+        }
+        
+        .card {
+            border: none;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s;
+            margin-bottom: 20px;
+        }
+        
+        .card:hover {
+            transform: translateY(-5px);
+        }
+        
+        .card-header {
+            background-color: var(--primary-color);
+            color: white;
+            font-weight: bold;
+        }
+        
+        .btn-primary {
+            background-color: var(--primary-color);
+            border-color: var(--primary-color);
+        }
+        
+        .btn-primary:hover {
+            background-color: #2980b9;
+            border-color: #2980b9;
+        }
+        
+        .project-card {
+            height: 100%;
+        }
+        
+        .status-badge {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+        }
+        
+        .user-info {
+            background-color: var(--light-color);
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+        }
+        
+        .hidden {
+            display: none;
+        }
+        
+        footer {
+            background-color: var(--secondary-color);
+            color: white;
+            padding: 20px 0;
+            margin-top: 40px;
+        }
+        
+        .login-container {
+            max-width: 400px;
+            margin: 100px auto;
+            padding: 30px;
+            background-color: white;
+            border-radius: 10px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+        
+        #firebaseui-auth-container {
+            margin-top: 20px;
+        }
+        
+        /* Fix for dropdown menu in navbar */
+        .navbar-nav .dropdown-menu {
+            position: absolute;
+        }
+        
+        /* Loading spinner */
+        .loader {
+            border: 4px solid #f3f3f3;
+            border-radius: 50%;
+            border-top: 4px solid var(--primary-color);
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 20px auto;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
 </head>
 <body>
-  <div class="header-buttons" role="toolbar" aria-label="Top controls">
-    <button id="guideBtn" class="header-btn" title="Guide">❔ Guide</button>
-    <button id="themeBtn" class="header-btn" title="Toggle theme">🌗 Theme</button>
-  </div>
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+        <div class="container">
+            <a class="navbar-brand" href="#">ProjectBooking</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav me-auto">
+                    <li class="nav-item">
+                        <a class="nav-link active" href="#home">Home</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#projects">My Projects</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#bookings">Bookings</a>
+                    </li>
+                </ul>
+                <div class="navbar-nav">
+                    <div id="user-info" class="nav-item dropdown hidden">
+                        <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
+                            <span id="user-name">User</span>
+                        </a>
+                        <ul class="dropdown-menu">
+                            <li><a class="dropdown-item" href="#profile">Profile</a></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item" href="#" id="sign-out">Sign Out</a></li>
+                        </ul>
+                    </div>
+                    <div id="auth-buttons" class="nav-item">
+                        <button class="btn btn-outline-light" id="sign-in-btn">Sign In</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
 
-  <div class="app" id="app" hidden>
-    <h2>Echo – Anonymous Voice Connect</h2>
-    <p class="sub">Record → Upload → Share. Dashboard updates live when someone interacts.</p>
-
-    <!-- sender -->
-    <div id="senderView">
-      <label for="privacy">Privacy</label>
-      <div class="select-wrap">
-        <select id="privacy" name="privacy">
-          <option value="anonymous">Anonymous</option>
-          <option value="reveal_on_request">Reveal on Request</option>
-          <option value="auto_reveal">Auto Reveal</option>
-        </select>
-      </div>
-
-      <label for="expiry">Expiry</label>
-      <div class="select-wrap">
-        <select id="expiry" name="expiry">
-          <option value="permanent">Permanent</option>
-          <option value="24h">24 hours</option>
-        </select>
-      </div>
-
-      <label for="senderName">Your Name</label>
-      <input id="senderName" placeholder="e.g. Sandy" />
-
-      <div class="mic" id="micBtn" title="Start recording">🎙️</div>
-      <button id="stopBtn" disabled>⏹ Stop</button>
-      <audio id="preview" controls hidden></audio>
-      <button id="uploadBtn" hidden>⬆️ Upload</button>
-
-      <div id="result" style="margin-top:12px"></div>
-
-      <h3 style="margin-top:22px">My Voices</h3>
-      <div id="grid" class="grid"></div>
+    <!-- Login Section -->
+    <div id="login-section" class="container">
+        <div class="login-container">
+            <h2 class="text-center mb-4">Welcome to ProjectBooking</h2>
+            <p class="text-center mb-4">Please sign in to manage your project bookings</p>
+            <div id="firebaseui-auth-container"></div>
+            <div id="loader" class="loader hidden"></div>
+        </div>
     </div>
 
-    <!-- receiver -->
-    <div id="receiverView" hidden>
-      <h3>Incoming Voice Message 🔊</h3>
-      <audio id="playAudio" controls></audio>
-      <button id="playBtn">▶️ Play</button>
-      <div id="receiverStatus" style="margin-top:10px;color:rgba(255,255,255,0.7)"></div>
-      <div id="revealSection" style="margin-top:12px"></div>
+    <!-- Main Content (Hidden until login) -->
+    <div id="main-content" class="hidden">
+        <!-- Hero Section -->
+        <section class="hero-section" id="home">
+            <div class="container text-center">
+                <h1 class="display-4 mb-4">Project Booking System</h1>
+                <p class="lead mb-4">Efficiently manage and book projects with our streamlined platform</p>
+                <button class="btn btn-light btn-lg" data-bs-toggle="modal" data-bs-target="#newProjectModal">Create New Project</button>
+            </div>
+        </section>
+
+        <!-- Dashboard -->
+        <section class="container">
+            <div class="row">
+                <div class="col-md-3">
+                    <div class="card text-center">
+                        <div class="card-body">
+                            <h5 class="card-title">Active Projects</h5>
+                            <h2 class="text-primary" id="active-projects-count">0</h2>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card text-center">
+                        <div class="card-body">
+                            <h5 class="card-title">Completed</h5>
+                            <h2 class="text-success" id="completed-projects-count">0</h2>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card text-center">
+                        <div class="card-body">
+                            <h5 class="card-title">Pending</h5>
+                            <h2 class="text-warning" id="pending-projects-count">0</h2>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card text-center">
+                        <div class="card-body">
+                            <h5 class="card-title">Bookings</h5>
+                            <h2 class="text-info" id="total-bookings-count">0</h2>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Projects Section -->
+        <section class="container mt-5" id="projects">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h2>My Projects</h2>
+                <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#newProjectModal">
+                    <i class="bi bi-plus-circle"></i> New Project
+                </button>
+            </div>
+            
+            <div class="row" id="projects-container">
+                <!-- Projects will be dynamically added here -->
+            </div>
+        </section>
+
+        <!-- Bookings Section -->
+        <section class="container mt-5" id="bookings">
+            <h2 class="mb-4">Recent Bookings</h2>
+            <div class="table-responsive">
+                <table class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th>Project</th>
+                            <th>Date</th>
+                            <th>Duration</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="bookings-table">
+                        <!-- Bookings will be dynamically added here -->
+                    </tbody>
+                </table>
+            </div>
+        </section>
     </div>
-  </div>
 
-  <div id="loader" style="position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:#000;color:#fff;z-index:1400">Loading Echo...</div>
+    <!-- New Project Modal -->
+    <div class="modal fade" id="newProjectModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Create New Project</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="new-project-form">
+                        <div class="mb-3">
+                            <label for="project-name" class="form-label">Project Name</label>
+                            <input type="text" class="form-control" id="project-name" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="project-description" class="form-label">Description</label>
+                            <textarea class="form-control" id="project-description" rows="3"></textarea>
+                        </div>
+                        <div class="mb-3">
+                            <label for="project-start-date" class="form-label">Start Date</label>
+                            <input type="date" class="form-control" id="project-start-date" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="project-end-date" class="form-label">End Date</label>
+                            <input type="date" class="form-control" id="project-end-date">
+                        </div>
+                        <div class="mb-3">
+                            <label for="project-budget" class="form-label">Budget ($)</label>
+                            <input type="number" class="form-control" id="project-budget" min="0" step="0.01">
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-primary" id="save-project-btn">Save Project</button>
+                </div>
+            </div>
+        </div>
+    </div>
 
-<script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
-<script>
-/* -------------------------
-   BASIC INIT
-   ------------------------- */
-const BASE_URL = window.location.origin;
-const socket = io(BASE_URL, { transports: ['websocket','polling'] });
-const params = new URLSearchParams(window.location.search);
-const voiceId = params.get("v");
-const loader = document.getElementById("loader");
-const app = document.getElementById("app");
-const senderView = document.getElementById("senderView");
-const receiverView = document.getElementById("receiverView");
-const themeBtn = document.getElementById("themeBtn");
-const guideBtn = document.getElementById("guideBtn");
+    <!-- Footer -->
+    <footer class="text-center">
+        <div class="container">
+            <p>&copy; 2023 ProjectBooking System. All rights reserved.</p>
+        </div>
+    </footer>
 
-/* THEME */
-let dark = true;
-themeBtn.onclick = () => {
-  dark = !dark;
-  document.body.classList.toggle('light', !dark);
-  themeBtn.textContent = dark ? "🌗 Theme" : "☀️ Theme";
-};
+    <!-- Firebase and other JS libraries -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/firebaseui@6.0.1/dist/firebaseui.js"></script>
+    
+    <script>
+        // Firebase configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyBlEAhsMJUSf-KYxpRJyM6Y4Kaee8X6pIU",
+            authDomain: "pts-host.firebaseapp.com",
+            projectId: "pts-host",
+            storageBucket: "pts-host.firebasestorage.app",
+            messagingSenderId: "161812167259",
+            appId: "1:161812167259:web:79f5e919b43bc9cfd75d7e",
+            measurementId: "G-7VL9THWMFX"
+        };
 
-/* GUIDE */
-guideBtn.onclick = () => {
-  // Small friendly modal replacement
-  alert("How Echo works:\n\n1) Record a short voice note.\n2) Upload to get a unique share link.\n3) Send the link to someone. They can listen and, if allowed, request your name to be revealed.\n\nUse Reveal on Request to get notified and approve the reveal.");
-};
+        // Initialize Firebase
+        firebase.initializeApp(firebaseConfig);
+        
+        // Initialize FirebaseUI
+        const ui = new firebaseui.auth.AuthUI(firebase.auth());
+        
+        // Firebase UI configuration
+        const uiConfig = {
+            callbacks: {
+                signInSuccessWithAuthResult: function(authResult, redirectUrl) {
+                    // User successfully signed in
+                    handleSignedInUser(authResult.user);
+                    // Don't redirect, we'll handle the UI change
+                    return false;
+                },
+                uiShown: function() {
+                    // The widget is rendered, hide the loader
+                    document.getElementById('loader').classList.add('hidden');
+                }
+            },
+            signInFlow: 'popup',
+            signInSuccessUrl: '#',
+            signInOptions: [
+                firebase.auth.GoogleAuthProvider.PROVIDER_ID,
+                {
+                    provider: firebase.auth.EmailAuthProvider.PROVIDER_ID,
+                    requireDisplayName: true
+                }
+            ],
+            tosUrl: '#',
+            privacyPolicyUrl: '#'
+        };
 
-/* Sender id registration (persisted locally) */
-if (!localStorage.getItem('echo_id')) {
-  localStorage.setItem('echo_id', 'echo_' + Math.random().toString(36).slice(2,9));
-}
-const SENDER_ID = localStorage.getItem('echo_id');
+        // DOM elements
+        const loginSection = document.getElementById('login-section');
+        const mainContent = document.getElementById('main-content');
+        const userInfo = document.getElementById('user-info');
+        const authButtons = document.getElementById('auth-buttons');
+        const signInBtn = document.getElementById('sign-in-btn');
+        const signOutBtn = document.getElementById('sign-out');
+        const userName = document.getElementById('user-name');
+        const projectsContainer = document.getElementById('projects-container');
+        const bookingsTable = document.getElementById('bookings-table');
+        const saveProjectBtn = document.getElementById('save-project-btn');
+        const loader = document.getElementById('loader');
+        
+        // Data storage
+        let projects = [];
+        let bookings = [];
+        
+        // Firebase auth state observer
+        firebase.auth().onAuthStateChanged(function(user) {
+            if (user) {
+                // User is signed in
+                handleSignedInUser(user);
+            } else {
+                // User is signed out
+                handleSignedOutUser();
+            }
+        });
+        
+        // Handle signed in user
+        function handleSignedInUser(user) {
+            console.log('User signed in:', user);
+            loginSection.classList.add('hidden');
+            mainContent.classList.remove('hidden');
+            userInfo.classList.remove('hidden');
+            authButtons.classList.add('hidden');
+            userName.textContent = user.displayName || user.email;
+            
+            // Load user data
+            loadUserData(user.uid);
+        }
+        
+        // Handle signed out user
+        function handleSignedOutUser() {
+            console.log('User signed out');
+            loginSection.classList.remove('hidden');
+            mainContent.classList.add('hidden');
+            userInfo.classList.add('hidden');
+            authButtons.classList.remove('hidden');
+            projects = [];
+            bookings = [];
+            
+            // Reset UI
+            renderProjects();
+            renderBookings();
+            updateDashboard();
+            
+            // Start Firebase UI
+            ui.start('#firebaseui-auth-container', uiConfig);
+        }
+        
+        // Sign in button click
+        signInBtn.addEventListener('click', function() {
+            loader.classList.remove('hidden');
+            ui.start('#firebaseui-auth-container', uiConfig);
+        });
+        
+        // Sign out button click
+        signOutBtn.addEventListener('click', function() {
+            firebase.auth().signOut().catch(function(error) {
+                console.error('Sign out error:', error);
+            });
+        });
+        
+        // Load user data (mock implementation - replace with actual API calls)
+        function loadUserData(userId) {
+            // Mock projects data
+            projects = [
+                {
+                    id: 1,
+                    name: "Website Redesign",
+                    description: "Complete redesign of company website with modern UI/UX",
+                    startDate: "2023-05-01",
+                    endDate: "2023-07-15",
+                    budget: 5000,
+                    status: "active",
+                    userId: userId
+                },
+                {
+                    id: 2,
+                    name: "Mobile App Development",
+                    description: "Development of a cross-platform mobile application",
+                    startDate: "2023-06-10",
+                    endDate: "2023-09-30",
+                    budget: 12000,
+                    status: "pending",
+                    userId: userId
+                },
+                {
+                    id: 3,
+                    name: "E-commerce Platform",
+                    description: "Build a custom e-commerce solution with payment integration",
+                    startDate: "2023-04-15",
+                    endDate: "2023-06-30",
+                    budget: 8000,
+                    status: "completed",
+                    userId: userId
+                }
+            ];
+            
+            // Mock bookings data
+            bookings = [
+                {
+                    id: 1,
+                    projectId: 1,
+                    projectName: "Website Redesign",
+                    date: "2023-05-15",
+                    duration: "2 weeks",
+                    status: "confirmed"
+                },
+                {
+                    id: 2,
+                    projectId: 2,
+                    projectName: "Mobile App Development",
+                    date: "2023-06-20",
+                    duration: "3 months",
+                    status: "pending"
+                },
+                {
+                    id: 3,
+                    projectId: 3,
+                    projectName: "E-commerce Platform",
+                    date: "2023-04-20",
+                    duration: "2.5 months",
+                    status: "completed"
+                }
+            ];
+            
+            // Update UI with data
+            renderProjects();
+            renderBookings();
+            updateDashboard();
+        }
+        
+        // Render projects
+        function renderProjects() {
+            projectsContainer.innerHTML = '';
+            
+            if (projects.length === 0) {
+                projectsContainer.innerHTML = `
+                    <div class="col-12 text-center py-5">
+                        <h4>No projects found</h4>
+                        <p>Create your first project to get started!</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            projects.forEach(project => {
+                const statusClass = getStatusClass(project.status);
+                
+                const projectCard = document.createElement('div');
+                projectCard.className = 'col-md-4 mb-4';
+                projectCard.innerHTML = `
+                    <div class="card project-card">
+                        <div class="card-header d-flex justify-content-between align-items-center position-relative">
+                            <span class="project-title">${project.name}</span>
+                            <span class="badge ${statusClass}">${project.status}</span>
+                        </div>
+                        <div class="card-body">
+                            <p class="card-text">${project.description}</p>
+                            <div class="mb-2"><strong>Start:</strong> ${formatDate(project.startDate)}</div>
+                            <div class="mb-2"><strong>End:</strong> ${project.endDate ? formatDate(project.endDate) : 'Ongoing'}</div>
+                            <div class="mb-3"><strong>Budget:</strong> $${project.budget?.toLocaleString() || '0'}</div>
+                            <div class="d-flex gap-2">
+                                <button class="btn btn-sm btn-outline-primary" onclick="editProject(${project.id})">Edit</button>
+                                <button class="btn btn-sm btn-outline-danger" onclick="deleteProject(${project.id})">Delete</button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                
+                projectsContainer.appendChild(projectCard);
+            });
+        }
+        
+        // Render bookings
+        function renderBookings() {
+            bookingsTable.innerHTML = '';
+            
+            if (bookings.length === 0) {
+                bookingsTable.innerHTML = `
+                    <tr>
+                        <td colspan="5" class="text-center py-4">
+                            <h5>No bookings found</h5>
+                            <p>Create a project first to make bookings</p>
+                        </td>
+                    </tr>
+                `;
+                return;
+            }
+            
+            bookings.forEach(booking => {
+                const statusClass = getStatusClass(booking.status);
+                
+                const bookingRow = document.createElement('tr');
+                bookingRow.innerHTML = `
+                    <td>${booking.projectName}</td>
+                    <td>${formatDate(booking.date)}</td>
+                    <td>${booking.duration}</td>
+                    <td><span class="badge ${statusClass}">${booking.status}</span></td>
+                    <td>
+                        <div class="d-flex gap-2">
+                            <button class="btn btn-sm btn-outline-primary" onclick="viewBooking(${booking.id})">View</button>
+                            <button class="btn btn-sm btn-outline-danger" onclick="cancelBooking(${booking.id})">Cancel</button>
+                        </div>
+                    </td>
+                `;
+                
+                bookingsTable.appendChild(bookingRow);
+            });
+        }
+        
+        // Update dashboard counts
+        function updateDashboard() {
+            const activeCount = projects.filter(p => p.status === 'active').length;
+            const completedCount = projects.filter(p => p.status === 'completed').length;
+            const pendingCount = projects.filter(p => p.status === 'pending').length;
+            const bookingsCount = bookings.length;
+            
+            document.getElementById('active-projects-count').textContent = activeCount;
+            document.getElementById('completed-projects-count').textContent = completedCount;
+            document.getElementById('pending-projects-count').textContent = pendingCount;
+            document.getElementById('total-bookings-count').textContent = bookingsCount;
+        }
+        
+        // Save new project
+        saveProjectBtn.addEventListener('click', function() {
+            const projectName = document.getElementById('project-name').value;
+            const projectDescription = document.getElementById('project-description').value;
+            const projectStartDate = document.getElementById('project-start-date').value;
+            const projectEndDate = document.getElementById('project-end-date').value;
+            const projectBudget = document.getElementById('project-budget').value;
+            
+            if (!projectName || !projectStartDate) {
+                alert('Please fill in required fields (Project Name and Start Date)');
+                return;
+            }
+            
+            const user = firebase.auth().currentUser;
+            if (!user) {
+                alert('Please sign in to create projects');
+                return;
+            }
+            
+            // Create new project
+            const newProject = {
+                id: projects.length > 0 ? Math.max(...projects.map(p => p.id)) + 1 : 1,
+                name: projectName,
+                description: projectDescription,
+                startDate: projectStartDate,
+                endDate: projectEndDate,
+                budget: parseFloat(projectBudget) || 0,
+                status: 'pending',
+                userId: user.uid
+            };
+            
+            projects.push(newProject);
+            
+            // Reset form and close modal
+            document.getElementById('new-project-form').reset();
+            const modal = bootstrap.Modal.getInstance(document.getElementById('newProjectModal'));
+            if (modal) {
+                modal.hide();
+            }
+            
+            // Update UI
+            renderProjects();
+            updateDashboard();
+            
+            alert('Project created successfully!');
+        });
+        
+        // Helper functions
+        function getStatusClass(status) {
+            switch(status) {
+                case 'active': 
+                case 'confirmed': 
+                    return 'bg-success';
+                case 'pending': 
+                    return 'bg-warning';
+                case 'completed': 
+                    return 'bg-info';
+                case 'cancelled':
+                    return 'bg-danger';
+                default: 
+                    return 'bg-secondary';
+            }
+        }
+        
+        function formatDate(dateString) {
+            if (!dateString) return 'N/A';
+            try {
+                const options = { year: 'numeric', month: 'short', day: 'numeric' };
+                return new Date(dateString).toLocaleDateString(undefined, options);
+            } catch (error) {
+                return 'Invalid Date';
+            }
+        }
+        
+        // Action functions
+        window.editProject = function(id) {
+            const project = projects.find(p => p.id === id);
+            if (project) {
+                alert(`Edit project: ${project.name}\nID: ${id}\n\nIn a real application, this would open an edit form.`);
+            }
+        };
+        
+        window.deleteProject = function(id) {
+            if (confirm('Are you sure you want to delete this project?')) {
+                projects = projects.filter(p => p.id !== id);
+                // Also remove associated bookings
+                bookings = bookings.filter(b => b.projectId !== id);
+                renderProjects();
+                renderBookings();
+                updateDashboard();
+                alert('Project deleted successfully!');
+            }
+        };
+        
+        window.viewBooking = function(id) {
+            const booking = bookings.find(b => b.id === id);
+            if (booking) {
+                alert(`View booking:\nProject: ${booking.projectName}\nDate: ${formatDate(booking.date)}\nDuration: ${booking.duration}\nStatus: ${booking.status}`);
+            }
+        };
+        
+        window.cancelBooking = function(id) {
+            if (confirm('Are you sure you want to cancel this booking?')) {
+                const booking = bookings.find(b => b.id === id);
+                if (booking) {
+                    booking.status = 'cancelled';
+                    renderBookings();
+                    alert('Booking cancelled successfully!');
+                }
+            }
+        };
 
-/* When socket connects register sender to a private room so server can notify only them */
-socket.on('connect', () => {
-  // send register to server so server can do room emits (server must implement register_sender)
-  socket.emit('register_sender', SENDER_ID);
-});
-
-/* -------------------------
-   ON LOAD - show UI
-   ------------------------- */
-window.addEventListener('load', () => {
-  loader.style.display = 'none';
-  app.hidden = false;
-  if (voiceId) {
-    senderView.hidden = true;
-    receiverView.hidden = false;
-    loadReceiver();
-  } else {
-    senderView.hidden = false;
-    receiverView.hidden = true;
-    loadDashboard();
-  }
-});
-
-/* -------------------------
-   RECORDING
-   ------------------------- */
-let mediaRecorder, chunks = [];
-const micBtn = document.getElementById('micBtn');
-const stopBtn = document.getElementById('stopBtn');
-const preview = document.getElementById('preview');
-const uploadBtn = document.getElementById('uploadBtn');
-const result = document.getElementById('result');
-
-micBtn.onclick = async () => {
-  try {
-    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-    mediaRecorder = new MediaRecorder(stream);
-    chunks = [];
-    mediaRecorder.ondataavailable = e => chunks.push(e.data);
-    mediaRecorder.onstop = () => {
-      const blob = new Blob(chunks, { type: 'audio/webm' });
-      preview.src = URL.createObjectURL(blob);
-      preview.hidden = false;
-      uploadBtn.hidden = false;
-    };
-    mediaRecorder.start();
-    micBtn.classList.add('recording');
-    stopBtn.disabled = false;
-  } catch (err) {
-    alert('Please allow microphone access to record.');
-  }
-};
-
-stopBtn.onclick = () => {
-  if (mediaRecorder && mediaRecorder.state === 'recording') mediaRecorder.stop();
-  micBtn.classList.remove('recording');
-  stopBtn.disabled = true;
-};
-
-/* -------------------------
-   UPLOAD + DASHBOARD
-   ------------------------- */
-uploadBtn.onclick = async () => {
-  const blob = new Blob(chunks, { type: 'audio/webm' });
-  const form = new FormData();
-  form.append('voice', blob);
-  form.append('privacy', document.getElementById('privacy').value);
-  form.append('expiry', document.getElementById('expiry').value);
-  form.append('senderId', SENDER_ID);
-  form.append('senderName', document.getElementById('senderName').value || 'Anonymous');
-
-  uploadBtn.disabled = true; uploadBtn.textContent = 'Uploading...';
-  try {
-    const res = await fetch(`${BASE_URL}/api/upload`, { method: 'POST', body: form });
-    const data = await res.json();
-    if (data.ok) {
-      result.innerHTML = `<p style="color:var(--accent)">✅ Uploaded! Share this link:</p>
-        <input value="${data.link}" style="width:100%;padding:8px;border-radius:8px" readonly />
-        <button style="margin-top:8px" onclick="navigator.clipboard.writeText('${data.link}')">Copy</button>`;
-      await loadDashboard();
-    } else {
-      result.textContent = 'Upload failed.';
-    }
-  } catch (e) {
-    result.textContent = 'Upload failed.';
-  } finally {
-    uploadBtn.disabled = false; uploadBtn.textContent = '⬆️ Upload';
-  }
-};
-
-async function loadDashboard() {
-  const grid = document.getElementById('grid');
-  grid.innerHTML = '<p>Loading...</p>';
-  try {
-    const res = await fetch(`${BASE_URL}/api/dashboard/${SENDER_ID}`);
-    const rows = await res.json();
-    if (!rows || rows.length === 0) {
-      grid.innerHTML = "<p style='color:rgba(255,255,255,0.6)'>No voices yet.</p>";
-      return;
-    }
-    grid.innerHTML = rows.map(v => `
-      <div class="card">
-        <b>${v.senderName || 'Anonymous'}</b>
-        <a href="${BASE_URL}/?v=${v.id}" target="_blank">${v.id}</a>
-        <small>Privacy: ${v.privacy} | Expiry: ${v.expiry}</small>
-        <div>Opened: ${v.openCount || 0} | Played: ${v.playCount || 0}</div>
-        ${v.revealRequest && !v.revealApproved ? `<button onclick="approveReveal('${v.id}')">Approve Reveal</button>` : v.revealApproved ? `<p>👁️ Reveal Approved</p>` : ''}
-      </div>
-    `).join('');
-  } catch (err) {
-    grid.innerHTML = "<p style='color:crimson'>Error loading dashboard.</p>";
-  }
-}
-
-async function approveReveal(id) {
-  try {
-    await fetch(`${BASE_URL}/api/approve-reveal/${id}`, { method: 'POST' });
-    // notify server will emit reveal_approved
-    await loadDashboard();
-  } catch (e) {
-    alert('Approve failed');
-  }
-}
-
-/* -------------------------
-   RECEIVER
-   ------------------------- */
-async function loadReceiver() {
-  try {
-    const res = await fetch(`${BASE_URL}/api/voice/${voiceId}`);
-    if (!res.ok) { document.getElementById('receiverStatus').textContent = 'Not found'; return; }
-    const data = await res.json();
-    const playAudio = document.getElementById('playAudio');
-    const playBtn = document.getElementById('playBtn');
-    const receiverStatus = document.getElementById('receiverStatus');
-    const revealSection = document.getElementById('revealSection');
-
-    if (!data.path) { receiverStatus.textContent = 'Voice not found'; return; }
-    playAudio.src = `${BASE_URL}/play/${data.path}`;
-    await fetch(`${BASE_URL}/api/open/${voiceId}`, { method: 'POST' });
-
-    if (data.privacy === 'auto_reveal') {
-      revealSection.innerHTML = `<p>👤 Sender: <b>${data.senderName}</b></p>`;
-    } else if (data.privacy === 'reveal_on_request') {
-      revealSection.innerHTML = `<button id="reqBtn">Request Name Reveal</button>`;
-      document.getElementById('reqBtn').onclick = async () => {
-        await fetch(`${BASE_URL}/api/request-reveal/${voiceId}`, { method: 'POST' });
-        revealSection.innerHTML = "<p>⏳ Request sent. Waiting...</p>";
-      };
-    } else {
-      revealSection.innerHTML = '';
-    }
-
-    playBtn.onclick = async () => {
-      playAudio.play();
-      await fetch(`${BASE_URL}/api/play/${voiceId}`, { method: 'POST' });
-      receiverStatus.textContent = "✅ Voice played.";
-    };
-  } catch (e) {
-    document.getElementById('receiverStatus').textContent = 'Error loading voice';
-  }
-}
-
-/* -------------------------
-   SOCKET REAL-TIME
-   ------------------------- */
-/* -------------------------
-   SOCKET REAL-TIME
-   ------------------------- */
-socket.on('reveal_request', data => {
-  if (data && data.senderId && data.senderId === SENDER_ID) {
-    alert('🔔 Someone requested a reveal for your voice. Open the dashboard to approve.');
-    loadDashboard();
-  }
-});
-
-/* dynamically listen for reveal approval specific to this voice */
-if (voiceId) {
-  socket.on(`reveal_approved_${voiceId}`, (data) => {
-    console.log("Reveal approved received:", data);
-    const revealSection = document.getElementById("revealSection");
-    revealSection.innerHTML = `<p>👤 Sender: <b>${data.senderName || "Anonymous"}</b></p>`;
-  });
-}
-
-</script>
+        // Initialize the application
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('Project Booking System initialized');
+            // Set minimum date to today for date inputs
+            const today = new Date().toISOString().split('T')[0];
+            document.getElementById('project-start-date').min = today;
+            document.getElementById('project-end-date').min = today;
+        });
+    </script>
 </body>
 </html>
-
-
